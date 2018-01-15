@@ -14,7 +14,8 @@ type TreediagramRequest struct {
 }
 
 type TreediagramResponse struct {
-	Response string `json:"response"`
+	Id     string `json:id`
+	Status string `json:status`
 }
 
 func DecodeTreediagramRequest(_ context.Context, r *http.Request) (request interface{}, err error) {

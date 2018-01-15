@@ -11,6 +11,6 @@ func MakeTreediagramRequestEndpoint(service Service) endpoint.Endpoint {
 
 		response, err := service.Request(request)
 
-		return TreediagramResponse{response}, err
+		return response, err
 	}
 }

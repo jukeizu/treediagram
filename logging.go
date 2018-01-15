@@ -14,7 +14,7 @@ func NewLoggingService(logger log.Logger, s Service) Service {
 	return &loggingService{logger, s}
 }
 
-func (s *loggingService) Request(treediagramRequest TreediagramRequest) (result string, err error) {
+func (s *loggingService) Request(treediagramRequest TreediagramRequest) (result TreediagramResponse, err error) {
 	defer func(begin time.Time) {
 		s.logger.Log(
 			"method", "Request",
