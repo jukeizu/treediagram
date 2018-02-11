@@ -10,12 +10,14 @@ import (
 )
 
 type TreediagramRequest struct {
-	Content string `json:"content"`
+	Source    string `json:"source"`
+	UserId    string `json:"userId"`
+	ChannelId string `json:"channelId"`
+	Content   string `json:"content"`
 }
 
 type TreediagramResponse struct {
-	Id     string `json:id`
-	Status string `json:status`
+	Id string `json:id`
 }
 
 func DecodeTreediagramRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
