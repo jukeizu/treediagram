@@ -6,14 +6,12 @@ import (
 	"github.com/go-kit/kit/log"
 	httpTransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
+	"github.com/jukeizu/treediagram/command"
 	"net/http"
 )
 
 type TreediagramRequest struct {
-	Source    string `json:"source"`
-	UserId    string `json:"userId"`
-	ChannelId string `json:"channelId"`
-	Content   string `json:"content"`
+	command.Request
 }
 
 type TreediagramResponse struct {

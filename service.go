@@ -15,7 +15,7 @@ type service struct {
 }
 
 func NewService(rabbitmqConfig rabbitmq.Config) (Service, error) {
-	client, err := rabbitmq.NewClient(rabbitmqConfig)
+	client, err := rabbitmq.NewPublisher(rabbitmqConfig)
 
 	return &service{client}, err
 }

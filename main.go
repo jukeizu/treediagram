@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/go-kit/kit/log"
+	"github.com/jukeizu/treediagram/handlers"
 	"github.com/shawntoffel/rabbitmq"
 	"github.com/shawntoffel/services-core/command"
 	"github.com/shawntoffel/services-core/config"
@@ -12,7 +13,8 @@ import (
 
 type TreediagramConfig struct {
 	config.ServiceConfig
-	RabbitMqConfig rabbitmq.Config
+	RabbitMqConfig    rabbitmq.Config
+	TimeHandlerConfig rabbitmq.Config
 }
 
 var serviceArgs command.ServiceArgs
@@ -31,6 +33,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	go func() {
+		timeHandler, _ := handlers.NewTimeHandler(treediagramConfig.TimeHandlerConfig)
+
+		timeHandler.Start()
+
+	}()
 
 	var service Service
 	service, err = NewService(treediagramConfig.RabbitMqConfig)
