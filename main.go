@@ -15,7 +15,7 @@ type TreediagramConfig struct {
 	RabbitMqConfig rabbitmq.Config
 }
 
-var serviceArgs command.ServiceArgs
+var serviceArgs command.CommandArgs
 
 func init() {
 	serviceArgs = command.ParseArgs()
@@ -26,7 +26,7 @@ func main() {
 
 	treediagramConfig := TreediagramConfig{}
 
-	err := config.ReadServiceConfig(serviceArgs.ConfigFile, &treediagramConfig)
+	err := config.ReadConfig(serviceArgs.ConfigFile, &treediagramConfig)
 
 	if err != nil {
 		panic(err)
