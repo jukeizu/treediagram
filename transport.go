@@ -6,16 +6,16 @@ import (
 	"github.com/go-kit/kit/log"
 	httpTransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
+	"github.com/jukeizu/treediagram-handler"
 	"net/http"
 )
 
 type TreediagramRequest struct {
-	Content string `json:"content"`
+	handler.Request
 }
 
 type TreediagramResponse struct {
-	Id     string `json:id`
-	Status string `json:status`
+	Id string `json:id`
 }
 
 func DecodeTreediagramRequest(_ context.Context, r *http.Request) (request interface{}, err error) {

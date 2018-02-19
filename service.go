@@ -14,16 +14,17 @@ type service struct {
 	Queue rabbitmq.Client
 }
 
-func NewService(rabbitmqConfig rabbitmq.Config) Service {
-	client := rabbitmq.NewClient(rabbitmqConfig)
+func NewService(rabbitmqConfig rabbitmq.Config) (Service, error) {
+	client, err := rabbitmq.NewPublisher(rabbitmqConfig)
 
-	return &service{client}
+	return &service{client}, err
 }
 
 func (s *service) Request(treediagramRequest TreediagramRequest) (TreediagramResponse, error) {
 
+	id := xid.New()
 	treediagramResponse := TreediagramResponse{}
-	treediagramResponse.Id = xid.New().String()
+	treediagramResponse.Id = id.String()
 
 	marshalled, err := json.Marshal(treediagramRequest)
 
@@ -36,8 +37,6 @@ func (s *service) Request(treediagramRequest TreediagramRequest) (TreediagramRes
 	if err != nil {
 		return treediagramResponse, err
 	}
-
-	treediagramResponse.Status = "queued"
 
 	return treediagramResponse, nil
 }

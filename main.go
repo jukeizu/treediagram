@@ -33,7 +33,12 @@ func main() {
 	}
 
 	var service Service
-	service = NewService(treediagramConfig.RabbitMqConfig)
+	service, err = NewService(treediagramConfig.RabbitMqConfig)
+
+	if err != nil {
+		panic(err)
+	}
+
 	service = NewLoggingService(log.With(logger, "component", "treediagram"), service)
 
 	httpLogger := log.With(logger, "component", "http")
