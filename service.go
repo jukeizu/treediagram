@@ -21,10 +21,13 @@ func NewService(rabbitmqConfig rabbitmq.Config) (Service, error) {
 }
 
 func (s *service) Request(treediagramRequest TreediagramRequest) (TreediagramResponse, error) {
+	correlationId := xid.New().String()
 
-	id := xid.New()
-	treediagramResponse := TreediagramResponse{}
-	treediagramResponse.Id = id.String()
+	treediagramResponse := TreediagramResponse{
+		Id: correlationId,
+	}
+
+	treediagramRequest.CorrelationId = correlationId
 
 	marshalled, err := json.Marshal(treediagramRequest)
 
