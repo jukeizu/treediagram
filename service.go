@@ -27,8 +27,6 @@ func (s *service) Request(treediagramRequest TreediagramRequest) (TreediagramRes
 		Id: correlationId,
 	}
 
-	treediagramRequest.CorrelationId = correlationId
-
 	marshalled, err := json.Marshal(treediagramRequest)
 
 	if err != nil {
