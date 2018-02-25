@@ -16,9 +16,13 @@ func NewLoggingService(logger log.Logger, s Service) Service {
 
 func (s *loggingService) Request(treediagramRequest TreediagramRequest) (result TreediagramResponse, err error) {
 	defer func(begin time.Time) {
+		logRequest := treediagramRequest
+
+		logRequest.Content = ""
+
 		s.logger.Log(
 			"method", "Request",
-			"request", treediagramRequest,
+			"request", logRequest,
 			"result", result,
 			"took", time.Since(begin),
 		)
