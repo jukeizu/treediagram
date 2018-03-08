@@ -1,6 +1,4 @@
 language: go
-go:
-- tip
 before_deploy:
 - "./build.sh"
 deploy:
