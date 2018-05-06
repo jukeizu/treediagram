@@ -1,0 +1,22 @@
+Port = 10000
+
+[StorageConfig]
+    [StorageConfig.MessageStorageConfig]
+    DatabaseName = "treediagram-publisher"
+    Url = "localhost"
+    CollectionName = "message"
+
+    [StorageConfig.MessageRequestStorageConfig]
+    DatabaseName = "treediagram-publisher"
+    Url = "localhost"
+    CollectionName = "messageRequest"
+
+[QueueConfig]
+    [QueueConfig.MessageQueueConfig]
+    Url = "amqp://localhost:5672/"
+    QueueName = "treediagram-publisher.Message"
+    Durable = true
+    ConsumerCount = 10
+
+[DiscordConfig]
+Token = ""
