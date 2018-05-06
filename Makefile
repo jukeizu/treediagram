@@ -11,3 +11,4 @@ test:
 
 build:
 	for CMD in `ls cmd/services`; do $(BUILD) -o bin/$$CMD-service-$$TRAVIS_TAG ./cmd/services/$$CMD; done
+	for CMD in `ls cmd/subscribers`; do $(BUILD) -o bin/$$CMD-subscriber-$$TRAVIS_TAG ./cmd/subscribers/$$CMD; done
