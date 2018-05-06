@@ -21,7 +21,7 @@ type User struct {
 }
 
 type TreediagramResponse struct {
-	Id string `json:id`
+	Id string `json:"id"`
 }
 
 type treediagram struct {
