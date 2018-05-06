@@ -16,7 +16,7 @@ type TreediagramRequest struct {
 }
 
 type TreediagramResponse struct {
-	Id string `json:id`
+	Id string
 }
 
 func DecodeTreediagramRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
