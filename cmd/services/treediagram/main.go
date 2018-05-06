@@ -1,13 +1,15 @@
 package main
 
 import (
+	"net/http"
+	"os"
+
 	"github.com/go-kit/kit/log"
+	"github.com/jukeizu/treediagram/services/treediagram"
 	"github.com/shawntoffel/rabbitmq"
 	"github.com/shawntoffel/services-core/command"
 	"github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/runner"
-	"net/http"
-	"os"
 )
 
 type TreediagramConfig struct {
@@ -32,20 +34,20 @@ func main() {
 		panic(err)
 	}
 
-	var service Service
-	service, err = NewService(treediagramConfig.RabbitMqConfig)
+	var service treediagram.Service
+	service, err = treediagram.NewService(treediagramConfig.RabbitMqConfig)
 
 	if err != nil {
 		panic(err)
 	}
 
-	service = NewLoggingService(log.With(logger, "component", "treediagram"), service)
+	service = treediagram.NewLoggingService(log.With(logger, "component", "treediagram"), service)
 
 	httpLogger := log.With(logger, "component", "http")
 
 	mux := http.NewServeMux()
 
-	var handler = MakeHandler(service, httpLogger)
+	var handler = treediagram.MakeHandler(service, httpLogger)
 	mux.Handle("/treediagram", handler)
 	mux.Handle("/treediagram/", handler)
 

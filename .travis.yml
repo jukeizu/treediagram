@@ -1,11 +1,10 @@
 language: go
-before_deploy:
-- "./build.sh"
+
 deploy:
   provider: releases
-  api_key:
-    secure: Ec78RiWyjlSmeGPx+dgNYsBzCdqazBLsknuDMnP/iFLxkKoDtK48N5lRDSFs8568xWFXKx4HoJHC13304qteZLqdPurPJpmkLSVamvw2XN5wzq5XUo99mKwx5OPBhkZ1GeSR3EN5v9H8i7h00S6sd8qTyaJ+D6kPbTvkpXonpsK5+3vdY7j8CxuHMrJ8UZPXPZq6D9MyJnjprCbqiB7/EsD7Lr3WEFnjs6ML4GKNjnACazxjn71dERI08zepKwSEhkMJGQf4deyBOnjkHGo3m1Wfdhmjuik+yq9Iz0fGlmTE2NfxIiTlErstwwO3XzJh2n3Z3rJsoRkf1tBLw4mD+npu1SOLABNBCl+xMrskfAgPMRrviJ+FD4kCkElj0zyN1ub7r4zZ0t0vTAkFzyiEhN9TBAI7sAC6ifKPog66//waqifLxEuHDvtfq6Xwa7Hcf4uEtlGGR1nrGXC4xaTWnEA6YPZcYLcinDb4tdma3UPpSCdekz8upMoOowghdpFCVVm55Q6Ux+DRtaMts8Qgpg7T/iworhiZn2GnMa67BxB4qmDeIIseOPsS/ygxH994L2CrwcR2h9lcv2ml7RTK4hIxg1J6oNzFd549HsibI9RyWKsIoA6dbr+sssulRxXRCZnHC7OgJaI2Xl39UCiEzN/4U+NBKTQZ5hxln7NJk0Y=
-  file: bin/treediagram
+  api_key: $GITHUB_TOKEN
+  file_glob: true
+  file: bin/*
   skip_cleanup: true
   on:
     tags: true

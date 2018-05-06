@@ -1,4 +1,4 @@
-package main
+package treediagram
 
 import (
 	"github.com/go-kit/kit/log"

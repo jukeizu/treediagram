@@ -1,21 +1,35 @@
-package main
+package treediagram
 
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+
 	"github.com/go-kit/kit/log"
 	httpTransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
-	"github.com/jukeizu/treediagram-handler"
-	"net/http"
 )
 
 type TreediagramRequest struct {
-	handler.Request
+	Source        string `json:"source"`
+	CorrelationId string `json:"correlationId"`
+	Bot           User   `json:"bot"`
+	Author        User   `json:"author"`
+	ChannelId     string `json:"channelId"`
+	ServerId      string `json:"serverId"`
+	Mentions      Users  `json:"mentions"`
+	Content       string `json:"content"`
+}
+
+type Users []User
+
+type User struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type TreediagramResponse struct {
-	Id string `json:id`
+	Id string `json:"id"`
 }
 
 func DecodeTreediagramRequest(_ context.Context, r *http.Request) (request interface{}, err error) {

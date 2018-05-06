@@ -13,6 +13,15 @@
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 
+bin
+
 treediagram
+!treediagram/
+
+publisher
+!publisher/
+
+discord
+!discord/
 
 testconfig.toml
