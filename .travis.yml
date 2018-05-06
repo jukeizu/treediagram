@@ -1,12 +1,5 @@
 language: go
 
-script:
-  - go vet ./...
-  - go test -v -race ./...
-
-install:
-  - for CMD in `ls cmd/services`; do go build GOARCH=amd64 -o bin/$CMD-service-$TRAVIS_TAG ./cmd/services/$CMD; done
-
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
