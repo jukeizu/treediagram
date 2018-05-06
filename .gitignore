@@ -16,4 +16,7 @@
 treediagram
 !treediagram/
 
+publisher
+!publisher/
+
 testconfig.toml
