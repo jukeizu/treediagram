@@ -17,7 +17,7 @@ type SendMessageRequest struct {
 }
 
 type Response struct {
-	Id string `json:id`
+	Id string `json:"id"`
 }
 
 func DecodeMessageRequest(_ context.Context, r *http.Request) (outputRequest interface{}, err error) {

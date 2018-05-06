@@ -6,6 +6,7 @@ import (
 
 type Client interface {
 	Treediagram() Treediagram
+	Publisher() Publisher
 }
 
 type client struct {
