@@ -30,7 +30,7 @@ func (s *service) SendMessage(sendMessageRequest SendMessageRequest) (Response, 
 
 	response.Id = messageRequestId
 
-	queueMessage := queue.QueueMessage{messageRequestId}
+	queueMessage := queue.QueueMessage{Id: messageRequestId}
 
 	err = s.Queue.PublishMessageRequest(queueMessage)
 

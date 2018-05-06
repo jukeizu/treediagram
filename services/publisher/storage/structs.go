@@ -23,7 +23,7 @@ type Message struct {
 	Id      string  `json:"id"`
 	Content string  `json:"content"`
 	Embed   *Embed  `json:"embed,omitempty"`
-	Tts     bool    `json:tts`
+	Tts     bool    `json:"tts"`
 	Files   []*File `json:"files,omitempty"`
 }
 
