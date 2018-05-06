@@ -5,6 +5,7 @@ import (
 )
 
 type Client interface {
+	Treediagram() Treediagram
 }
 
 type client struct {
