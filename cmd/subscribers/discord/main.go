@@ -15,8 +15,8 @@ import (
 )
 
 type Config struct {
-	DiscordHandlerConfig discord.DiscordHandlerConfig
-	ClientConfig         base.ClientConfig
+	DiscordSubscriberConfig discord.DiscordSubscriberConfig
+	ClientConfig            base.ClientConfig
 }
 
 var commandArgs command.CommandArgs
@@ -38,7 +38,7 @@ func main() {
 
 	client := api.NewClient(c.ClientConfig)
 
-	handler, err := discord.NewDiscordHandler(c.DiscordHandlerConfig, client, logger)
+	handler, err := discord.NewDiscordSubscriber(c.DiscordSubscriberConfig, client, logger)
 
 	err = handler.Open()
 
