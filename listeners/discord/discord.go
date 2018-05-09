@@ -6,23 +6,23 @@ import (
 	"github.com/jukeizu/treediagram/api"
 )
 
-type DiscordSubscriberConfig struct {
+type DiscordListenerConfig struct {
 	Token string
 }
 
-type DiscordSubscriber interface {
+type DiscordListener interface {
 	Open() error
 	Close()
 }
 
-type discordSubscriber struct {
+type discordListener struct {
 	Session *discordgo.Session
 	Client  api.Client
 	Logger  log.Logger
 }
 
-func NewDiscordSubscriber(config DiscordSubscriberConfig, client api.Client, logger log.Logger) (DiscordSubscriber, error) {
-	dh := discordSubscriber{Client: client, Logger: logger}
+func NewDiscordListener(config DiscordListenerConfig, client api.Client, logger log.Logger) (DiscordListener, error) {
+	dh := discordListener{Client: client, Logger: logger}
 
 	session, err := discordgo.New("Bot " + config.Token)
 
@@ -37,15 +37,15 @@ func NewDiscordSubscriber(config DiscordSubscriberConfig, client api.Client, log
 	return &dh, nil
 }
 
-func (d *discordSubscriber) Open() error {
+func (d *discordListener) Open() error {
 	return d.Session.Open()
 }
 
-func (d *discordSubscriber) Close() {
+func (d *discordListener) Close() {
 	d.Session.Close()
 }
 
-func (d *discordSubscriber) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+func (d *discordListener) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
