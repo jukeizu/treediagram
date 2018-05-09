@@ -5,11 +5,11 @@ import (
 	"os"
 
 	"github.com/go-kit/kit/log"
-	"github.com/jukeizu/treediagram/services/publisher"
-	"github.com/jukeizu/treediagram/services/publisher/handlers"
-	"github.com/jukeizu/treediagram/services/publisher/handlers/discord"
-	"github.com/jukeizu/treediagram/services/publisher/queue"
-	"github.com/jukeizu/treediagram/services/publisher/storage"
+	"github.com/jukeizu/treediagram/services/publishing"
+	"github.com/jukeizu/treediagram/services/publishing/handlers"
+	"github.com/jukeizu/treediagram/services/publishing/handlers/discord"
+	"github.com/jukeizu/treediagram/services/publishing/queue"
+	"github.com/jukeizu/treediagram/services/publishing/storage"
 	"github.com/shawntoffel/services-core/command"
 	"github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/runner"
@@ -76,14 +76,14 @@ func main() {
 
 	listener.Listen(queueHandler)
 
-	sendService := publisher.NewService(publisherQueue, store)
-	sendService = publisher.NewLoggingService(log.With(logger, "component", "treediagram-publisher-service"), sendService)
+	sendService := publishing.NewService(publisherQueue, store)
+	sendService = publishing.NewLoggingService(log.With(logger, "component", "treediagram-publisher-service"), sendService)
 
 	httpLogger := log.With(logger, "component", "http")
 
 	mux := http.NewServeMux()
 
-	var requestHandler = publisher.MakeHandler(sendService, httpLogger)
+	var requestHandler = publishing.MakeHandler(sendService, httpLogger)
 	mux.Handle("/message", requestHandler)
 
 	serviceConfig := config.ServiceConfig{Port: publisherConfig.Port}

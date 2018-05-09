@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/jukeizu/treediagram/services/publisher/storage"
+	"github.com/jukeizu/treediagram/services/publishing/storage"
 	restclient "github.com/shawntoffel/go-restclient"
 )
 

@@ -1,4 +1,4 @@
-package publisher
+package publishing
 
 import (
 	"github.com/go-kit/kit/log"

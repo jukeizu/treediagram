@@ -1,4 +1,4 @@
-package publisher
+package publishing
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/go-kit/kit/log"
 	httpTransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
-	"github.com/jukeizu/treediagram/services/publisher/storage"
+	"github.com/jukeizu/treediagram/services/publishing/storage"
 )
 
 type SendMessageRequest struct {

@@ -2,7 +2,7 @@ package discord
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"github.com/jukeizu/treediagram/services/publisher/handlers"
+	"github.com/jukeizu/treediagram/services/publishing/handlers"
 )
 
 type DiscordConfig struct {

@@ -1,8 +1,8 @@
-package publisher
+package publishing
 
 import (
-	"github.com/jukeizu/treediagram/services/publisher/queue"
-	"github.com/jukeizu/treediagram/services/publisher/storage"
+	"github.com/jukeizu/treediagram/services/publishing/queue"
+	"github.com/jukeizu/treediagram/services/publishing/storage"
 	"github.com/rs/xid"
 )
 
