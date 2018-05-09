@@ -1,4 +1,4 @@
-package treediagram
+package receiving
 
 import (
 	"github.com/go-kit/kit/log"

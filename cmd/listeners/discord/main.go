@@ -8,15 +8,15 @@ import (
 
 	base "github.com/jukeizu/client-base"
 	"github.com/jukeizu/treediagram/api"
-	"github.com/jukeizu/treediagram/subscribers/discord"
+	"github.com/jukeizu/treediagram/listeners/discord"
 	"github.com/shawntoffel/services-core/command"
 	"github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/logging"
 )
 
 type Config struct {
-	DiscordSubscriberConfig discord.DiscordSubscriberConfig
-	ClientConfig            base.ClientConfig
+	DiscordListenerConfig discord.DiscordListenerConfig
+	ClientConfig          base.ClientConfig
 }
 
 var commandArgs command.CommandArgs
@@ -38,7 +38,7 @@ func main() {
 
 	client := api.NewClient(c.ClientConfig)
 
-	handler, err := discord.NewDiscordSubscriber(c.DiscordSubscriberConfig, client, logger)
+	handler, err := discord.NewDiscordListener(c.DiscordListenerConfig, client, logger)
 
 	err = handler.Open()
 

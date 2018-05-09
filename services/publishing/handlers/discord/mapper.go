@@ -4,7 +4,7 @@ import (
 	"bytes"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/jukeizu/treediagram/services/publisher/storage"
+	"github.com/jukeizu/treediagram/services/publishing/storage"
 )
 
 func MapToEmbed(embed *storage.Embed) *discordgo.MessageEmbed {

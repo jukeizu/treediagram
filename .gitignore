@@ -15,11 +15,14 @@
 
 bin
 
+receiving
+!receiving/
+
 treediagram
 !treediagram/
 
-publisher
-!publisher/
+publishing
+!publishing/
 
 discord
 !discord/

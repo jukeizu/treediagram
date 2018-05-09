@@ -1,4 +1,4 @@
-package treediagram
+package receiving
 
 import (
 	"encoding/json"
