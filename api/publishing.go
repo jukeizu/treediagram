@@ -14,19 +14,19 @@ type Response struct {
 	Id string `json:"id"`
 }
 
-type publisher struct {
+type publishing struct {
 	client *client
 }
 
-type Publisher interface {
+type Publishing interface {
 	SendMessage(SendMessageRequest) (Response, error)
 }
 
-func (c *client) Publisher() Publisher {
-	return &publisher{c}
+func (c *client) Publishing() Publishing {
+	return &publishing{c}
 }
 
-func (p *publisher) SendMessage(request SendMessageRequest) (Response, error) {
+func (p *publishing) SendMessage(request SendMessageRequest) (Response, error) {
 	response := Response{}
 
 	err := restclient.Post(p.client.ClientConfig.BaseUrl+"/message", request, &response)
