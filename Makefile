@@ -1,6 +1,8 @@
 VERSION=$(shell git describe --tags)
 BUILD=GOARCH=amd64 go build -v
 
+.PHONY all deps test build
+
 all: deps test build
 
 deps:
