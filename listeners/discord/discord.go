@@ -1,6 +1,8 @@
 package discord
 
 import (
+	"fmt"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-kit/kit/log"
 	"github.com/jukeizu/treediagram/api"
@@ -24,15 +26,19 @@ type discordListener struct {
 func NewDiscordListener(config DiscordListenerConfig, client api.Client, logger log.Logger) (DiscordListener, error) {
 	dh := discordListener{Client: client, Logger: logger}
 
+	discordgo.Logger = dh.discordLogger
+
 	session, err := discordgo.New("Bot " + config.Token)
 
 	if err != nil {
 		return &dh, err
 	}
 
-	dh.Session = session
+	session.LogLevel = discordgo.LogWarning
 
 	session.AddHandler(dh.messageCreate)
+
+	dh.Session = session
 
 	return &dh, nil
 }
@@ -66,4 +72,10 @@ func (d *discordListener) messageCreate(s *discordgo.Session, m *discordgo.Messa
 	if err != nil {
 		d.Logger.Log("error", err.Error(), "correlationId", request.CorrelationId, "responseId", response.Id)
 	}
+}
+
+func (d *discordListener) discordLogger(level int, caller int, format string, a ...interface{}) {
+	message := fmt.Sprintf(format, a...)
+
+	d.Logger.Log("component", "discordgo", "level", level, "message", message, "version", discordgo.VERSION)
 }
