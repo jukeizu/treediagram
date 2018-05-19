@@ -34,7 +34,7 @@ func NewDiscordListener(config DiscordListenerConfig, client api.Client, logger 
 		return &dh, err
 	}
 
-	session.LogLevel = discordgo.LogWarning
+	session.LogLevel = discordgo.LogInformational
 
 	session.AddHandler(dh.messageCreate)
 
@@ -44,10 +44,14 @@ func NewDiscordListener(config DiscordListenerConfig, client api.Client, logger 
 }
 
 func (d *discordListener) Open() error {
+	d.Logger.Log("session", "opening")
+
 	return d.Session.Open()
 }
 
 func (d *discordListener) Close() {
+	d.Logger.Log("session", "closing")
+
 	d.Session.Close()
 }
 
