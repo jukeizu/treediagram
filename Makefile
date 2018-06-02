@@ -1,7 +1,7 @@
 VERSION=$(shell git describe --tags)
 BUILD=GOARCH=amd64 go build -v
 
-.PHONY: all deps test build
+.PHONY: all deps test build clean
 
 all: deps test build
 
@@ -15,3 +15,6 @@ test:
 build:
 	for CMD in `ls cmd/services`; do $(BUILD) -o bin/$$CMD-service-$(VERSION) ./cmd/services/$$CMD; done
 	for CMD in `ls cmd/listeners`; do $(BUILD) -o bin/$$CMD-listener-$(VERSION) ./cmd/listeners/$$CMD; done
+
+clean:
+	rm -v bin/*
