@@ -17,7 +17,7 @@ type storage struct {
 	mdb.Store
 }
 
-func NewStorage(dbConfig mdb.DbConfig) (CommandStorage, error) {
+func NewCommandStorage(dbConfig mdb.DbConfig) (CommandStorage, error) {
 	store, err := mdb.NewStorage(dbConfig)
 
 	j := storage{}
