@@ -2,6 +2,7 @@ package receiving
 
 import (
 	"encoding/json"
+
 	"github.com/rs/xid"
 	"github.com/shawntoffel/rabbitmq"
 )
@@ -21,10 +22,10 @@ func NewService(rabbitmqConfig rabbitmq.Config) (Service, error) {
 }
 
 func (s *service) Request(treediagramRequest TreediagramRequest) (TreediagramResponse, error) {
-	correlationId := xid.New().String()
+	id := xid.New().String()
 
 	treediagramResponse := TreediagramResponse{
-		Id: correlationId,
+		Id: id,
 	}
 
 	marshalled, err := json.Marshal(treediagramRequest)

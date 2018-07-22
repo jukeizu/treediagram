@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package registration;
+
+service Registration {
+    rpc AddCommand(AddCommandRequest) returns (AddCommandReply) {}
+    rpc RemoveCommand(RemoveCommandRequest) returns (RemoveCommandReply) {}
+    rpc Commands(CommandsRequest) returns (CommandsReply) {}
+}
+
+message Command {
+    string id = 1;
+    string server = 2;
+    string name = 3;
+    string regex = 4;
+    string endpoint = 5;
+    string help = 6;
+}
+
+message CommandsRequest {}
+
+message CommandsReply {
+    repeated Command Commands = 1;
+}
+
+message AddCommandRequest {
+    Command command = 1;
+}
+
+message AddCommandReply {}
+
+message RemoveCommandRequest {
+    string id = 1;
+}
+
+message RemoveCommandReply {}
