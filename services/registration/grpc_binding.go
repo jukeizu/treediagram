@@ -6,11 +6,11 @@ import (
 	pb "github.com/jukeizu/treediagram/api/registration"
 )
 
-type grpcBinding struct {
+type GrpcBinding struct {
 	Service
 }
 
-func (b grpcBinding) Add(ctx context.Context, req *pb.AddCommandRequest) (*pb.AddCommandReply, error) {
+func (b GrpcBinding) AddCommand(ctx context.Context, req *pb.AddCommandRequest) (*pb.AddCommandReply, error) {
 	c := Command{
 		Id:       req.Command.Id,
 		Server:   req.Command.Server,
@@ -25,13 +25,13 @@ func (b grpcBinding) Add(ctx context.Context, req *pb.AddCommandRequest) (*pb.Ad
 	return &pb.AddCommandReply{}, err
 }
 
-func (b grpcBinding) Remove(ctx context.Context, req *pb.RemoveCommandRequest) (*pb.RemoveCommandReply, error) {
+func (b GrpcBinding) RemoveCommand(ctx context.Context, req *pb.RemoveCommandRequest) (*pb.RemoveCommandReply, error) {
 	err := b.Service.Remove(req.Id)
 
 	return &pb.RemoveCommandReply{}, err
 }
 
-func (b grpcBinding) Commands(ctx context.Context, req *pb.CommandsRequest) (*pb.CommandsReply, error) {
+func (b GrpcBinding) Commands(ctx context.Context, req *pb.CommandsRequest) (*pb.CommandsReply, error) {
 	commands, err := b.Service.Commands()
 
 	if err != nil {
