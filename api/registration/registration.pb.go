@@ -28,8 +28,10 @@ type Command struct {
 	Server               string   `protobuf:"bytes,2,opt,name=server,proto3" json:"server,omitempty"`
 	Name                 string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Regex                string   `protobuf:"bytes,4,opt,name=regex,proto3" json:"regex,omitempty"`
-	Endpoint             string   `protobuf:"bytes,5,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
-	Help                 string   `protobuf:"bytes,6,opt,name=help,proto3" json:"help,omitempty"`
+	RequireMention       bool     `protobuf:"varint,5,opt,name=requireMention,proto3" json:"requireMention,omitempty"`
+	Endpoint             string   `protobuf:"bytes,6,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	Help                 string   `protobuf:"bytes,7,opt,name=help,proto3" json:"help,omitempty"`
+	Enabled              bool     `protobuf:"varint,8,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -39,7 +41,7 @@ func (m *Command) Reset()         { *m = Command{} }
 func (m *Command) String() string { return proto.CompactTextString(m) }
 func (*Command) ProtoMessage()    {}
 func (*Command) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_0211b0c536230fe8, []int{0}
+	return fileDescriptor_registration_df11ec03cd296385, []int{0}
 }
 func (m *Command) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Command.Unmarshal(m, b)
@@ -87,6 +89,13 @@ func (m *Command) GetRegex() string {
 	return ""
 }
 
+func (m *Command) GetRequireMention() bool {
+	if m != nil {
+		return m.RequireMention
+	}
+	return false
+}
+
 func (m *Command) GetEndpoint() string {
 	if m != nil {
 		return m.Endpoint
@@ -101,72 +110,111 @@ func (m *Command) GetHelp() string {
 	return ""
 }
 
-type CommandsRequest struct {
+func (m *Command) GetEnabled() bool {
+	if m != nil {
+		return m.Enabled
+	}
+	return false
+}
+
+type QueryCommandsRequest struct {
+	Server               string   `protobuf:"bytes,1,opt,name=server,proto3" json:"server,omitempty"`
+	LastId               string   `protobuf:"bytes,2,opt,name=lastId,proto3" json:"lastId,omitempty"`
+	PageSize             int32    `protobuf:"varint,3,opt,name=pageSize,proto3" json:"pageSize,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *CommandsRequest) Reset()         { *m = CommandsRequest{} }
-func (m *CommandsRequest) String() string { return proto.CompactTextString(m) }
-func (*CommandsRequest) ProtoMessage()    {}
-func (*CommandsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_0211b0c536230fe8, []int{1}
+func (m *QueryCommandsRequest) Reset()         { *m = QueryCommandsRequest{} }
+func (m *QueryCommandsRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryCommandsRequest) ProtoMessage()    {}
+func (*QueryCommandsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_registration_df11ec03cd296385, []int{1}
 }
-func (m *CommandsRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CommandsRequest.Unmarshal(m, b)
+func (m *QueryCommandsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_QueryCommandsRequest.Unmarshal(m, b)
 }
-func (m *CommandsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CommandsRequest.Marshal(b, m, deterministic)
+func (m *QueryCommandsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_QueryCommandsRequest.Marshal(b, m, deterministic)
 }
-func (dst *CommandsRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CommandsRequest.Merge(dst, src)
+func (dst *QueryCommandsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryCommandsRequest.Merge(dst, src)
 }
-func (m *CommandsRequest) XXX_Size() int {
-	return xxx_messageInfo_CommandsRequest.Size(m)
+func (m *QueryCommandsRequest) XXX_Size() int {
+	return xxx_messageInfo_QueryCommandsRequest.Size(m)
 }
-func (m *CommandsRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_CommandsRequest.DiscardUnknown(m)
+func (m *QueryCommandsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryCommandsRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_CommandsRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryCommandsRequest proto.InternalMessageInfo
 
-type CommandsReply struct {
+func (m *QueryCommandsRequest) GetServer() string {
+	if m != nil {
+		return m.Server
+	}
+	return ""
+}
+
+func (m *QueryCommandsRequest) GetLastId() string {
+	if m != nil {
+		return m.LastId
+	}
+	return ""
+}
+
+func (m *QueryCommandsRequest) GetPageSize() int32 {
+	if m != nil {
+		return m.PageSize
+	}
+	return 0
+}
+
+type QueryCommandsReply struct {
 	Commands             []*Command `protobuf:"bytes,1,rep,name=Commands,proto3" json:"Commands,omitempty"`
+	HasMore              bool       `protobuf:"varint,2,opt,name=hasMore,proto3" json:"hasMore,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
 	XXX_unrecognized     []byte     `json:"-"`
 	XXX_sizecache        int32      `json:"-"`
 }
 
-func (m *CommandsReply) Reset()         { *m = CommandsReply{} }
-func (m *CommandsReply) String() string { return proto.CompactTextString(m) }
-func (*CommandsReply) ProtoMessage()    {}
-func (*CommandsReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_0211b0c536230fe8, []int{2}
+func (m *QueryCommandsReply) Reset()         { *m = QueryCommandsReply{} }
+func (m *QueryCommandsReply) String() string { return proto.CompactTextString(m) }
+func (*QueryCommandsReply) ProtoMessage()    {}
+func (*QueryCommandsReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_registration_df11ec03cd296385, []int{2}
 }
-func (m *CommandsReply) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CommandsReply.Unmarshal(m, b)
+func (m *QueryCommandsReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_QueryCommandsReply.Unmarshal(m, b)
 }
-func (m *CommandsReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CommandsReply.Marshal(b, m, deterministic)
+func (m *QueryCommandsReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_QueryCommandsReply.Marshal(b, m, deterministic)
 }
-func (dst *CommandsReply) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CommandsReply.Merge(dst, src)
+func (dst *QueryCommandsReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryCommandsReply.Merge(dst, src)
 }
-func (m *CommandsReply) XXX_Size() int {
-	return xxx_messageInfo_CommandsReply.Size(m)
+func (m *QueryCommandsReply) XXX_Size() int {
+	return xxx_messageInfo_QueryCommandsReply.Size(m)
 }
-func (m *CommandsReply) XXX_DiscardUnknown() {
-	xxx_messageInfo_CommandsReply.DiscardUnknown(m)
+func (m *QueryCommandsReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryCommandsReply.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_CommandsReply proto.InternalMessageInfo
+var xxx_messageInfo_QueryCommandsReply proto.InternalMessageInfo
 
-func (m *CommandsReply) GetCommands() []*Command {
+func (m *QueryCommandsReply) GetCommands() []*Command {
 	if m != nil {
 		return m.Commands
 	}
 	return nil
+}
+
+func (m *QueryCommandsReply) GetHasMore() bool {
+	if m != nil {
+		return m.HasMore
+	}
+	return false
 }
 
 type AddCommandRequest struct {
@@ -180,7 +228,7 @@ func (m *AddCommandRequest) Reset()         { *m = AddCommandRequest{} }
 func (m *AddCommandRequest) String() string { return proto.CompactTextString(m) }
 func (*AddCommandRequest) ProtoMessage()    {}
 func (*AddCommandRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_0211b0c536230fe8, []int{3}
+	return fileDescriptor_registration_df11ec03cd296385, []int{3}
 }
 func (m *AddCommandRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AddCommandRequest.Unmarshal(m, b)
@@ -217,7 +265,7 @@ func (m *AddCommandReply) Reset()         { *m = AddCommandReply{} }
 func (m *AddCommandReply) String() string { return proto.CompactTextString(m) }
 func (*AddCommandReply) ProtoMessage()    {}
 func (*AddCommandReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_0211b0c536230fe8, []int{4}
+	return fileDescriptor_registration_df11ec03cd296385, []int{4}
 }
 func (m *AddCommandReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AddCommandReply.Unmarshal(m, b)
@@ -237,82 +285,82 @@ func (m *AddCommandReply) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_AddCommandReply proto.InternalMessageInfo
 
-type RemoveCommandRequest struct {
+type DisableCommandRequest struct {
 	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *RemoveCommandRequest) Reset()         { *m = RemoveCommandRequest{} }
-func (m *RemoveCommandRequest) String() string { return proto.CompactTextString(m) }
-func (*RemoveCommandRequest) ProtoMessage()    {}
-func (*RemoveCommandRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_0211b0c536230fe8, []int{5}
+func (m *DisableCommandRequest) Reset()         { *m = DisableCommandRequest{} }
+func (m *DisableCommandRequest) String() string { return proto.CompactTextString(m) }
+func (*DisableCommandRequest) ProtoMessage()    {}
+func (*DisableCommandRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_registration_df11ec03cd296385, []int{5}
 }
-func (m *RemoveCommandRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_RemoveCommandRequest.Unmarshal(m, b)
+func (m *DisableCommandRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DisableCommandRequest.Unmarshal(m, b)
 }
-func (m *RemoveCommandRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_RemoveCommandRequest.Marshal(b, m, deterministic)
+func (m *DisableCommandRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DisableCommandRequest.Marshal(b, m, deterministic)
 }
-func (dst *RemoveCommandRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RemoveCommandRequest.Merge(dst, src)
+func (dst *DisableCommandRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DisableCommandRequest.Merge(dst, src)
 }
-func (m *RemoveCommandRequest) XXX_Size() int {
-	return xxx_messageInfo_RemoveCommandRequest.Size(m)
+func (m *DisableCommandRequest) XXX_Size() int {
+	return xxx_messageInfo_DisableCommandRequest.Size(m)
 }
-func (m *RemoveCommandRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_RemoveCommandRequest.DiscardUnknown(m)
+func (m *DisableCommandRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_DisableCommandRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_RemoveCommandRequest proto.InternalMessageInfo
+var xxx_messageInfo_DisableCommandRequest proto.InternalMessageInfo
 
-func (m *RemoveCommandRequest) GetId() string {
+func (m *DisableCommandRequest) GetId() string {
 	if m != nil {
 		return m.Id
 	}
 	return ""
 }
 
-type RemoveCommandReply struct {
+type DisableCommandReply struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *RemoveCommandReply) Reset()         { *m = RemoveCommandReply{} }
-func (m *RemoveCommandReply) String() string { return proto.CompactTextString(m) }
-func (*RemoveCommandReply) ProtoMessage()    {}
-func (*RemoveCommandReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_0211b0c536230fe8, []int{6}
+func (m *DisableCommandReply) Reset()         { *m = DisableCommandReply{} }
+func (m *DisableCommandReply) String() string { return proto.CompactTextString(m) }
+func (*DisableCommandReply) ProtoMessage()    {}
+func (*DisableCommandReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_registration_df11ec03cd296385, []int{6}
 }
-func (m *RemoveCommandReply) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_RemoveCommandReply.Unmarshal(m, b)
+func (m *DisableCommandReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DisableCommandReply.Unmarshal(m, b)
 }
-func (m *RemoveCommandReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_RemoveCommandReply.Marshal(b, m, deterministic)
+func (m *DisableCommandReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DisableCommandReply.Marshal(b, m, deterministic)
 }
-func (dst *RemoveCommandReply) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RemoveCommandReply.Merge(dst, src)
+func (dst *DisableCommandReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DisableCommandReply.Merge(dst, src)
 }
-func (m *RemoveCommandReply) XXX_Size() int {
-	return xxx_messageInfo_RemoveCommandReply.Size(m)
+func (m *DisableCommandReply) XXX_Size() int {
+	return xxx_messageInfo_DisableCommandReply.Size(m)
 }
-func (m *RemoveCommandReply) XXX_DiscardUnknown() {
-	xxx_messageInfo_RemoveCommandReply.DiscardUnknown(m)
+func (m *DisableCommandReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_DisableCommandReply.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_RemoveCommandReply proto.InternalMessageInfo
+var xxx_messageInfo_DisableCommandReply proto.InternalMessageInfo
 
 func init() {
 	proto.RegisterType((*Command)(nil), "registration.Command")
-	proto.RegisterType((*CommandsRequest)(nil), "registration.CommandsRequest")
-	proto.RegisterType((*CommandsReply)(nil), "registration.CommandsReply")
+	proto.RegisterType((*QueryCommandsRequest)(nil), "registration.QueryCommandsRequest")
+	proto.RegisterType((*QueryCommandsReply)(nil), "registration.QueryCommandsReply")
 	proto.RegisterType((*AddCommandRequest)(nil), "registration.AddCommandRequest")
 	proto.RegisterType((*AddCommandReply)(nil), "registration.AddCommandReply")
-	proto.RegisterType((*RemoveCommandRequest)(nil), "registration.RemoveCommandRequest")
-	proto.RegisterType((*RemoveCommandReply)(nil), "registration.RemoveCommandReply")
+	proto.RegisterType((*DisableCommandRequest)(nil), "registration.DisableCommandRequest")
+	proto.RegisterType((*DisableCommandReply)(nil), "registration.DisableCommandReply")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -328,8 +376,8 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type RegistrationClient interface {
 	AddCommand(ctx context.Context, in *AddCommandRequest, opts ...grpc.CallOption) (*AddCommandReply, error)
-	RemoveCommand(ctx context.Context, in *RemoveCommandRequest, opts ...grpc.CallOption) (*RemoveCommandReply, error)
-	Commands(ctx context.Context, in *CommandsRequest, opts ...grpc.CallOption) (*CommandsReply, error)
+	DisableCommand(ctx context.Context, in *DisableCommandRequest, opts ...grpc.CallOption) (*DisableCommandReply, error)
+	QueryCommands(ctx context.Context, in *QueryCommandsRequest, opts ...grpc.CallOption) (*QueryCommandsReply, error)
 }
 
 type registrationClient struct {
@@ -349,18 +397,18 @@ func (c *registrationClient) AddCommand(ctx context.Context, in *AddCommandReque
 	return out, nil
 }
 
-func (c *registrationClient) RemoveCommand(ctx context.Context, in *RemoveCommandRequest, opts ...grpc.CallOption) (*RemoveCommandReply, error) {
-	out := new(RemoveCommandReply)
-	err := c.cc.Invoke(ctx, "/registration.Registration/RemoveCommand", in, out, opts...)
+func (c *registrationClient) DisableCommand(ctx context.Context, in *DisableCommandRequest, opts ...grpc.CallOption) (*DisableCommandReply, error) {
+	out := new(DisableCommandReply)
+	err := c.cc.Invoke(ctx, "/registration.Registration/DisableCommand", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *registrationClient) Commands(ctx context.Context, in *CommandsRequest, opts ...grpc.CallOption) (*CommandsReply, error) {
-	out := new(CommandsReply)
-	err := c.cc.Invoke(ctx, "/registration.Registration/Commands", in, out, opts...)
+func (c *registrationClient) QueryCommands(ctx context.Context, in *QueryCommandsRequest, opts ...grpc.CallOption) (*QueryCommandsReply, error) {
+	out := new(QueryCommandsReply)
+	err := c.cc.Invoke(ctx, "/registration.Registration/QueryCommands", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -370,8 +418,8 @@ func (c *registrationClient) Commands(ctx context.Context, in *CommandsRequest, 
 // RegistrationServer is the server API for Registration service.
 type RegistrationServer interface {
 	AddCommand(context.Context, *AddCommandRequest) (*AddCommandReply, error)
-	RemoveCommand(context.Context, *RemoveCommandRequest) (*RemoveCommandReply, error)
-	Commands(context.Context, *CommandsRequest) (*CommandsReply, error)
+	DisableCommand(context.Context, *DisableCommandRequest) (*DisableCommandReply, error)
+	QueryCommands(context.Context, *QueryCommandsRequest) (*QueryCommandsReply, error)
 }
 
 func RegisterRegistrationServer(s *grpc.Server, srv RegistrationServer) {
@@ -396,38 +444,38 @@ func _Registration_AddCommand_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Registration_RemoveCommand_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RemoveCommandRequest)
+func _Registration_DisableCommand_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DisableCommandRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RegistrationServer).RemoveCommand(ctx, in)
+		return srv.(RegistrationServer).DisableCommand(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/registration.Registration/RemoveCommand",
+		FullMethod: "/registration.Registration/DisableCommand",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RegistrationServer).RemoveCommand(ctx, req.(*RemoveCommandRequest))
+		return srv.(RegistrationServer).DisableCommand(ctx, req.(*DisableCommandRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Registration_Commands_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CommandsRequest)
+func _Registration_QueryCommands_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryCommandsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RegistrationServer).Commands(ctx, in)
+		return srv.(RegistrationServer).QueryCommands(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/registration.Registration/Commands",
+		FullMethod: "/registration.Registration/QueryCommands",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RegistrationServer).Commands(ctx, req.(*CommandsRequest))
+		return srv.(RegistrationServer).QueryCommands(ctx, req.(*QueryCommandsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -441,40 +489,45 @@ var _Registration_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Registration_AddCommand_Handler,
 		},
 		{
-			MethodName: "RemoveCommand",
-			Handler:    _Registration_RemoveCommand_Handler,
+			MethodName: "DisableCommand",
+			Handler:    _Registration_DisableCommand_Handler,
 		},
 		{
-			MethodName: "Commands",
-			Handler:    _Registration_Commands_Handler,
+			MethodName: "QueryCommands",
+			Handler:    _Registration_QueryCommands_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "registration.proto",
 }
 
-func init() { proto.RegisterFile("registration.proto", fileDescriptor_registration_0211b0c536230fe8) }
+func init() { proto.RegisterFile("registration.proto", fileDescriptor_registration_df11ec03cd296385) }
 
-var fileDescriptor_registration_0211b0c536230fe8 = []byte{
-	// 310 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x92, 0xbb, 0x4e, 0xf3, 0x40,
-	0x10, 0x85, 0x7f, 0x3b, 0xd7, 0x7f, 0x48, 0x40, 0x19, 0x05, 0xb4, 0x32, 0x8a, 0x88, 0xb6, 0x40,
-	0xa9, 0x82, 0x08, 0x4f, 0xc0, 0xa5, 0xa0, 0xa2, 0x70, 0x43, 0x6d, 0xd8, 0x51, 0xb0, 0x64, 0x7b,
-	0x97, 0xb5, 0x89, 0x70, 0x49, 0xcd, 0x4b, 0x23, 0xaf, 0xed, 0xf8, 0x42, 0x4c, 0xb7, 0x73, 0xe6,
-	0xf8, 0x9b, 0x33, 0xbb, 0x06, 0xd4, 0xb4, 0xf5, 0xe3, 0x44, 0x7b, 0x89, 0x2f, 0xa3, 0xb5, 0xd2,
-	0x32, 0x91, 0x38, 0xa9, 0x6b, 0xfc, 0xdb, 0x82, 0xd1, 0xbd, 0x0c, 0x43, 0x2f, 0x12, 0x78, 0x0c,
-	0xb6, 0x2f, 0x98, 0xb5, 0xb4, 0x56, 0xff, 0x5d, 0xdb, 0x17, 0x78, 0x06, 0xc3, 0x98, 0xf4, 0x8e,
-	0x34, 0xb3, 0x8d, 0x56, 0x54, 0x88, 0xd0, 0x8f, 0xbc, 0x90, 0x58, 0xcf, 0xa8, 0xe6, 0x8c, 0x73,
-	0x18, 0x68, 0xda, 0xd2, 0x27, 0xeb, 0x1b, 0x31, 0x2f, 0xd0, 0x81, 0x31, 0x45, 0x42, 0x49, 0x3f,
-	0x4a, 0xd8, 0xc0, 0x34, 0xf6, 0x75, 0x46, 0x79, 0xa3, 0x40, 0xb1, 0x61, 0x4e, 0xc9, 0xce, 0x7c,
-	0x06, 0x27, 0x45, 0x98, 0xd8, 0xa5, 0xf7, 0x0f, 0x8a, 0x13, 0x7e, 0x07, 0xd3, 0x4a, 0x52, 0x41,
-	0x8a, 0xd7, 0x30, 0x2e, 0x05, 0x66, 0x2d, 0x7b, 0xab, 0xa3, 0xcd, 0xe9, 0xba, 0xb1, 0x66, 0xd1,
-	0x75, 0xf7, 0x36, 0xfe, 0x00, 0xb3, 0x5b, 0x21, 0x4a, 0x3d, 0x07, 0xe3, 0x15, 0x8c, 0x5e, 0x73,
-	0xc5, 0xac, 0xdc, 0x89, 0x29, 0x5d, 0x59, 0xb8, 0x3a, 0x45, 0x05, 0x29, 0xbf, 0x84, 0xb9, 0x4b,
-	0xa1, 0xdc, 0x51, 0x8b, 0xdd, 0xba, 0x49, 0x3e, 0x07, 0x6c, 0xf9, 0x54, 0x90, 0x6e, 0xbe, 0x6c,
-	0x98, 0xb8, 0xb5, 0x91, 0xf8, 0x04, 0x50, 0x4d, 0xc0, 0x8b, 0x66, 0x9e, 0x5f, 0x1b, 0x38, 0x8b,
-	0x6e, 0x43, 0x16, 0xee, 0x1f, 0x3e, 0xc3, 0xb4, 0x31, 0x16, 0x79, 0xf3, 0x8b, 0x43, 0xd9, 0x9d,
-	0xe5, 0x9f, 0x9e, 0x1c, 0xfc, 0x58, 0xbd, 0x01, 0x2e, 0x0e, 0x5e, 0x5b, 0xf9, 0x7e, 0xce, 0x79,
-	0x57, 0xdb, 0x90, 0x5e, 0x86, 0xe6, 0xa7, 0xbc, 0xf9, 0x09, 0x00, 0x00, 0xff, 0xff, 0xfc, 0xed,
-	0xf9, 0xd7, 0xaa, 0x02, 0x00, 0x00,
+var fileDescriptor_registration_df11ec03cd296385 = []byte{
+	// 391 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x53, 0xc1, 0x0e, 0xd2, 0x40,
+	0x14, 0xb4, 0x05, 0xda, 0xfa, 0x44, 0x0c, 0x4f, 0x20, 0x9b, 0x26, 0xc6, 0xba, 0x26, 0xca, 0x09,
+	0x23, 0x7e, 0x81, 0x91, 0x8b, 0x07, 0x4c, 0xac, 0x07, 0x13, 0x6f, 0x8b, 0xfb, 0x02, 0x9b, 0x94,
+	0xb6, 0x6c, 0x8b, 0xb1, 0xfe, 0x86, 0xdf, 0xe5, 0x3f, 0x99, 0x6e, 0x5b, 0x6c, 0x2b, 0x70, 0xdb,
+	0x19, 0xe6, 0xcd, 0xbc, 0xd9, 0xa5, 0x80, 0x9a, 0xf6, 0x2a, 0xcb, 0xb5, 0xc8, 0x55, 0x12, 0xaf,
+	0x52, 0x9d, 0xe4, 0x09, 0x8e, 0xdb, 0x1c, 0xff, 0x63, 0x81, 0xfb, 0x21, 0x39, 0x1e, 0x45, 0x2c,
+	0x71, 0x02, 0xb6, 0x92, 0xcc, 0x0a, 0xac, 0xe5, 0xc3, 0xd0, 0x56, 0x12, 0x17, 0xe0, 0x64, 0xa4,
+	0x7f, 0x90, 0x66, 0xb6, 0xe1, 0x6a, 0x84, 0x08, 0xc3, 0x58, 0x1c, 0x89, 0x0d, 0x0c, 0x6b, 0xce,
+	0x38, 0x83, 0x91, 0xa6, 0x3d, 0xfd, 0x64, 0x43, 0x43, 0x56, 0x00, 0x5f, 0xc1, 0x44, 0xd3, 0xe9,
+	0xac, 0x34, 0x6d, 0x29, 0x2e, 0xf3, 0xd8, 0x28, 0xb0, 0x96, 0x5e, 0xd8, 0x63, 0xd1, 0x07, 0x8f,
+	0x62, 0x99, 0x26, 0x2a, 0xce, 0x99, 0x63, 0x0c, 0x2e, 0xb8, 0x4c, 0x3b, 0x50, 0x94, 0x32, 0xb7,
+	0x4a, 0x2b, 0xcf, 0xc8, 0xc0, 0xa5, 0x58, 0xec, 0x22, 0x92, 0xcc, 0x33, 0x86, 0x0d, 0xe4, 0x3b,
+	0x98, 0x7d, 0x3e, 0x93, 0x2e, 0xea, 0x4e, 0x59, 0x48, 0xa7, 0x33, 0x65, 0x79, 0xab, 0x8b, 0xd5,
+	0xe9, 0xb2, 0x00, 0x27, 0x12, 0x59, 0xfe, 0x51, 0x36, 0x1d, 0x2b, 0x54, 0x6e, 0x94, 0x8a, 0x3d,
+	0x7d, 0x51, 0xbf, 0xaa, 0x9e, 0xa3, 0xf0, 0x82, 0xb9, 0x00, 0xec, 0x65, 0xa4, 0x51, 0x81, 0x6f,
+	0xc1, 0x6b, 0x08, 0x66, 0x05, 0x83, 0xe5, 0xa3, 0xf5, 0x7c, 0xd5, 0xb9, 0xfe, 0xfa, 0xd7, 0xf0,
+	0x22, 0x2b, 0x6b, 0x1c, 0x44, 0xb6, 0x4d, 0x34, 0x99, 0x74, 0x2f, 0x6c, 0x20, 0xdf, 0xc0, 0xf4,
+	0xbd, 0x94, 0xcd, 0x44, 0xdd, 0xe1, 0x0d, 0xb8, 0xdf, 0x2b, 0xc6, 0x94, 0xb8, 0x19, 0xd0, 0xa8,
+	0xf8, 0x14, 0x9e, 0xb4, 0x5d, 0xd2, 0xa8, 0xe0, 0xaf, 0x61, 0xbe, 0x51, 0x59, 0x79, 0x57, 0x3d,
+	0xf3, 0xde, 0xe3, 0xf3, 0x39, 0x3c, 0xed, 0x0b, 0xd3, 0xa8, 0x58, 0xff, 0xb6, 0x61, 0x1c, 0xb6,
+	0x42, 0xf1, 0x13, 0xc0, 0xbf, 0x0c, 0x7c, 0xde, 0xdd, 0xe8, 0xbf, 0x0e, 0xfe, 0xb3, 0xdb, 0x82,
+	0x72, 0xbd, 0x07, 0xf8, 0x0d, 0x26, 0xdd, 0x5c, 0x7c, 0xd9, 0x1d, 0xb9, 0xba, 0xbe, 0xff, 0xe2,
+	0xbe, 0xa8, 0xf2, 0xfe, 0x0a, 0x8f, 0x3b, 0x0f, 0x87, 0xbc, 0x3b, 0x75, 0xed, 0x9f, 0xe3, 0x07,
+	0x77, 0x35, 0xc6, 0x78, 0xe7, 0x98, 0x4f, 0xeb, 0xdd, 0xdf, 0x00, 0x00, 0x00, 0xff, 0xff, 0xd8,
+	0x8c, 0x13, 0xed, 0x70, 0x03, 0x00, 0x00,
 }

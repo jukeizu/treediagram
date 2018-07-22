@@ -4,8 +4,8 @@ package registration;
 
 service Registration {
     rpc AddCommand(AddCommandRequest) returns (AddCommandReply) {}
-    rpc RemoveCommand(RemoveCommandRequest) returns (RemoveCommandReply) {}
-    rpc Commands(CommandsRequest) returns (CommandsReply) {}
+    rpc DisableCommand(DisableCommandRequest) returns (DisableCommandReply) {}
+    rpc QueryCommands(QueryCommandsRequest) returns (QueryCommandsReply) {}
 }
 
 message Command {
@@ -13,14 +13,21 @@ message Command {
     string server = 2;
     string name = 3;
     string regex = 4;
-    string endpoint = 5;
-    string help = 6;
+    bool requireMention = 5;
+    string endpoint = 6;
+    string help = 7;
+    bool enabled = 8;
 }
 
-message CommandsRequest {}
+message QueryCommandsRequest {
+    string server = 1;
+    string lastId = 2;
+    int32 pageSize = 3;
+}
 
-message CommandsReply {
+message QueryCommandsReply {
     repeated Command Commands = 1;
+    bool hasMore = 2;
 }
 
 message AddCommandRequest {
@@ -29,8 +36,8 @@ message AddCommandRequest {
 
 message AddCommandReply {}
 
-message RemoveCommandRequest {
+message DisableCommandRequest {
     string id = 1;
 }
 
-message RemoveCommandReply {}
+message DisableCommandReply {}

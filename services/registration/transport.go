@@ -1,10 +1,25 @@
 package registration
 
+import "gopkg.in/mgo.v2/bson"
+
 type Command struct {
-	Id       string
+	Id             bson.ObjectId `bson:"_id, omitempty"`
+	Server         string
+	Name           string
+	Regex          string
+	RequireMention bool
+	Endpoint       string
+	Help           string
+	Enabled        bool
+}
+
+type CommandQuery struct {
 	Server   string
-	Name     string
-	Regex    string
-	Endpoint string
-	Help     string
+	LastId   string
+	PageSize int
+}
+
+type CommandQueryResult struct {
+	Commands []Command
+	HasMore  bool
 }

@@ -11,48 +11,73 @@ type GrpcBinding struct {
 }
 
 func (b GrpcBinding) AddCommand(ctx context.Context, req *pb.AddCommandRequest) (*pb.AddCommandReply, error) {
-	c := Command{
-		Id:       req.Command.Id,
-		Server:   req.Command.Server,
-		Name:     req.Command.Name,
-		Regex:    req.Command.Regex,
-		Endpoint: req.Command.Endpoint,
-		Help:     req.Command.Help,
-	}
-
-	_, err := b.Service.Add(c)
+	_, err := b.Service.Add(toCommand(req.Command))
 
 	return &pb.AddCommandReply{}, err
 }
 
-func (b GrpcBinding) RemoveCommand(ctx context.Context, req *pb.RemoveCommandRequest) (*pb.RemoveCommandReply, error) {
-	err := b.Service.Remove(req.Id)
+func (b GrpcBinding) DisableCommand(ctx context.Context, req *pb.DisableCommandRequest) (*pb.DisableCommandReply, error) {
+	err := b.Service.Disable(req.Id)
 
-	return &pb.RemoveCommandReply{}, err
+	return &pb.DisableCommandReply{}, err
 }
 
-func (b GrpcBinding) Commands(ctx context.Context, req *pb.CommandsRequest) (*pb.CommandsReply, error) {
-	commands, err := b.Service.Commands()
+func (b GrpcBinding) QueryCommands(ctx context.Context, req *pb.QueryCommandsRequest) (*pb.QueryCommandsReply, error) {
+	queryResult, err := b.Service.Query(toCommandQuery(req))
 
 	if err != nil {
 		return nil, err
 	}
 
-	commandsReply := &pb.CommandsReply{}
+	return toPbCommandQueryReply(queryResult), err
+}
 
-	for _, command := range commands {
+func toCommand(pbCommand *pb.Command) Command {
+	command := Command{
+		Server:         pbCommand.Server,
+		Name:           pbCommand.Name,
+		Regex:          pbCommand.Regex,
+		RequireMention: pbCommand.RequireMention,
+		Endpoint:       pbCommand.Endpoint,
+		Help:           pbCommand.Help,
+	}
 
-		mapped := &pb.Command{
-			Id:       command.Id,
-			Server:   command.Server,
-			Name:     command.Name,
-			Regex:    command.Regex,
-			Endpoint: command.Endpoint,
-			Help:     command.Help,
-		}
+	return command
+}
 
+func toCommandQuery(pbCommandQuery *pb.QueryCommandsRequest) CommandQuery {
+	query := CommandQuery{
+		Server:   pbCommandQuery.Server,
+		LastId:   pbCommandQuery.LastId,
+		PageSize: int(pbCommandQuery.PageSize),
+	}
+
+	return query
+}
+
+func toPbCommandQueryReply(queryResult CommandQueryResult) *pb.QueryCommandsReply {
+	commandsReply := &pb.QueryCommandsReply{
+		HasMore: queryResult.HasMore,
+	}
+
+	for _, command := range queryResult.Commands {
+		mapped := toPbCommand(command)
 		commandsReply.Commands = append(commandsReply.Commands, mapped)
 	}
 
-	return commandsReply, err
+	return commandsReply
+}
+
+func toPbCommand(command Command) *pb.Command {
+	pbCommand := &pb.Command{
+		Id:             command.Id.String(),
+		Server:         command.Server,
+		Name:           command.Name,
+		Regex:          command.Regex,
+		RequireMention: command.RequireMention,
+		Endpoint:       command.Endpoint,
+		Help:           command.Help,
+	}
+
+	return pbCommand
 }
