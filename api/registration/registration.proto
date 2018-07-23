@@ -34,10 +34,14 @@ message AddCommandRequest {
     Command command = 1;
 }
 
-message AddCommandReply {}
+message AddCommandReply {
+    Command command = 1;
+}
 
 message DisableCommandRequest {
     string id = 1;
 }
 
-message DisableCommandReply {}
+message DisableCommandReply {
+    string id = 1;
+}

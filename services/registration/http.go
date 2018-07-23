@@ -8,30 +8,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
 	"github.com/shawntoffel/services-core/transport"
-	"gopkg.in/mgo.v2/bson"
 )
-
-type Command struct {
-	Id             bson.ObjectId `json:"id,omitempty" bson:"_id,omitempty"`
-	Server         string        `json:"server"`
-	Name           string        `json:"name"`
-	Regex          string        `json:"regex"`
-	RequireMention bool          `json:"requireMention"`
-	Endpoint       string        `json:"endpoint"`
-	Help           string        `json:"help"`
-	Enabled        bool          `json:"enabled"`
-}
-
-type CommandQuery struct {
-	Server   string `json:"server"`
-	LastId   string `json:"lastId"`
-	PageSize int    `json:"pageSize"`
-}
-
-type CommandQueryResult struct {
-	Commands []Command `json:"commands"`
-	HasMore  bool      `json:"hasMore"`
-}
 
 type AddRequest struct {
 	Command Command `json:"command"`

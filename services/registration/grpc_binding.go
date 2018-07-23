@@ -11,15 +11,15 @@ type GrpcBinding struct {
 }
 
 func (b GrpcBinding) AddCommand(ctx context.Context, req *pb.AddCommandRequest) (*pb.AddCommandReply, error) {
-	_, err := b.Service.Add(toCommand(req.Command))
+	command, err := b.Service.Add(toCommand(req.Command))
 
-	return &pb.AddCommandReply{}, err
+	return &pb.AddCommandReply{Command: toPbCommand(command)}, err
 }
 
 func (b GrpcBinding) DisableCommand(ctx context.Context, req *pb.DisableCommandRequest) (*pb.DisableCommandReply, error) {
 	err := b.Service.Disable(req.Id)
 
-	return &pb.DisableCommandReply{}, err
+	return &pb.DisableCommandReply{Id: req.Id}, err
 }
 
 func (b GrpcBinding) QueryCommands(ctx context.Context, req *pb.QueryCommandsRequest) (*pb.QueryCommandsReply, error) {
