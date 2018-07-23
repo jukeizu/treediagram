@@ -47,6 +47,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	service = registration.NewLoggingService(logger, service)
 
 	errChannel := make(chan error)
 	go func() {
