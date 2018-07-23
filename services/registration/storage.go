@@ -40,7 +40,7 @@ func (s *storage) Disable(id string) error {
 func (s *storage) Query(query CommandQuery) ([]Command, error) {
 	commands := []Command{}
 
-	err := s.Collection.Find(bson.M{"_id": bson.M{"$gt": query.LastId}, "server": query.Server}).Limit(query.PageSize).All(&commands)
+	err := s.Collection.Find(bson.M{"_id": bson.M{"$gt": bson.ObjectIdHex(query.LastId)}, "server": query.Server}).Limit(query.PageSize).All(&commands)
 
 	return commands, err
 }
