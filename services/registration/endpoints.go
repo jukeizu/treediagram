@@ -22,7 +22,7 @@ func MakeDisableRequestEndpoint(service Service) endpoint.Endpoint {
 
 		err := service.Disable(request.Id)
 
-		return nil, err
+		return DisableResponse{Id: request.Id}, err
 	}
 }
 

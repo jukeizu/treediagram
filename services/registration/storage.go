@@ -1,6 +1,8 @@
 package registration
 
 import (
+	"errors"
+
 	mdb "github.com/shawntoffel/GoMongoDb"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -32,7 +34,10 @@ func (s *storage) Save(c Command) error {
 }
 
 func (s *storage) Disable(id string) error {
-	_, err := s.Collection.Upsert(bson.M{"_id": id}, bson.M{"$set": bson.M{"enabled": false}})
+	if !bson.IsObjectIdHex(id) {
+		return errors.New("The following id is invalid: " + id)
+	}
+	_, err := s.Collection.Upsert(bson.M{"_id": bson.ObjectIdHex(id)}, bson.M{"$set": bson.M{"enabled": false}})
 
 	return err
 }
@@ -40,7 +45,15 @@ func (s *storage) Disable(id string) error {
 func (s *storage) Query(query CommandQuery) ([]Command, error) {
 	commands := []Command{}
 
-	err := s.Collection.Find(bson.M{"_id": bson.M{"$gt": bson.ObjectIdHex(query.LastId)}, "server": query.Server}).Limit(query.PageSize).All(&commands)
+	bsonQuery := []bson.M{
+		bson.M{"server": query.Server},
+		bson.M{"enabled": true},
+	}
+	if bson.IsObjectIdHex(query.LastId) {
+		bsonQuery = append(bsonQuery, bson.M{"_id": bson.M{"$gt": bson.ObjectIdHex(query.LastId)}})
+	}
+
+	err := s.Collection.Find(bson.M{"$and": bsonQuery}).Limit(query.PageSize).All(&commands)
 
 	return commands, err
 }

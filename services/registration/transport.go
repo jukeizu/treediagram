@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/go-kit/kit/log"
-	httpTransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
+	"github.com/shawntoffel/services-core/transport"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -38,6 +38,10 @@ type AddRequest struct {
 }
 
 type DisableRequest struct {
+	Id string `json:"id"`
+}
+
+type DisableResponse struct {
 	Id string `json:"id"`
 }
 
@@ -80,45 +84,23 @@ func DecodeQueryRequest(_ context.Context, r *http.Request) (request interface{}
 	return query, nil
 }
 
-func EncodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
-	return json.NewEncoder(w).Encode(response)
-}
-
-func EncodeError(_ context.Context, err error, w http.ResponseWriter) {
-	w.WriteHeader(http.StatusInternalServerError)
-
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"error": err.Error(),
-	})
-}
-
 func MakeHandler(s Service, logger log.Logger) http.Handler {
-	opts := []httpTransport.ServerOption{
-		httpTransport.ServerErrorLogger(logger),
-		httpTransport.ServerErrorEncoder(EncodeError),
-	}
-
-	addMessageHandler := httpTransport.NewServer(
+	addMessageHandler := transport.NewDefaultServer(
+		logger,
 		MakeAddRequestEndpoint(s),
 		DecodeAddRequest,
-		EncodeResponse,
-		opts...,
 	)
 
-	disableMessageHandler := httpTransport.NewServer(
+	disableMessageHandler := transport.NewDefaultServer(
+		logger,
 		MakeDisableRequestEndpoint(s),
 		DecodeDisableRequest,
-		EncodeResponse,
-		opts...,
 	)
 
-	queryMessageHandler := httpTransport.NewServer(
+	queryMessageHandler := transport.NewDefaultServer(
+		logger,
 		MakeQueryRequestEndpoint(s),
 		DecodeQueryRequest,
-		EncodeResponse,
-		opts...,
 	)
 	router := mux.NewRouter()
 
