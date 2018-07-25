@@ -1,15 +1,19 @@
 package main
 
 import (
-	"net/http"
+	"fmt"
+	"net"
 	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/go-kit/kit/log"
+	pb "github.com/jukeizu/treediagram/api/receiving"
 	"github.com/jukeizu/treediagram/services/receiving"
 	"github.com/shawntoffel/rabbitmq"
 	"github.com/shawntoffel/services-core/command"
 	"github.com/shawntoffel/services-core/config"
-	"github.com/shawntoffel/services-core/runner"
+	"github.com/shawntoffel/services-core/logging"
+	"google.golang.org/grpc"
 )
 
 type TreediagramConfig struct {
@@ -24,7 +28,7 @@ func init() {
 }
 
 func main() {
-	logger := log.NewJSONLogger(os.Stdout)
+	logger := logging.GetLogger("services.receiving", os.Stdout)
 
 	treediagramConfig := TreediagramConfig{}
 
@@ -34,24 +38,38 @@ func main() {
 		panic(err)
 	}
 
-	var service receiving.Service
-	service, err = receiving.NewService(treediagramConfig.RabbitMqConfig)
+	service, err := receiving.NewService(treediagramConfig.RabbitMqConfig)
 
 	if err != nil {
 		panic(err)
 	}
 
-	service = receiving.NewLoggingService(log.With(logger, "component", "treediagram"), service)
+	service = receiving.NewLoggingService(logger, service)
 
-	httpLogger := log.With(logger, "component", "http")
+	errChannel := make(chan error)
+	go func() {
+		c := make(chan os.Signal)
+		signal.Notify(c, syscall.SIGINT)
+		errChannel <- fmt.Errorf("%s", <-c)
 
-	mux := http.NewServeMux()
+	}()
 
-	var handler = receiving.MakeHandler(service, httpLogger)
-	mux.Handle("/treediagram", handler)
-	mux.Handle("/treediagram/", handler)
+	go func() {
+		port := fmt.Sprintf(":%d", treediagramConfig.Port)
 
-	serviceConfig := config.ServiceConfig{Port: treediagramConfig.Port}
+		listener, err := net.Listen("tcp", port)
 
-	runner.StartService(mux, logger, serviceConfig)
+		if err != nil {
+			errChannel <- err
+		}
+
+		s := grpc.NewServer()
+		pb.RegisterReceivingServer(s, service)
+
+		logger.Log("transport", "grpc", "address", port, "msg", "listening")
+
+		errChannel <- s.Serve(listener)
+	}()
+
+	logger.Log("stopped", <-errChannel)
 }
