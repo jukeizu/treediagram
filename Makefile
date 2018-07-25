@@ -1,9 +1,9 @@
 VERSION=$(shell git describe --tags)
 BUILD=GOARCH=amd64 go build -v
 
-.PHONY: all deps test build clean
+.PHONY: all deps test proto build clean
 
-all: deps test build
+all: deps test proto build
 
 deps:
 	go get -t -v ./...
@@ -11,6 +11,10 @@ deps:
 test:
 	go vet ./...
 	go test -v -race ./...
+
+proto:
+	cd api/registration && protoc registration.proto --go_out=plugins=grpc:.
+	cd api/receiving && protoc receiving.proto --go_out=plugins=grpc:.
 
 build:
 	for CMD in `ls cmd/services`; do $(BUILD) -o bin/$$CMD-service-$(VERSION) ./cmd/services/$$CMD; done
