@@ -3,7 +3,7 @@ BUILD=GOARCH=amd64 go build -v
 
 .PHONY: all deps test proto build clean
 
-all: deps test proto build
+all: deps test build
 
 deps:
 	go get -t -v ./...
