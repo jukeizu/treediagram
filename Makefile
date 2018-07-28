@@ -13,9 +13,7 @@ test:
 	go test -v -race ./...
 
 proto:
-	cd api/registration && protoc registration.proto --go_out=plugins=grpc:.
-	cd api/receiving && protoc receiving.proto --go_out=plugins=grpc:.
-	cd api/publishing && protoc publishing.proto --go_out=plugins=grpc:.
+	for PROTO in `ls api`; do protoc $$PROTO/$$PROTO.proto --go_out=plugins=grpc:.; done
 
 build:
 	for CMD in `ls cmd/services`; do $(BUILD) -o bin/$$CMD-service-$(VERSION) ./cmd/services/$$CMD; done
