@@ -1,35 +1,38 @@
 package receiving
 
 import (
-	"github.com/go-kit/kit/log"
+	"context"
 	"time"
+
+	"github.com/go-kit/kit/log"
+	pb "github.com/jukeizu/treediagram/api/receiving"
 )
 
 type loggingService struct {
-	logger log.Logger
-	Service
+	logger  log.Logger
+	Service pb.ReceivingServer
 }
 
-func NewLoggingService(logger log.Logger, s Service) Service {
+func NewLoggingService(logger log.Logger, s pb.ReceivingServer) pb.ReceivingServer {
 	return &loggingService{logger, s}
 }
 
-func (s *loggingService) Request(treediagramRequest TreediagramRequest) (result TreediagramResponse, err error) {
+func (s *loggingService) Request(ctx context.Context, req *pb.TreediagramRequest) (reply *pb.TreediagramReply, err error) {
 	defer func(begin time.Time) {
-		logRequest := treediagramRequest
+		logRequest := req
 
 		logRequest.Content = ""
 
 		s.logger.Log(
 			"method", "Request",
-			"request", logRequest,
-			"result", result,
+			"request", *logRequest,
+			"reply", *reply,
 			"took", time.Since(begin),
 		)
 
 	}(time.Now())
 
-	result, err = s.Service.Request(treediagramRequest)
+	reply, err = s.Service.Request(ctx, req)
 
 	return
 }

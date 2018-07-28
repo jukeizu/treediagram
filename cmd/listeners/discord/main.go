@@ -7,11 +7,12 @@ import (
 	"syscall"
 
 	base "github.com/jukeizu/client-base"
-	"github.com/jukeizu/treediagram/api"
+	pb "github.com/jukeizu/treediagram/api/receiving"
 	"github.com/jukeizu/treediagram/listeners/discord"
 	"github.com/shawntoffel/services-core/command"
 	"github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/logging"
+	"google.golang.org/grpc"
 )
 
 type Config struct {
@@ -31,15 +32,20 @@ func main() {
 	c := Config{}
 
 	err := config.ReadConfig(commandArgs.ConfigFile, &c)
-
 	if err != nil {
 		panic(err)
 	}
 
-	client := api.NewClient(c.ClientConfig)
+	conn, err := grpc.Dial(c.ClientConfig.BaseUrl, grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+
+	defer conn.Close()
+
+	client := pb.NewReceivingClient(conn)
 
 	handler, err := discord.NewDiscordListener(c.DiscordListenerConfig, client, logger)
-
 	err = handler.Open()
 
 	if err != nil {

@@ -1,11 +1,12 @@
 package discord
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-kit/kit/log"
-	"github.com/jukeizu/treediagram/api"
+	pb "github.com/jukeizu/treediagram/api/receiving"
 )
 
 type DiscordListenerConfig struct {
@@ -19,11 +20,11 @@ type DiscordListener interface {
 
 type discordListener struct {
 	Session *discordgo.Session
-	Client  api.Client
+	Client  pb.ReceivingClient
 	Logger  log.Logger
 }
 
-func NewDiscordListener(config DiscordListenerConfig, client api.Client, logger log.Logger) (DiscordListener, error) {
+func NewDiscordListener(config DiscordListenerConfig, client pb.ReceivingClient, logger log.Logger) (DiscordListener, error) {
 	dh := discordListener{Client: client, Logger: logger}
 
 	discordgo.Logger = dh.discordLogger
@@ -60,7 +61,7 @@ func (d *discordListener) messageCreate(s *discordgo.Session, m *discordgo.Messa
 		return
 	}
 
-	request := api.TreediagramRequest{}
+	request := &pb.TreediagramRequest{}
 
 	request.Source = "discord"
 	request.CorrelationId = m.ID
@@ -71,10 +72,10 @@ func (d *discordListener) messageCreate(s *discordgo.Session, m *discordgo.Messa
 	request.Content = m.Content
 	request.Mentions = mapToUsers(m.Mentions)
 
-	response, err := d.Client.Treediagram().Request(request)
+	_, err := d.Client.Request(context.Background(), request)
 
 	if err != nil {
-		d.Logger.Log("error", err.Error(), "correlationId", request.CorrelationId, "responseId", response.Id)
+		d.Logger.Log("error", err.Error(), "correlationId", request.CorrelationId)
 	}
 }
 
