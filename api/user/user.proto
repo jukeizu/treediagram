@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package user;
+
+service User {
+    rpc Preference(PreferenceRequest) returns (PreferenceReply) {}
+    rpc SetServer(SetServerRequest) returns (PreferenceReply) {}
+}
+
+message Preference {
+    string userId = 1;
+    string serverId = 2;
+}
+
+message PreferenceRequest {
+    string userId = 1;
+}
+
+message PreferenceReply {
+    Preference preference = 1;
+}
+
+message SetServerRequest {
+    string userId = 1;
+    string serverId = 2;
+}
