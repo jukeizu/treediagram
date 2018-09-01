@@ -13,11 +13,14 @@ test:
 	go test -v -race ./...
 
 proto:
-	for PROTO in `ls api`; do protoc $$PROTO/$$PROTO.proto --go_out=plugins=grpc:.; done
+	cd api/registration && protoc registration.proto --go_out=plugins=grpc:.
+	cd api/receiving && protoc receiving.proto --go_out=plugins=grpc:.
+	cd api/publishing && protoc publishing.proto --go_out=plugins=grpc:.
+	cd api/user && protoc user.proto --go_out=plugins=grpc:.
 
 build:
 	for CMD in `ls cmd/services`; do $(BUILD) -o bin/$$CMD-service-$(VERSION) ./cmd/services/$$CMD; done
 	for CMD in `ls cmd/listeners`; do $(BUILD) -o bin/$$CMD-listener-$(VERSION) ./cmd/listeners/$$CMD; done
 
 clean:
-	rm -v bin/*
+	find bin -type f ! -name '*.toml' -delete
