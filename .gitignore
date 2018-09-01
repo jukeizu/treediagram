@@ -27,7 +27,10 @@ publishing
 registration
 !registration/
 
+user
+!user/
+
 discord
 !discord/
 
-testconfig.toml
+testconfig*.toml
