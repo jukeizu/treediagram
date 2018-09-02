@@ -69,6 +69,7 @@ func (h httpBinding) makeHandler() http.Handler {
 
 func (h httpBinding) createJobEndpoint(ctx context.Context, r interface{}) (interface{}, error) {
 	request := r.(pb.CreateJobRequest)
+
 	return h.Service.Create(ctx, &request)
 }
 
