@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -25,9 +26,10 @@ func init() {
 }
 
 type Config struct {
-	Port        int
-	JobStorage  mdb.DbConfig
+	GrpcPort    int
+	HttpPort    int
 	NatsServers string
+	JobStorage  mdb.DbConfig
 }
 
 func main() {
@@ -43,6 +45,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer storage.Close()
 
 	nc, err := nats.Connect(c.NatsServers)
 	if err != nil {
@@ -65,7 +68,7 @@ func main() {
 	}()
 
 	go func() {
-		port := fmt.Sprintf(":%d", c.Port)
+		port := fmt.Sprintf(":%d", c.GrpcPort)
 
 		listener, err := net.Listen("tcp", port)
 		if err != nil {
@@ -80,6 +83,17 @@ func main() {
 		errChannel <- s.Serve(listener)
 	}()
 
-	logger.Log("stopped", <-errChannel)
+	go func() {
+		port := fmt.Sprintf(":%d", c.HttpPort)
 
+		httpBinding := scheduling.NewHttpBinding(logger, service)
+
+		http.Handle("/", httpBinding.NewServeMux())
+
+		logger.Log("transport", "http", "address", port, "msg", "listening")
+
+		errChannel <- http.ListenAndServe(port, nil)
+	}()
+
+	logger.Log("stopped", <-errChannel)
 }

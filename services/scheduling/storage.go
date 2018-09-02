@@ -34,6 +34,11 @@ func (store *jobStorage) Create(job *pb.Job) error {
 func (store *jobStorage) Jobs(schedule *pb.Schedule) ([]*pb.Job, error) {
 	jobs := []*pb.Job{}
 
+	if schedule == nil {
+		err := store.Collection.Find(bson.M{"enabled": true}).All(&jobs)
+		return jobs, err
+	}
+
 	scheduleSelector := bson.M{
 		"$and": []bson.M{
 			buildTimeSelector("schedule.minute", schedule.Minute),

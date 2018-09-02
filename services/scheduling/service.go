@@ -49,16 +49,20 @@ func (s service) Create(ctx context.Context, req *pb.CreateJobRequest) (*pb.Crea
 }
 
 func (s service) Jobs(ctx context.Context, req *pb.JobsRequest) (*pb.JobsReply, error) {
-	schedule := &pb.Schedule{}
+	if req.Time == 0 {
+		jobs, err := s.JobStorage.Jobs(nil)
 
-	if req.Time > 0 {
-		t := time.Unix(req.Time, 0).UTC()
+		return &pb.JobsReply{Jobs: jobs}, err
+	}
 
-		schedule.Minute = strconv.Itoa(t.Minute())
-		schedule.Hour = strconv.Itoa(t.Hour())
-		schedule.DayOfMonth = strconv.Itoa(t.Day())
-		schedule.Month = t.Month().String()
-		schedule.DayOfWeek = t.Weekday().String()
+	t := time.Unix(req.Time, 0).UTC()
+
+	schedule := &pb.Schedule{
+		Minute:     strconv.Itoa(t.Minute()),
+		Hour:       strconv.Itoa(t.Hour()),
+		DayOfMonth: strconv.Itoa(t.Day()),
+		Month:      t.Month().String(),
+		DayOfWeek:  t.Weekday().String(),
 	}
 
 	jobs, err := s.JobStorage.Jobs(schedule)
