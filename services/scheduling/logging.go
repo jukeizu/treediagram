@@ -35,6 +35,18 @@ func (s loggingService) Create(ctx context.Context, req *pb.CreateJobRequest) (r
 }
 
 func (s loggingService) Jobs(ctx context.Context, req *pb.JobsRequest) (reply *pb.JobsReply, err error) {
+	defer func(begin time.Time) {
+		if err != nil {
+			s.logger.Log(
+				"method", "Jobs",
+				"request", *req,
+				"error", err,
+				"took", time.Since(begin),
+			)
+		}
+
+	}(time.Now())
+
 	reply, err = s.Service.Jobs(ctx, req)
 
 	return
