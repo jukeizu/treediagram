@@ -17,7 +17,7 @@ type jobStorage struct {
 	mdb.Store
 }
 
-func NewStorage(dbConfig mdb.DbConfig) (JobStorage, error) {
+func NewJobStorage(dbConfig mdb.DbConfig) (JobStorage, error) {
 	store, err := mdb.NewStorage(dbConfig)
 
 	j := jobStorage{}

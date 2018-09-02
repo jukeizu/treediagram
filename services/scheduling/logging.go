@@ -13,8 +13,8 @@ type loggingService struct {
 	Service pb.SchedulingServer
 }
 
-func NewLoggingService() pb.SchedulingServer {
-	return &service{}
+func NewLoggingService(logger log.Logger, s pb.SchedulingServer) pb.SchedulingServer {
+	return &loggingService{logger, s}
 }
 
 func (s loggingService) Create(ctx context.Context, req *pb.CreateJobRequest) (reply *pb.CreateJobReply, err error) {
@@ -48,6 +48,24 @@ func (s loggingService) Jobs(ctx context.Context, req *pb.JobsRequest) (reply *p
 	}(time.Now())
 
 	reply, err = s.Service.Jobs(ctx, req)
+
+	return
+}
+
+func (s loggingService) Run(ctx context.Context, req *pb.RunJobsRequest) (reply *pb.RunJobsReply, err error) {
+	defer func(begin time.Time) {
+		if err != nil {
+			s.logger.Log(
+				"method", "Run",
+				"request", *req,
+				"error", err,
+				"took", time.Since(begin),
+			)
+		}
+
+	}(time.Now())
+
+	reply, err = s.Service.Run(ctx, req)
 
 	return
 }

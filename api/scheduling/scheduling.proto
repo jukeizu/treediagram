@@ -5,6 +5,7 @@ package scheduling;
 service Scheduling {
     rpc Create (CreateJobRequest) returns (CreateJobReply) {}
     rpc Jobs (JobsRequest) returns (JobsReply) {}
+    rpc Run(RunJobsRequest) returns (RunJobsReply) {}
     rpc Disable (DisableJobRequest) returns (DisableJobReply) {}
 }
 
@@ -43,6 +44,14 @@ message JobsRequest {
 }
 
 message JobsReply {
+    repeated Job jobs = 1;
+}
+
+message RunJobsRequest {
+    int64 time = 1;
+}
+
+message RunJobsReply {
     repeated Job jobs = 1;
 }
 
