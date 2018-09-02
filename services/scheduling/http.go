@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
 	pb "github.com/jukeizu/treediagram/api/scheduling"
@@ -66,14 +65,6 @@ func (h httpBinding) makeHandler() http.Handler {
 	router.Handle("/disable", disableJobHandler).Methods("POST")
 
 	return router
-}
-
-func (h httpBinding) makeCreateJobEndpoint() endpoint.Endpoint {
-	return func(ctx context.Context, receivedRequest interface{}) (interface{}, error) {
-		request := receivedRequest.(pb.CreateJobRequest)
-
-		return h.Service.Create(ctx, &request)
-	}
 }
 
 func (h httpBinding) createJobEndpoint(ctx context.Context, r interface{}) (interface{}, error) {
