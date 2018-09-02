@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package scheduling;
+
+service Scheduling {
+    rpc Create (CreateJobRequest) returns (CreateJobReply) {}
+    rpc Jobs (JobsRequest) returns (JobsReply) {}
+    rpc Run(RunJobsRequest) returns (RunJobsReply) {}
+    rpc Disable (DisableJobRequest) returns (DisableJobReply) {}
+}
+
+message Schedule {
+    string minute = 1;
+    string hour = 2;
+    string dayOfMonth = 3;
+    string month = 4;
+    string dayOfWeek = 5;
+}
+
+message Job {
+    string id = 1;
+    string type = 2;
+    string content = 3;
+    string user = 4;
+    string destination = 5;
+    Schedule schedule = 6;
+    bool enabled = 7;
+}
+
+message CreateJobRequest {
+    string type = 1;
+    string content = 2;
+    string user = 3;
+    string destination = 4;
+    Schedule schedule = 5;
+}
+
+message CreateJobReply {
+    Job job = 1;
+}
+
+message JobsRequest {
+    int64 time = 1;
+}
+
+message JobsReply {
+    repeated Job jobs = 1;
+}
+
+message RunJobsRequest {
+    int64 time = 1;
+}
+
+message RunJobsReply {
+    repeated Job jobs = 1;
+}
+
+message DisableJobRequest {
+    string id = 1;
+}
+
+message DisableJobReply {
+    string id = 1;
+    bool enabled = 2;
+}
