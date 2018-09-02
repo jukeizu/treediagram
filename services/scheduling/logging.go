@@ -26,7 +26,6 @@ func (s loggingService) Create(ctx context.Context, req *pb.CreateJobRequest) (r
 			"error", err,
 			"took", time.Since(begin),
 		)
-
 	}(time.Now())
 
 	reply, err = s.Service.Create(ctx, req)
@@ -44,7 +43,6 @@ func (s loggingService) Jobs(ctx context.Context, req *pb.JobsRequest) (reply *p
 				"took", time.Since(begin),
 			)
 		}
-
 	}(time.Now())
 
 	reply, err = s.Service.Jobs(ctx, req)
@@ -62,7 +60,6 @@ func (s loggingService) Run(ctx context.Context, req *pb.RunJobsRequest) (reply 
 				"took", time.Since(begin),
 			)
 		}
-
 	}(time.Now())
 
 	reply, err = s.Service.Run(ctx, req)
@@ -79,7 +76,6 @@ func (s loggingService) Disable(ctx context.Context, req *pb.DisableJobRequest) 
 			"error", err,
 			"took", time.Since(begin),
 		)
-
 	}(time.Now())
 
 	reply, err = s.Service.Disable(ctx, req)
