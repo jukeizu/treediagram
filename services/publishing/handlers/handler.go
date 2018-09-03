@@ -1,13 +1,13 @@
 package handlers
 
 import (
+	pb "github.com/jukeizu/treediagram/api/publishing"
 	"github.com/jukeizu/treediagram/services/publishing/queue"
 	"github.com/jukeizu/treediagram/services/publishing/storage"
 )
 
 type HandlerParams struct {
-	MessageRequest storage.MessageRequest
-	Message        storage.Message
+	Message *pb.Message
 }
 
 type MessageHandler interface {
@@ -19,29 +19,22 @@ type Handler interface {
 }
 
 type handler struct {
-	Storage        storage.Storage
+	MessageStorage storage.MessageStorage
 	MessageHandler MessageHandler
 }
 
-func NewQueueHandler(s storage.Storage, messageHandler MessageHandler) Handler {
+func NewQueueHandler(s storage.MessageStorage, messageHandler MessageHandler) Handler {
 	return &handler{s, messageHandler}
 }
 
 func (h *handler) Handle(queueMessage queue.QueueMessage) error {
-
-	messageRequest, err := h.Storage.MessageRequestStorage.GetMessageRequest(queueMessage.Id)
-
-	if err != nil {
-		return err
-	}
-
-	message, err := h.Storage.MessageStorage.GetMessage(messageRequest.MessageId)
+	message, err := h.MessageStorage.Message(queueMessage.Id)
 
 	if err != nil {
 		return err
 	}
 
-	params := HandlerParams{messageRequest, message}
+	params := HandlerParams{message}
 
 	return h.MessageHandler.Handle(params)
 }
