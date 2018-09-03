@@ -4,10 +4,11 @@ import (
 	"bytes"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/jukeizu/treediagram/services/publishing/storage"
+
+	pb "github.com/jukeizu/treediagram/api/publishing"
 )
 
-func MapToEmbed(embed *storage.Embed) *discordgo.MessageEmbed {
+func MapToEmbed(embed *pb.Embed) *discordgo.MessageEmbed {
 	discordEmbed := discordgo.MessageEmbed{}
 
 	if embed == nil {
@@ -19,7 +20,7 @@ func MapToEmbed(embed *storage.Embed) *discordgo.MessageEmbed {
 	discordEmbed.Title = embed.Title
 	discordEmbed.Description = embed.Description
 	discordEmbed.Timestamp = embed.Timestamp
-	discordEmbed.Color = embed.Color
+	discordEmbed.Color = int(embed.Color)
 	discordEmbed.Footer = MapFooter(embed.Footer)
 	discordEmbed.Image = MapImage(embed.Image)
 	discordEmbed.Thumbnail = MapThumbnail(embed.Thumbnail)
@@ -31,7 +32,11 @@ func MapToEmbed(embed *storage.Embed) *discordgo.MessageEmbed {
 	return &discordEmbed
 }
 
-func MapToMessageSend(message storage.Message) *discordgo.MessageSend {
+func MapToMessageSend(message *pb.Message) *discordgo.MessageSend {
+	if message == nil {
+		return nil
+	}
+
 	mappedEmbed := MapToEmbed(message.Embed)
 
 	messageSend := discordgo.MessageSend{}
@@ -48,7 +53,7 @@ func MapToMessageSend(message storage.Message) *discordgo.MessageSend {
 	return &messageSend
 }
 
-func MapToFile(file *storage.File) *discordgo.File {
+func MapToFile(file *pb.File) *discordgo.File {
 	if file == nil {
 		return nil
 	}
@@ -60,8 +65,7 @@ func MapToFile(file *storage.File) *discordgo.File {
 	return &discordFile
 }
 
-func MapFooter(footer *storage.EmbedFooter) *discordgo.MessageEmbedFooter {
-
+func MapFooter(footer *pb.EmbedFooter) *discordgo.MessageEmbedFooter {
 	if footer == nil {
 		return nil
 	}
@@ -75,8 +79,7 @@ func MapFooter(footer *storage.EmbedFooter) *discordgo.MessageEmbedFooter {
 	return &discordFooter
 }
 
-func MapImage(image *storage.EmbedImage) *discordgo.MessageEmbedImage {
-
+func MapImage(image *pb.EmbedImage) *discordgo.MessageEmbedImage {
 	if image == nil {
 		return nil
 	}
@@ -85,14 +88,13 @@ func MapImage(image *storage.EmbedImage) *discordgo.MessageEmbedImage {
 
 	discordImage.URL = image.Url
 	discordImage.ProxyURL = image.ProxyUrl
-	discordImage.Width = image.Width
-	discordImage.Height = image.Height
+	discordImage.Width = int(image.Width)
+	discordImage.Height = int(image.Height)
 
 	return &discordImage
 }
 
-func MapThumbnail(thumbnail *storage.EmbedThumbnail) *discordgo.MessageEmbedThumbnail {
-
+func MapThumbnail(thumbnail *pb.EmbedThumbnail) *discordgo.MessageEmbedThumbnail {
 	if thumbnail == nil {
 		return nil
 	}
@@ -101,14 +103,13 @@ func MapThumbnail(thumbnail *storage.EmbedThumbnail) *discordgo.MessageEmbedThum
 
 	discordThumbnail.URL = thumbnail.Url
 	discordThumbnail.ProxyURL = thumbnail.ProxyUrl
-	discordThumbnail.Width = thumbnail.Width
-	discordThumbnail.Height = thumbnail.Height
+	discordThumbnail.Width = int(thumbnail.Width)
+	discordThumbnail.Height = int(thumbnail.Height)
 
 	return &discordThumbnail
 }
 
-func MapVideo(video *storage.EmbedVideo) *discordgo.MessageEmbedVideo {
-
+func MapVideo(video *pb.EmbedVideo) *discordgo.MessageEmbedVideo {
 	if video == nil {
 		return nil
 	}
@@ -117,14 +118,13 @@ func MapVideo(video *storage.EmbedVideo) *discordgo.MessageEmbedVideo {
 
 	discordVideo.URL = video.Url
 	discordVideo.ProxyURL = video.ProxyUrl
-	discordVideo.Width = video.Width
-	discordVideo.Height = video.Height
+	discordVideo.Width = int(video.Width)
+	discordVideo.Height = int(video.Height)
 
 	return &discordVideo
 }
 
-func MapProvider(provider *storage.EmbedProvider) *discordgo.MessageEmbedProvider {
-
+func MapProvider(provider *pb.EmbedProvider) *discordgo.MessageEmbedProvider {
 	if provider == nil {
 		return nil
 	}
@@ -137,8 +137,7 @@ func MapProvider(provider *storage.EmbedProvider) *discordgo.MessageEmbedProvide
 	return &discordProvider
 }
 
-func MapAuthor(author *storage.EmbedAuthor) *discordgo.MessageEmbedAuthor {
-
+func MapAuthor(author *pb.EmbedAuthor) *discordgo.MessageEmbedAuthor {
 	if author == nil {
 		return nil
 	}
@@ -153,8 +152,7 @@ func MapAuthor(author *storage.EmbedAuthor) *discordgo.MessageEmbedAuthor {
 	return &discordAuthor
 }
 
-func MapFields(fields []*storage.EmbedField) []*discordgo.MessageEmbedField {
-
+func MapFields(fields []*pb.EmbedField) []*discordgo.MessageEmbedField {
 	discordFields := []*discordgo.MessageEmbedField{}
 
 	for _, field := range fields {
@@ -165,7 +163,6 @@ func MapFields(fields []*storage.EmbedField) []*discordgo.MessageEmbedField {
 		discordField.Inline = field.Inline
 
 		discordFields = append(discordFields, &discordField)
-
 	}
 
 	return discordFields

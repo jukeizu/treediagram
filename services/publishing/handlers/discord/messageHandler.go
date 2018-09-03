@@ -33,11 +33,11 @@ func NewDiscordHandler(config DiscordConfig) (DiscordHandler, error) {
 
 func (h *discordHandler) Handle(params handlers.HandlerParams) error {
 
-	channelId := params.MessageRequest.ChannelId
+	channelId := params.Message.ChannelId
 
-	if params.MessageRequest.IsRedirect {
+	if params.Message.IsRedirect {
 
-		id, err := h.getUserChannelId(params.MessageRequest.User.Id)
+		id, err := h.getUserChannelId(params.Message.User.Id)
 
 		if err != nil {
 			return err
@@ -48,8 +48,8 @@ func (h *discordHandler) Handle(params handlers.HandlerParams) error {
 		}
 	}
 
-	if params.MessageRequest.PrivateMessage {
-		id, err := h.getUserChannelId(params.MessageRequest.User.Id)
+	if params.Message.PrivateMessage {
+		id, err := h.getUserChannelId(params.Message.User.Id)
 
 		if err != nil {
 			return err

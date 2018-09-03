@@ -1,37 +1,39 @@
 package storage
 
 import (
+	pb "github.com/jukeizu/treediagram/api/publishing"
 	mdb "github.com/shawntoffel/GoMongoDb"
+	"gopkg.in/mgo.v2/bson"
 )
 
-type Storage struct {
-	MessageStorage        MessageStorage
-	MessageRequestStorage MessageRequestStorage
+type MessageStorage interface {
+	mdb.Storage
+	Save(*pb.Message) error
+	Message(id string) (*pb.Message, error)
 }
 
-type StorageConfig struct {
-	MessageStorageConfig        mdb.DbConfig
-	MessageRequestStorageConfig mdb.DbConfig
+type messageStorage struct {
+	mdb.Store
 }
 
-func NewStorage(storageConfig StorageConfig) (Storage, error) {
+func NewMessageStorage(dbConfig mdb.DbConfig) (MessageStorage, error) {
+	store, err := mdb.NewStorage(dbConfig)
 
-	storage := Storage{}
+	m := messageStorage{}
+	m.Session = store.Session
+	m.Collection = store.Collection
 
-	var err error
-
-	storage.MessageStorage, err = NewMessageStorage(storageConfig.MessageStorageConfig)
-
-	if err != nil {
-		return storage, err
-	}
-
-	storage.MessageRequestStorage, err = NewMessageRequestStorage(storageConfig.MessageRequestStorageConfig)
-
-	return storage, err
+	return &m, err
 }
 
-func (s *Storage) Close() {
-	s.MessageStorage.Close()
-	s.MessageRequestStorage.Close()
+func (store *messageStorage) Save(message *pb.Message) error {
+	return store.Collection.Insert(message)
+}
+
+func (store *messageStorage) Message(id string) (*pb.Message, error) {
+	message := pb.Message{}
+
+	err := store.Collection.Find(bson.M{"id": id}).One(&message)
+
+	return &message, err
 }

@@ -15,6 +15,7 @@ test:
 proto:
 	cd api/registration && protoc registration.proto --go_out=plugins=grpc:.
 	cd api/receiving && protoc receiving.proto --go_out=plugins=grpc:.
+	cd api/publishing && protoc publishing.proto --go_out=plugins=grpc:.
 	cd api/user && protoc user.proto --go_out=plugins=grpc:.
 	cd api/scheduling && protoc scheduling.proto --go_out=plugins=grpc:.
 

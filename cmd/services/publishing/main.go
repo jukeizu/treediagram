@@ -1,26 +1,24 @@
 package main
 
 import (
-	"net/http"
+	"fmt"
+	"net"
 	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/go-kit/kit/log"
+	pb "github.com/jukeizu/treediagram/api/publishing"
 	"github.com/jukeizu/treediagram/services/publishing"
 	"github.com/jukeizu/treediagram/services/publishing/handlers"
 	"github.com/jukeizu/treediagram/services/publishing/handlers/discord"
 	"github.com/jukeizu/treediagram/services/publishing/queue"
 	"github.com/jukeizu/treediagram/services/publishing/storage"
+	mdb "github.com/shawntoffel/GoMongoDb"
 	"github.com/shawntoffel/services-core/command"
 	"github.com/shawntoffel/services-core/config"
-	"github.com/shawntoffel/services-core/runner"
+	"github.com/shawntoffel/services-core/logging"
+	"google.golang.org/grpc"
 )
-
-type TreediagramPublisherConfig struct {
-	Port          int
-	StorageConfig storage.StorageConfig
-	QueueConfig   queue.QueueConfig
-	DiscordConfig discord.DiscordConfig
-}
 
 var serviceArgs command.CommandArgs
 
@@ -28,65 +26,80 @@ func init() {
 	serviceArgs = command.ParseArgs()
 }
 
+type Config struct {
+	Port           int
+	MessageStorage mdb.DbConfig
+	QueueConfig    queue.QueueConfig
+	DiscordConfig  discord.DiscordConfig
+}
+
 func main() {
-	logger := log.NewJSONLogger(os.Stdout)
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC)
+	logger := logging.GetLogger("services.publishing", os.Stdout)
 
-	publisherConfig := TreediagramPublisherConfig{}
-
-	err := config.ReadConfig(serviceArgs.ConfigFile, &publisherConfig)
-
+	c := Config{}
+	err := config.ReadConfig(serviceArgs.ConfigFile, &c)
 	if err != nil {
 		panic(err)
 	}
 
-	store, err := storage.NewStorage(publisherConfig.StorageConfig)
-
+	store, err := storage.NewMessageStorage(c.MessageStorage)
 	if err != nil {
 		panic(err)
 	}
 
 	defer store.Close()
 
-	publisherQueue, err := queue.NewQueue(publisherConfig.QueueConfig)
-	publisherQueue = queue.NewQueueLogger(log.With(logger, "component", "treediagram-publisher-queue"), publisherQueue)
-
+	publisherQueue, err := queue.NewQueue(c.QueueConfig)
 	if err != nil {
 		panic(err)
 	}
+	publisherQueue = queue.NewQueueLogger(logger, publisherQueue)
 
 	defer publisherQueue.Close()
 
-	discordMessageHandler, err := discord.NewDiscordHandler(publisherConfig.DiscordConfig)
-
+	discordMessageHandler, err := discord.NewDiscordHandler(c.DiscordConfig)
 	if err != nil {
 		panic(err)
 	}
 
 	queueHandler := handlers.NewQueueHandler(store, discordMessageHandler)
 
-	listener, err := queue.NewQueue(publisherConfig.QueueConfig)
-	listener = queue.NewQueueLogger(log.With(logger, "component", "treediagram-publisher-queue-listener"), listener)
-
+	listener, err := queue.NewQueue(c.QueueConfig)
 	if err != nil {
 		panic(err)
 	}
-
+	listener = queue.NewQueueLogger(logger, listener)
 	defer listener.Close()
 
 	listener.Listen(queueHandler)
 
-	sendService := publishing.NewService(publisherQueue, store)
-	sendService = publishing.NewLoggingService(log.With(logger, "component", "treediagram-publisher-service"), sendService)
+	service := publishing.NewService(publisherQueue, store)
+	service = publishing.NewLoggingService(logger, service)
 
-	httpLogger := log.With(logger, "component", "http")
+	errChannel := make(chan error)
+	go func() {
+		c := make(chan os.Signal)
+		signal.Notify(c, syscall.SIGINT)
+		errChannel <- fmt.Errorf("%s", <-c)
 
-	mux := http.NewServeMux()
+	}()
 
-	var requestHandler = publishing.MakeHandler(sendService, httpLogger)
-	mux.Handle("/message", requestHandler)
+	go func() {
+		port := fmt.Sprintf(":%d", c.Port)
 
-	serviceConfig := config.ServiceConfig{Port: publisherConfig.Port}
+		listener, err := net.Listen("tcp", port)
+		if err != nil {
+			logger.Log("error", err.Error())
 
-	runner.StartService(mux, logger, serviceConfig)
+		}
+
+		s := grpc.NewServer()
+		pb.RegisterPublishingServer(s, service)
+
+		logger.Log("transport", "grpc", "address", port, "msg", "listening")
+
+		errChannel <- s.Serve(listener)
+	}()
+
+	logger.Log("stopped", <-errChannel)
 }
