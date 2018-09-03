@@ -16,15 +16,20 @@ message SendMessageReply {
 
 message Message {
     string id = 1;
-    string correlationId = 2;
-    string channelId = 3;
-    User user = 4;
-    bool privateMessage = 5;
-    bool isRedirect = 6;
-    string content = 7;
-    Embed embed = 8;
-    bool tts = 9;
-    repeated File files = 10;
+    string source = 2;
+    string correlationId = 3;
+    string channelId = 4;
+    User user = 5;
+    bool privateMessage = 6;
+    bool isRedirect = 7;
+    string content = 8;
+    Embed embed = 9;
+    bool tts = 10;
+    repeated File files = 11;
+}
+
+message QueueMessage {
+    string id = 1;
 }
 
 message User {

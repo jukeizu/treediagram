@@ -2,15 +2,17 @@ package discord
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"github.com/jukeizu/treediagram/services/publishing/handlers"
+	pb "github.com/jukeizu/treediagram/api/publishing"
 )
+
+var DiscordHandlerSubject = "discord"
 
 type DiscordConfig struct {
 	Token string
 }
 
 type DiscordHandler interface {
-	handlers.MessageHandler
+	Handle(*pb.Message) error
 }
 
 type discordHandler struct {
@@ -21,7 +23,6 @@ func NewDiscordHandler(config DiscordConfig) (DiscordHandler, error) {
 	handler := discordHandler{}
 
 	session, err := discordgo.New("Bot " + config.Token)
-
 	if err != nil {
 		return &handler, err
 	}
@@ -31,14 +32,11 @@ func NewDiscordHandler(config DiscordConfig) (DiscordHandler, error) {
 	return &handler, nil
 }
 
-func (h *discordHandler) Handle(params handlers.HandlerParams) error {
+func (h *discordHandler) Handle(message *pb.Message) error {
+	channelId := message.ChannelId
 
-	channelId := params.Message.ChannelId
-
-	if params.Message.IsRedirect {
-
-		id, err := h.getUserChannelId(params.Message.User.Id)
-
+	if message.IsRedirect {
+		id, err := h.getUserChannelId(message.User.Id)
 		if err != nil {
 			return err
 		}
@@ -48,9 +46,8 @@ func (h *discordHandler) Handle(params handlers.HandlerParams) error {
 		}
 	}
 
-	if params.Message.PrivateMessage {
-		id, err := h.getUserChannelId(params.Message.User.Id)
-
+	if message.PrivateMessage {
+		id, err := h.getUserChannelId(message.User.Id)
 		if err != nil {
 			return err
 		}
@@ -58,7 +55,7 @@ func (h *discordHandler) Handle(params handlers.HandlerParams) error {
 		channelId = id
 	}
 
-	messageSend := MapToMessageSend(params.Message)
+	messageSend := MapToMessageSend(message)
 
 	_, err := h.Session.ChannelMessageSendComplex(channelId, messageSend)
 

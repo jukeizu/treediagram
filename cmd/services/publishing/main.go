@@ -9,10 +9,9 @@ import (
 
 	pb "github.com/jukeizu/treediagram/api/publishing"
 	"github.com/jukeizu/treediagram/services/publishing"
-	"github.com/jukeizu/treediagram/services/publishing/handlers"
-	"github.com/jukeizu/treediagram/services/publishing/handlers/discord"
-	"github.com/jukeizu/treediagram/services/publishing/queue"
-	"github.com/jukeizu/treediagram/services/publishing/storage"
+	"github.com/jukeizu/treediagram/services/publishing/discord"
+	nats "github.com/nats-io/go-nats"
+	"github.com/nats-io/go-nats/encoders/protobuf"
 	mdb "github.com/shawntoffel/GoMongoDb"
 	"github.com/shawntoffel/services-core/command"
 	"github.com/shawntoffel/services-core/config"
@@ -29,7 +28,7 @@ func init() {
 type Config struct {
 	Port           int
 	MessageStorage mdb.DbConfig
-	QueueConfig    queue.QueueConfig
+	NatsServers    string
 	DiscordConfig  discord.DiscordConfig
 }
 
@@ -42,38 +41,38 @@ func main() {
 		panic(err)
 	}
 
-	store, err := storage.NewMessageStorage(c.MessageStorage)
+	store, err := publishing.NewMessageStorage(c.MessageStorage)
 	if err != nil {
 		panic(err)
 	}
 
 	defer store.Close()
 
-	publisherQueue, err := queue.NewQueue(c.QueueConfig)
-	if err != nil {
-		panic(err)
-	}
-	publisherQueue = queue.NewQueueLogger(logger, publisherQueue)
-
-	defer publisherQueue.Close()
-
-	discordMessageHandler, err := discord.NewDiscordHandler(c.DiscordConfig)
+	discordHandler, err := discord.NewDiscordHandler(c.DiscordConfig)
 	if err != nil {
 		panic(err)
 	}
 
-	queueHandler := handlers.NewQueueHandler(store, discordMessageHandler)
-
-	listener, err := queue.NewQueue(c.QueueConfig)
+	nc, err := nats.Connect(c.NatsServers)
 	if err != nil {
 		panic(err)
 	}
-	listener = queue.NewQueueLogger(logger, listener)
-	defer listener.Close()
+	conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
+	if err != nil {
+		panic(err)
+	}
 
-	listener.Listen(queueHandler)
+	defer conn.Close()
 
-	service := publishing.NewService(publisherQueue, store)
+	handler := publishing.NewQueueHandler(store, conn)
+
+	sub, err := handler.Handle(discord.DiscordHandlerSubject, discordHandler.Handle)
+	if err != nil {
+		panic(err)
+	}
+	defer sub.Unsubscribe()
+
+	service := publishing.NewService(conn, store)
 	service = publishing.NewLoggingService(logger, service)
 
 	errChannel := make(chan error)
