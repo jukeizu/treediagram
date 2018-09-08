@@ -17,7 +17,7 @@ func NewService(q *nats.EncodedConn, store MessageStorage) pb.PublishingServer {
 	return &service{q, store}
 }
 
-func (s service) SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*pb.SendMessageReply, error) {
+func (s service) PublishMessage(ctx context.Context, req *pb.PublishMessageRequest) (*pb.PublishMessageReply, error) {
 	id := xid.New().String()
 	req.Message.Id = id
 
@@ -26,7 +26,7 @@ func (s service) SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*
 		return nil, err
 	}
 
-	err = s.Queue.Publish(req.Message.Source, pb.QueueMessage{Id: id})
+	err = s.Queue.Publish(req.Message.Source, pb.PublishMessageRequestReceived{Id: id})
 
-	return &pb.SendMessageReply{Id: id}, err
+	return &pb.PublishMessageReply{Id: id}, err
 }

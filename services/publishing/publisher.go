@@ -21,14 +21,14 @@ func NewPublisher(s MessageStorage, q *nats.EncodedConn) Publisher {
 }
 
 func (h *publisher) Subscribe(subject string, publisherFunc PublisherFunc) (*nats.Subscription, error) {
-	sub, err := h.queue.Subscribe(subject, func(queueMessage pb.QueueMessage) error {
+	sub, err := h.queue.Subscribe(subject, func(queueMessage pb.PublishMessageRequestReceived) error {
 		return h.process(queueMessage, publisherFunc)
 	})
 
 	return sub, err
 }
 
-func (h *publisher) process(queueMessage pb.QueueMessage, publisherFunc PublisherFunc) error {
+func (h *publisher) process(queueMessage pb.PublishMessageRequestReceived, publisherFunc PublisherFunc) error {
 	message, err := h.messageStorage.Message(queueMessage.Id)
 	if err != nil {
 		return err

@@ -3,14 +3,14 @@ syntax = "proto3";
 package publishing;
 
 service Publishing {
-    rpc SendMessage(SendMessageRequest) returns (SendMessageReply) {}
+    rpc PublishMessage(PublishMessageRequest) returns (PublishMessageReply) {}
 }
 
-message SendMessageRequest {
+message PublishMessageRequest {
     Message message = 1;
 }
 
-message SendMessageReply {
+message PublishMessageReply {
     string id = 1;
 }
 
@@ -28,7 +28,7 @@ message Message {
     repeated File files = 11;
 }
 
-message QueueMessage {
+message PublishMessageRequestReceived {
     string id = 1;
 }
 
