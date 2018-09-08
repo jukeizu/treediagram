@@ -5,7 +5,7 @@ import (
 	pb "github.com/jukeizu/treediagram/api/publishing"
 )
 
-var DiscordPublisherSubject = "discord"
+var DiscordPublisherQueueGroup = "discord"
 
 type DiscordConfig struct {
 	Token string

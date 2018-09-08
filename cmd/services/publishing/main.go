@@ -67,7 +67,7 @@ func main() {
 
 	publisher := publishing.NewPublisher(store, conn)
 
-	sub, err := publisher.Subscribe(discord.DiscordPublisherSubject, discordPublisher.Publish)
+	sub, err := publisher.Subscribe(discord.DiscordPublisherQueueGroup, discordPublisher.Publish)
 	if err != nil {
 		panic(err)
 	}
