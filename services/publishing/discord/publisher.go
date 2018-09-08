@@ -5,34 +5,30 @@ import (
 	pb "github.com/jukeizu/treediagram/api/publishing"
 )
 
-var DiscordHandlerSubject = "discord"
+var DiscordPublisherSubject = "discord"
 
 type DiscordConfig struct {
 	Token string
 }
 
-type DiscordHandler interface {
-	Handle(*pb.Message) error
+type DiscordPublisher interface {
+	Publish(*pb.Message) error
 }
 
-type discordHandler struct {
+type discordPublisher struct {
 	Session *discordgo.Session
 }
 
-func NewDiscordHandler(config DiscordConfig) (DiscordHandler, error) {
-	handler := discordHandler{}
-
+func NewDiscordPublisher(config DiscordConfig) (DiscordPublisher, error) {
 	session, err := discordgo.New("Bot " + config.Token)
 	if err != nil {
-		return &handler, err
+		return nil, err
 	}
 
-	handler.Session = session
-
-	return &handler, nil
+	return &discordPublisher{Session: session}, nil
 }
 
-func (h *discordHandler) Handle(message *pb.Message) error {
+func (h *discordPublisher) Publish(message *pb.Message) error {
 	channelId := message.ChannelId
 
 	if message.IsRedirect {
@@ -62,7 +58,7 @@ func (h *discordHandler) Handle(message *pb.Message) error {
 	return err
 }
 
-func (h *discordHandler) getUserChannelId(userId string) (string, error) {
+func (h *discordPublisher) getUserChannelId(userId string) (string, error) {
 	dmChannel, err := h.Session.UserChannelCreate(userId)
 
 	if err != nil {

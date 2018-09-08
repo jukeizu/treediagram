@@ -48,15 +48,11 @@ func main() {
 
 	defer store.Close()
 
-	discordHandler, err := discord.NewDiscordHandler(c.DiscordConfig)
-	if err != nil {
-		panic(err)
-	}
-
 	nc, err := nats.Connect(c.NatsServers)
 	if err != nil {
 		panic(err)
 	}
+
 	conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
 	if err != nil {
 		panic(err)
@@ -64,12 +60,18 @@ func main() {
 
 	defer conn.Close()
 
-	handler := publishing.NewQueueHandler(store, conn)
-
-	sub, err := handler.Handle(discord.DiscordHandlerSubject, discordHandler.Handle)
+	discordPublisher, err := discord.NewDiscordPublisher(c.DiscordConfig)
 	if err != nil {
 		panic(err)
 	}
+
+	publisher := publishing.NewPublisher(store, conn)
+
+	sub, err := publisher.Subscribe(discord.DiscordPublisherSubject, discordPublisher.Publish)
+	if err != nil {
+		panic(err)
+	}
+
 	defer sub.Unsubscribe()
 
 	service := publishing.NewService(conn, store)
