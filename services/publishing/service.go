@@ -4,30 +4,29 @@ import (
 	"context"
 
 	pb "github.com/jukeizu/treediagram/api/publishing"
-	"github.com/jukeizu/treediagram/services/publishing/queue"
-	"github.com/jukeizu/treediagram/services/publishing/storage"
+	nats "github.com/nats-io/go-nats"
 	"github.com/rs/xid"
 )
 
 type service struct {
-	Queue          queue.Queue
-	MessageStorage storage.MessageStorage
+	Queue          *nats.EncodedConn
+	MessageStorage MessageStorage
 }
 
-func NewService(q queue.Queue, store storage.MessageStorage) pb.PublishingServer {
+func NewService(q *nats.EncodedConn, store MessageStorage) pb.PublishingServer {
 	return &service{q, store}
 }
 
-func (s service) SendMessage(ctx context.Context, req *pb.SendMessageRequest) (*pb.SendMessageReply, error) {
-	req.Message.Id = xid.New().String()
+func (s service) PublishMessage(ctx context.Context, req *pb.PublishMessageRequest) (*pb.PublishMessageReply, error) {
+	id := xid.New().String()
+	req.Message.Id = id
 
 	err := s.MessageStorage.Save(req.Message)
 	if err != nil {
 		return nil, err
 	}
 
-	queueMessage := queue.QueueMessage{Id: req.Message.Id}
-	err = s.Queue.PublishMessageRequest(queueMessage)
+	err = s.Queue.Publish(req.Message.Source, pb.PublishMessageRequestReceived{Id: id})
 
-	return &pb.SendMessageReply{Id: req.Message.Id}, err
+	return &pb.PublishMessageReply{Id: id}, err
 }

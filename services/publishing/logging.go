@@ -18,7 +18,7 @@ func NewLoggingService(logger log.Logger, s pb.PublishingServer) pb.PublishingSe
 	return &loggingService{logger, s}
 }
 
-func (s loggingService) SendMessage(ctx context.Context, req *pb.SendMessageRequest) (reply *pb.SendMessageReply, err error) {
+func (s loggingService) PublishMessage(ctx context.Context, req *pb.PublishMessageRequest) (reply *pb.PublishMessageReply, err error) {
 	defer func(begin time.Time) {
 		s.logger.Log(
 			"method", "SendMessage",
@@ -34,7 +34,7 @@ func (s loggingService) SendMessage(ctx context.Context, req *pb.SendMessageRequ
 
 	}(time.Now())
 
-	reply, err = s.Service.SendMessage(ctx, req)
+	reply, err = s.Service.PublishMessage(ctx, req)
 
 	return
 }

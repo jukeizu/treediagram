@@ -1,4 +1,4 @@
-package storage
+package publishing
 
 import (
 	pb "github.com/jukeizu/treediagram/api/publishing"
@@ -31,9 +31,9 @@ func (store *messageStorage) Save(message *pb.Message) error {
 }
 
 func (store *messageStorage) Message(id string) (*pb.Message, error) {
-	message := pb.Message{}
+	message := &pb.Message{}
 
-	err := store.Collection.Find(bson.M{"id": id}).One(&message)
+	err := store.Collection.Find(bson.M{"id": id}).One(message)
 
-	return &message, err
+	return message, err
 }
