@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	DefaultPort = 50051
+	DefaultPort                     = 50051
+	DiscordTokenEnvironmentVariable = "TREEDIAGRAM_DISCORD_TOKEN"
 )
 
 type Config struct {
@@ -28,22 +29,26 @@ type Config struct {
 	DiscordToken      string
 }
 
-func main() {
-	logger := logging.GetLogger("services.publishing", os.Stdout)
-
-	port := flag.Int("port", DefaultPort, "port")
-	token := flag.String("token", "", "Discord token")
-	natsServers := flag.String("nats", nats.DefaultURL, "NATS servers")
-	storageUrl := flag.String("db", "localhost", "Database connection url")
+func parseConfig() Config {
+	c := Config{}
+	flag.IntVar(&c.Port, "port", DefaultPort, "port")
+	flag.StringVar(&c.DiscordToken, "token", "", "Discord token. This can also be specified via the "+DiscordTokenEnvironmentVariable+" environment variable.")
+	flag.StringVar(&c.NatsServers, "nats", nats.DefaultURL, "NATS servers")
+	flag.StringVar(&c.MessageStorageUrl, "db", "localhost", "Database connection url")
 
 	flag.Parse()
 
-	c := Config{
-		Port:              *port,
-		MessageStorageUrl: *storageUrl,
-		NatsServers:       *natsServers,
-		DiscordToken:      *token,
+	if c.DiscordToken == "" {
+		c.DiscordToken = os.Getenv(DiscordTokenEnvironmentVariable)
 	}
+
+	return c
+}
+
+func main() {
+	logger := logging.GetLogger("services.publishing", os.Stdout)
+
+	c := parseConfig()
 
 	store, err := publishing.NewMessageStorage(c.MessageStorageUrl)
 	if err != nil {
@@ -78,9 +83,6 @@ func main() {
 
 	defer sub.Unsubscribe()
 
-	service := publishing.NewService(conn, store)
-	service = publishing.NewLoggingService(logger, service)
-
 	errChannel := make(chan error)
 	go func() {
 		c := make(chan os.Signal)
@@ -88,6 +90,9 @@ func main() {
 		errChannel <- fmt.Errorf("%s", <-c)
 
 	}()
+
+	service := publishing.NewService(conn, store)
+	service = publishing.NewLoggingService(logger, service)
 
 	go func() {
 		port := fmt.Sprintf(":%d", c.Port)
