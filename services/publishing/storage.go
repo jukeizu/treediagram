@@ -6,6 +6,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+const (
+	DatabaseName   = "publishing"
+	CollectionName = "messages"
+)
+
 type MessageStorage interface {
 	mdb.Storage
 	Save(*pb.Message) error
@@ -16,8 +21,14 @@ type messageStorage struct {
 	mdb.Store
 }
 
-func NewMessageStorage(dbConfig mdb.DbConfig) (MessageStorage, error) {
-	store, err := mdb.NewStorage(dbConfig)
+func NewMessageStorage(url string) (MessageStorage, error) {
+	c := mdb.DbConfig{
+		Url:            url,
+		DatabaseName:   DatabaseName,
+		CollectionName: CollectionName,
+	}
+
+	store, err := mdb.NewStorage(c)
 
 	m := messageStorage{}
 	m.Session = store.Session

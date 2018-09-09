@@ -5,7 +5,9 @@ import (
 	nats "github.com/nats-io/go-nats"
 )
 
-var PublisherSubject = "publisher"
+const (
+	PublisherQueueGroup = "publisher"
+)
 
 type PublisherFunc func(*pb.Message) error
 
@@ -22,8 +24,8 @@ func NewPublisher(s MessageStorage, q *nats.EncodedConn) Publisher {
 	return &publisher{s, q}
 }
 
-func (h *publisher) Subscribe(queue string, publisherFunc PublisherFunc) (*nats.Subscription, error) {
-	sub, err := h.queue.QueueSubscribe(PublisherSubject, queue, func(queueMessage pb.PublishMessageRequestReceived) error {
+func (h *publisher) Subscribe(subject string, publisherFunc PublisherFunc) (*nats.Subscription, error) {
+	sub, err := h.queue.QueueSubscribe(subject, PublisherQueueGroup, func(queueMessage pb.PublishMessageRequestReceived) error {
 		return h.process(queueMessage, publisherFunc)
 	})
 

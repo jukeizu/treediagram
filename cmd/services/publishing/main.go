@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"os"
@@ -12,36 +13,39 @@ import (
 	"github.com/jukeizu/treediagram/services/publishing/discord"
 	nats "github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats/encoders/protobuf"
-	mdb "github.com/shawntoffel/GoMongoDb"
-	"github.com/shawntoffel/services-core/command"
-	"github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/logging"
 	"google.golang.org/grpc"
 )
 
-var serviceArgs command.CommandArgs
-
-func init() {
-	serviceArgs = command.ParseArgs()
-}
+const (
+	DefaultPort = 50051
+)
 
 type Config struct {
-	Port           int
-	MessageStorage mdb.DbConfig
-	NatsServers    string
-	DiscordConfig  discord.DiscordConfig
+	Port              int
+	MessageStorageUrl string
+	NatsServers       string
+	DiscordToken      string
 }
 
 func main() {
 	logger := logging.GetLogger("services.publishing", os.Stdout)
 
-	c := Config{}
-	err := config.ReadConfig(serviceArgs.ConfigFile, &c)
-	if err != nil {
-		panic(err)
+	port := flag.Int("port", DefaultPort, "port")
+	token := flag.String("token", "", "Discord token")
+	natsServers := flag.String("nats", nats.DefaultURL, "NATS servers")
+	storageUrl := flag.String("db", "localhost", "Database connection url")
+
+	flag.Parse()
+
+	c := Config{
+		Port:              *port,
+		MessageStorageUrl: *storageUrl,
+		NatsServers:       *natsServers,
+		DiscordToken:      *token,
 	}
 
-	store, err := publishing.NewMessageStorage(c.MessageStorage)
+	store, err := publishing.NewMessageStorage(c.MessageStorageUrl)
 	if err != nil {
 		panic(err)
 	}
@@ -60,14 +64,14 @@ func main() {
 
 	defer conn.Close()
 
-	discordPublisher, err := discord.NewDiscordPublisher(c.DiscordConfig)
+	discordPublisher, err := discord.NewDiscordPublisher(c.DiscordToken)
 	if err != nil {
 		panic(err)
 	}
 
 	publisher := publishing.NewPublisher(store, conn)
 
-	sub, err := publisher.Subscribe(discord.DiscordPublisherQueueGroup, discordPublisher.Publish)
+	sub, err := publisher.Subscribe(discord.DiscordPublisherSubject, discordPublisher.Publish)
 	if err != nil {
 		panic(err)
 	}
