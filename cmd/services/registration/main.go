@@ -10,7 +10,6 @@ import (
 
 	pb "github.com/jukeizu/treediagram/api/registration"
 	"github.com/jukeizu/treediagram/services/registration"
-	mdb "github.com/shawntoffel/GoMongoDb"
 	"github.com/shawntoffel/services-core/command"
 	configreader "github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/logging"
@@ -24,9 +23,9 @@ func init() {
 }
 
 type Config struct {
-	HttpPort       int
-	GrpcPort       int
-	CommandStorage mdb.DbConfig
+	HttpPort          int
+	GrpcPort          int
+	CommandStorageUrl string
 }
 
 func main() {
@@ -38,7 +37,7 @@ func main() {
 		panic(err)
 	}
 
-	storage, err := registration.NewCommandStorage(config.CommandStorage)
+	storage, err := registration.NewCommandStorage(config.CommandStorageUrl)
 	if err != nil {
 		panic(err)
 	}

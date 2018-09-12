@@ -9,7 +9,6 @@ import (
 
 	pb "github.com/jukeizu/treediagram/api/user"
 	"github.com/jukeizu/treediagram/services/user"
-	mdb "github.com/shawntoffel/GoMongoDb"
 	"github.com/shawntoffel/services-core/command"
 	configreader "github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/logging"
@@ -23,8 +22,8 @@ func init() {
 }
 
 type Config struct {
-	Port        int
-	UserStorage mdb.DbConfig
+	Port           int
+	UserStorageUrl string
 }
 
 func main() {
@@ -36,7 +35,7 @@ func main() {
 		panic(err)
 	}
 
-	storage, err := user.NewUserStorage(config.UserStorage)
+	storage, err := user.NewUserStorage(config.UserStorageUrl)
 	if err != nil {
 		panic(err)
 	}

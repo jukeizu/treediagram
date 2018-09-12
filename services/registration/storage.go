@@ -7,6 +7,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+const (
+	DatabaseName   = "registration"
+	CollectionName = "commands"
+)
+
 type CommandStorage interface {
 	mdb.Storage
 
@@ -19,8 +24,14 @@ type storage struct {
 	mdb.Store
 }
 
-func NewCommandStorage(dbConfig mdb.DbConfig) (CommandStorage, error) {
-	store, err := mdb.NewStorage(dbConfig)
+func NewCommandStorage(url string) (CommandStorage, error) {
+	c := mdb.DbConfig{
+		Url:            url,
+		DatabaseName:   DatabaseName,
+		CollectionName: CollectionName,
+	}
+
+	store, err := mdb.NewStorage(c)
 
 	j := storage{}
 	j.Session = store.Session

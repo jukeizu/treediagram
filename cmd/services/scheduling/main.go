@@ -12,7 +12,6 @@ import (
 	"github.com/jukeizu/treediagram/services/scheduling"
 	nats "github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats/encoders/protobuf"
-	mdb "github.com/shawntoffel/GoMongoDb"
 	"github.com/shawntoffel/services-core/command"
 	"github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/logging"
@@ -26,10 +25,10 @@ func init() {
 }
 
 type Config struct {
-	GrpcPort    int
-	HttpPort    int
-	NatsServers string
-	JobStorage  mdb.DbConfig
+	GrpcPort      int
+	HttpPort      int
+	NatsServers   string
+	JobStorageUrl string
 }
 
 func main() {
@@ -41,7 +40,7 @@ func main() {
 		panic(err)
 	}
 
-	storage, err := scheduling.NewJobStorage(c.JobStorage)
+	storage, err := scheduling.NewJobStorage(c.JobStorageUrl)
 	if err != nil {
 		panic(err)
 	}
