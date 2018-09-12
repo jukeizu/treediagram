@@ -9,10 +9,6 @@ import (
 	pb "github.com/jukeizu/treediagram/api/receiving"
 )
 
-type DiscordListenerConfig struct {
-	Token string
-}
-
 type DiscordListener interface {
 	Open() error
 	Close()
@@ -24,12 +20,12 @@ type discordListener struct {
 	Logger  log.Logger
 }
 
-func NewDiscordListener(config DiscordListenerConfig, client pb.ReceivingClient, logger log.Logger) (DiscordListener, error) {
+func NewDiscordListener(token string, client pb.ReceivingClient, logger log.Logger) (DiscordListener, error) {
 	dh := discordListener{Client: client, Logger: logger}
 
 	discordgo.Logger = dh.discordLogger
 
-	session, err := discordgo.New("Bot " + config.Token)
+	session, err := discordgo.New("Bot " + token)
 
 	if err != nil {
 		return &dh, err

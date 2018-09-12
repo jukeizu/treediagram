@@ -6,7 +6,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	base "github.com/jukeizu/client-base"
 	pb "github.com/jukeizu/treediagram/api/receiving"
 	"github.com/jukeizu/treediagram/listeners/discord"
 	"github.com/shawntoffel/services-core/command"
@@ -16,8 +15,8 @@ import (
 )
 
 type Config struct {
-	DiscordListenerConfig discord.DiscordListenerConfig
-	ClientConfig          base.ClientConfig
+	DiscordToken      string
+	ReceivingEndpoint string
 }
 
 var commandArgs command.CommandArgs
@@ -36,7 +35,7 @@ func main() {
 		panic(err)
 	}
 
-	conn, err := grpc.Dial(c.ClientConfig.BaseUrl, grpc.WithInsecure())
+	conn, err := grpc.Dial(c.ReceivingEndpoint, grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
@@ -45,7 +44,7 @@ func main() {
 
 	client := pb.NewReceivingClient(conn)
 
-	handler, err := discord.NewDiscordListener(c.DiscordListenerConfig, client, logger)
+	handler, err := discord.NewDiscordListener(c.DiscordToken, client, logger)
 	err = handler.Open()
 
 	if err != nil {
