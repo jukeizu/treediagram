@@ -13,7 +13,15 @@ type service struct {
 	Queue rabbitmq.Client
 }
 
-func NewService(rabbitmqConfig rabbitmq.Config) (pb.ReceivingServer, error) {
+func NewService(rabbitmqUrl string) (pb.ReceivingServer, error) {
+	rabbitmqConfig := rabbitmq.Config{
+		Durable:      true,
+		QueueName:    "treediagram",
+		Exchange:     "treediagram-exchange",
+		ExchangeType: "fanout",
+		Url:          rabbitmqUrl,
+	}
+
 	client, err := rabbitmq.NewPublisher(rabbitmqConfig)
 
 	return &service{client}, err

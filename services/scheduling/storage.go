@@ -6,6 +6,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+const (
+	DatabaseName   = "scheduling"
+	CollectionName = "jobs"
+)
+
 type JobStorage interface {
 	mdb.Storage
 	Create(*pb.Job) error
@@ -17,8 +22,17 @@ type jobStorage struct {
 	mdb.Store
 }
 
-func NewJobStorage(dbConfig mdb.DbConfig) (JobStorage, error) {
-	store, err := mdb.NewStorage(dbConfig)
+func NewJobStorage(url string) (JobStorage, error) {
+	c := mdb.DbConfig{
+		Url:            url,
+		DatabaseName:   DatabaseName,
+		CollectionName: CollectionName,
+	}
+
+	store, err := mdb.NewStorage(c)
+	if err != nil {
+		return nil, err
+	}
 
 	j := jobStorage{}
 	j.Session = store.Session

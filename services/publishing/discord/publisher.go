@@ -5,11 +5,9 @@ import (
 	pb "github.com/jukeizu/treediagram/api/publishing"
 )
 
-var DiscordPublisherQueueGroup = "discord"
-
-type DiscordConfig struct {
-	Token string
-}
+const (
+	DiscordPublisherSubject = "discord"
+)
 
 type DiscordPublisher interface {
 	Publish(*pb.Message) error
@@ -19,8 +17,8 @@ type discordPublisher struct {
 	Session *discordgo.Session
 }
 
-func NewDiscordPublisher(config DiscordConfig) (DiscordPublisher, error) {
-	session, err := discordgo.New("Bot " + config.Token)
+func NewDiscordPublisher(token string) (DiscordPublisher, error) {
+	session, err := discordgo.New("Bot " + token)
 	if err != nil {
 		return nil, err
 	}

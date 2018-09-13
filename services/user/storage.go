@@ -6,6 +6,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+const (
+	DatabaseName   = "user"
+	CollectionName = "preferences"
+)
+
 type UserStorage interface {
 	mdb.Storage
 
@@ -17,8 +22,17 @@ type storage struct {
 	mdb.Store
 }
 
-func NewUserStorage(dbConfig mdb.DbConfig) (UserStorage, error) {
-	store, err := mdb.NewStorage(dbConfig)
+func NewUserStorage(url string) (UserStorage, error) {
+	c := mdb.DbConfig{
+		Url:            url,
+		DatabaseName:   DatabaseName,
+		CollectionName: CollectionName,
+	}
+
+	store, err := mdb.NewStorage(c)
+	if err != nil {
+		return nil, err
+	}
 
 	j := storage{}
 	j.Session = store.Session

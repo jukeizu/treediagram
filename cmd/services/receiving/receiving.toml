@@ -1,5 +1,0 @@
-Port = 10000
-Url = "localhost"
-[rabbitmqConfig]
-Url =  "amqp://localhost:5672/"
-QueueName = "treediagram"

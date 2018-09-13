@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"os"
@@ -10,38 +11,44 @@ import (
 	pb "github.com/jukeizu/treediagram/api/receiving"
 	"github.com/jukeizu/treediagram/services/receiving"
 	"github.com/shawntoffel/rabbitmq"
-	"github.com/shawntoffel/services-core/command"
-	"github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/logging"
 	"google.golang.org/grpc"
 )
 
-type TreediagramConfig struct {
-	config.ServiceConfig
-	RabbitMqConfig rabbitmq.Config
+type Config struct {
+	Port        int
+	RabbitMqUrl string
 }
 
-var serviceArgs command.CommandArgs
+const (
+	DefaultPort                    = 50052
+	RabbitMqUrlEnvironmentVariable = "TREEDIAGRAM_RABBITMQ_URL"
+)
 
-func init() {
-	serviceArgs = command.ParseArgs()
+func parseConfig() Config {
+	c := Config{}
+
+	flag.IntVar(&c.Port, "p", DefaultPort, "port")
+	flag.StringVar(&c.RabbitMqUrl, "rmq", rabbitmq.DefaultUrl, "RabbitMQ url. This can also be specified via the "+RabbitMqUrlEnvironmentVariable+" environment variable.")
+
+	flag.Parse()
+
+	if c.RabbitMqUrl == "" {
+		c.RabbitMqUrl = os.Getenv(RabbitMqUrlEnvironmentVariable)
+	}
+
+	return c
 }
 
 func main() {
 	logger := logging.GetLogger("services.receiving", os.Stdout)
 
-	treediagramConfig := TreediagramConfig{}
+	config := parseConfig()
 
-	err := config.ReadConfig(serviceArgs.ConfigFile, &treediagramConfig)
-
+	service, err := receiving.NewService(config.RabbitMqUrl)
 	if err != nil {
-		panic(err)
-	}
-
-	service, err := receiving.NewService(treediagramConfig.RabbitMqConfig)
-
-	if err != nil {
-		panic(err)
+		logger.Log("error", err)
+		os.Exit(1)
 	}
 
 	service = receiving.NewLoggingService(logger, service)
@@ -51,11 +58,10 @@ func main() {
 		c := make(chan os.Signal)
 		signal.Notify(c, syscall.SIGINT)
 		errChannel <- fmt.Errorf("%s", <-c)
-
 	}()
 
 	go func() {
-		port := fmt.Sprintf(":%d", treediagramConfig.Port)
+		port := fmt.Sprintf(":%d", config.Port)
 
 		listener, err := net.Listen("tcp", port)
 

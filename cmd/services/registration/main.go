@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"net/http"
@@ -10,43 +11,52 @@ import (
 
 	pb "github.com/jukeizu/treediagram/api/registration"
 	"github.com/jukeizu/treediagram/services/registration"
-	mdb "github.com/shawntoffel/GoMongoDb"
-	"github.com/shawntoffel/services-core/command"
-	configreader "github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/logging"
 	"google.golang.org/grpc"
 )
 
-var serviceArgs command.CommandArgs
-
-func init() {
-	serviceArgs = command.ParseArgs()
-}
+const (
+	DefaultGrpcPort = 50053
+	DefaultHttpPort = 10001
+)
 
 type Config struct {
-	HttpPort       int
-	GrpcPort       int
-	CommandStorage mdb.DbConfig
+	HttpPort          int
+	GrpcPort          int
+	CommandStorageUrl string
+}
+
+func parseConfig() Config {
+	c := Config{}
+
+	flag.IntVar(&c.GrpcPort, "p", DefaultGrpcPort, "port")
+	flag.IntVar(&c.HttpPort, "http-port", DefaultHttpPort, "http-port")
+	flag.StringVar(&c.CommandStorageUrl, "db", "localhost", "Database connection url")
+
+	flag.Parse()
+
+	return c
 }
 
 func main() {
 	logger := logging.GetLogger("services.registration", os.Stdout)
 
-	config := Config{}
-	err := configreader.ReadConfig(serviceArgs.ConfigFile, &config)
+	config := parseConfig()
+
+	storage, err := registration.NewCommandStorage(config.CommandStorageUrl)
 	if err != nil {
-		panic(err)
+		logger.Log("db error", err)
+		os.Exit(1)
 	}
 
-	storage, err := registration.NewCommandStorage(config.CommandStorage)
-	if err != nil {
-		panic(err)
-	}
+	defer storage.Close()
 
 	service, err := registration.NewService(storage)
 	if err != nil {
-		panic(err)
+		logger.Log("error", err)
+		os.Exit(1)
 	}
+
 	service = registration.NewLoggingService(logger, service)
 
 	errChannel := make(chan error)
@@ -61,7 +71,7 @@ func main() {
 
 		listener, err := net.Listen("tcp", port)
 		if err != nil {
-			logger.Log("error", err.Error())
+			errChannel <- err
 		}
 
 		s := grpc.NewServer()
@@ -82,10 +92,8 @@ func main() {
 		mux.Handle("/disable", handler)
 		mux.Handle("/query", handler)
 
-		http.Handle("/", mux)
-
 		logger.Log("transport", "http", "address", port, "msg", "listening")
-		errChannel <- http.ListenAndServe(port, nil)
+		errChannel <- http.ListenAndServe(port, mux)
 	}()
 
 	logger.Log("stopped", <-errChannel)

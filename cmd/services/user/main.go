@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"os"
@@ -9,37 +10,42 @@ import (
 
 	pb "github.com/jukeizu/treediagram/api/user"
 	"github.com/jukeizu/treediagram/services/user"
-	mdb "github.com/shawntoffel/GoMongoDb"
-	"github.com/shawntoffel/services-core/command"
-	configreader "github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/logging"
 	"google.golang.org/grpc"
 )
 
-var serviceArgs command.CommandArgs
-
-func init() {
-	serviceArgs = command.ParseArgs()
-}
+const (
+	DefaultPort = 50055
+)
 
 type Config struct {
-	Port        int
-	UserStorage mdb.DbConfig
+	Port           int
+	UserStorageUrl string
+}
+
+func parseConfig() Config {
+	c := Config{}
+
+	flag.IntVar(&c.Port, "p", DefaultPort, "port")
+	flag.StringVar(&c.UserStorageUrl, "db", "localhost", "Database connection url")
+
+	flag.Parse()
+
+	return c
 }
 
 func main() {
 	logger := logging.GetLogger("services.user", os.Stdout)
 
-	config := Config{}
-	err := configreader.ReadConfig(serviceArgs.ConfigFile, &config)
+	config := parseConfig()
+
+	storage, err := user.NewUserStorage(config.UserStorageUrl)
 	if err != nil {
-		panic(err)
+		logger.Log("db error", err)
+		os.Exit(1)
 	}
 
-	storage, err := user.NewUserStorage(config.UserStorage)
-	if err != nil {
-		panic(err)
-	}
+	defer storage.Close()
 
 	service := user.NewService(storage)
 	service = user.NewLoggingService(logger, service)
@@ -56,7 +62,7 @@ func main() {
 
 		listener, err := net.Listen("tcp", port)
 		if err != nil {
-			logger.Log("error", err.Error())
+			errChannel <- err
 		}
 
 		s := grpc.NewServer()

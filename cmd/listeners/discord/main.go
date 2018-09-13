@@ -1,55 +1,63 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
-	base "github.com/jukeizu/client-base"
 	pb "github.com/jukeizu/treediagram/api/receiving"
 	"github.com/jukeizu/treediagram/listeners/discord"
-	"github.com/shawntoffel/services-core/command"
-	"github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/logging"
 	"google.golang.org/grpc"
 )
 
+const (
+	DefaultReceivingEndpoint        = "localhost:50052"
+	DiscordTokenEnvironmentVariable = "TREEDIAGRAM_DISCORD_TOKEN"
+)
+
 type Config struct {
-	DiscordListenerConfig discord.DiscordListenerConfig
-	ClientConfig          base.ClientConfig
+	DiscordToken      string
+	ReceivingEndpoint string
 }
 
-var commandArgs command.CommandArgs
+func parseConfig() Config {
+	c := Config{}
 
-func init() {
-	commandArgs = command.ParseArgs()
+	flag.StringVar(&c.DiscordToken, "discord-token", "", "Discord token. This can also be specified via the "+DiscordTokenEnvironmentVariable+" environment variable.")
+	flag.StringVar(&c.ReceivingEndpoint, "endpoint", DefaultReceivingEndpoint, "Url of the Receiving service")
+	flag.Parse()
+
+	if c.DiscordToken == "" {
+		c.DiscordToken = os.Getenv(DiscordTokenEnvironmentVariable)
+	}
+
+	return c
 }
 
 func main() {
 	logger := logging.GetLogger("treediagram-bot", os.Stdout)
 
-	c := Config{}
+	c := parseConfig()
 
-	err := config.ReadConfig(commandArgs.ConfigFile, &c)
+	conn, err := grpc.Dial(c.ReceivingEndpoint, grpc.WithInsecure())
 	if err != nil {
-		panic(err)
-	}
-
-	conn, err := grpc.Dial(c.ClientConfig.BaseUrl, grpc.WithInsecure())
-	if err != nil {
-		panic(err)
+		logger.Log("error", err)
+		os.Exit(1)
 	}
 
 	defer conn.Close()
 
 	client := pb.NewReceivingClient(conn)
 
-	handler, err := discord.NewDiscordListener(c.DiscordListenerConfig, client, logger)
-	err = handler.Open()
+	handler, err := discord.NewDiscordListener(c.DiscordToken, client, logger)
 
+	err = handler.Open()
 	if err != nil {
-		panic(err)
+		logger.Log("error", err)
+		os.Exit(1)
 	}
 
 	logger.Log("msg", "treediagram-bot has started.")
