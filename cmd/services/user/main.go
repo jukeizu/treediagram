@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"os"
@@ -9,31 +10,34 @@ import (
 
 	pb "github.com/jukeizu/treediagram/api/user"
 	"github.com/jukeizu/treediagram/services/user"
-	"github.com/shawntoffel/services-core/command"
-	configreader "github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/logging"
 	"google.golang.org/grpc"
 )
 
-var serviceArgs command.CommandArgs
-
-func init() {
-	serviceArgs = command.ParseArgs()
-}
+const (
+	DefaultPort = 50055
+)
 
 type Config struct {
 	Port           int
 	UserStorageUrl string
 }
 
+func parseConfig() Config {
+	c := Config{}
+
+	flag.IntVar(&c.Port, "p", DefaultPort, "port")
+	flag.StringVar(&c.UserStorageUrl, "db", "localhost", "Database connection url")
+
+	flag.Parse()
+
+	return c
+}
+
 func main() {
 	logger := logging.GetLogger("services.user", os.Stdout)
 
-	config := Config{}
-	err := configreader.ReadConfig(serviceArgs.ConfigFile, &config)
-	if err != nil {
-		panic(err)
-	}
+	config := parseConfig()
 
 	storage, err := user.NewUserStorage(config.UserStorageUrl)
 	if err != nil {
