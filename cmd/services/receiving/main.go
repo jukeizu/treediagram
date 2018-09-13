@@ -16,8 +16,8 @@ import (
 )
 
 type Config struct {
-	Port           int
-	RabbitMqConfig rabbitmq.Config
+	Port        int
+	RabbitMqUrl string
 }
 
 const (
@@ -28,20 +28,13 @@ const (
 func parseConfig() Config {
 	c := Config{}
 
-	c.RabbitMqConfig = rabbitmq.Config{
-		Durable:      true,
-		QueueName:    "treediagram",
-		Exchange:     "treediagram-exchange",
-		ExchangeType: "fanout",
-	}
-
 	flag.IntVar(&c.Port, "p", DefaultPort, "port")
-	flag.StringVar(&c.RabbitMqConfig.Url, "rmq", rabbitmq.DefaultUrl, "RabbitMQ url. This can also be specified via the "+RabbitMqUrlEnvironmentVariable+" environment variable.")
+	flag.StringVar(&c.RabbitMqUrl, "rmq", rabbitmq.DefaultUrl, "RabbitMQ url. This can also be specified via the "+RabbitMqUrlEnvironmentVariable+" environment variable.")
 
 	flag.Parse()
 
-	if c.RabbitMqConfig.Url == "" {
-		c.RabbitMqConfig.Url = os.Getenv(RabbitMqUrlEnvironmentVariable)
+	if c.RabbitMqUrl == "" {
+		c.RabbitMqUrl = os.Getenv(RabbitMqUrlEnvironmentVariable)
 	}
 
 	return c
@@ -50,9 +43,9 @@ func parseConfig() Config {
 func main() {
 	logger := logging.GetLogger("services.receiving", os.Stdout)
 
-	treediagramConfig := parseConfig()
+	config := parseConfig()
 
-	service, err := receiving.NewService(treediagramConfig.RabbitMqConfig)
+	service, err := receiving.NewService(config.RabbitMqUrl)
 	if err != nil {
 		logger.Log("error", err)
 		os.Exit(1)
@@ -68,7 +61,7 @@ func main() {
 	}()
 
 	go func() {
-		port := fmt.Sprintf(":%d", treediagramConfig.Port)
+		port := fmt.Sprintf(":%d", config.Port)
 
 		listener, err := net.Listen("tcp", port)
 

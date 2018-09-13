@@ -45,9 +45,9 @@ func parseConfig() Config {
 func main() {
 	logger := logging.GetLogger("services.scheduling", os.Stdout)
 
-	c := parseConfig()
+	config := parseConfig()
 
-	storage, err := scheduling.NewJobStorage(c.JobStorageUrl)
+	storage, err := scheduling.NewJobStorage(config.JobStorageUrl)
 	if err != nil {
 		logger.Log("db error", err)
 		os.Exit(1)
@@ -55,7 +55,7 @@ func main() {
 
 	defer storage.Close()
 
-	nc, err := nats.Connect(c.NatsServers)
+	nc, err := nats.Connect(config.NatsServers)
 	if err != nil {
 		logger.Log("error", err)
 		os.Exit(1)
@@ -79,7 +79,7 @@ func main() {
 	}()
 
 	go func() {
-		port := fmt.Sprintf(":%d", c.GrpcPort)
+		port := fmt.Sprintf(":%d", config.GrpcPort)
 
 		listener, err := net.Listen("tcp", port)
 		if err != nil {
@@ -95,7 +95,7 @@ func main() {
 	}()
 
 	go func() {
-		port := fmt.Sprintf(":%d", c.HttpPort)
+		port := fmt.Sprintf(":%d", config.HttpPort)
 
 		httpBinding := scheduling.NewHttpBinding(logger, service)
 

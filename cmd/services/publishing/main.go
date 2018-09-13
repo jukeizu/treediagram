@@ -49,9 +49,9 @@ func parseConfig() Config {
 func main() {
 	logger := logging.GetLogger("services.publishing", os.Stdout)
 
-	c := parseConfig()
+	config := parseConfig()
 
-	store, err := publishing.NewMessageStorage(c.MessageStorageUrl)
+	store, err := publishing.NewMessageStorage(config.MessageStorageUrl)
 	if err != nil {
 		logger.Log("db error", err)
 		os.Exit(1)
@@ -59,7 +59,7 @@ func main() {
 
 	defer store.Close()
 
-	nc, err := nats.Connect(c.NatsServers)
+	nc, err := nats.Connect(config.NatsServers)
 	if err != nil {
 		logger.Log("error", err)
 		os.Exit(1)
@@ -73,9 +73,10 @@ func main() {
 
 	defer conn.Close()
 
-	discordPublisher, err := discord.NewDiscordPublisher(c.DiscordToken)
+	discordPublisher, err := discord.NewDiscordPublisher(config.DiscordToken)
 	if err != nil {
-		panic(err)
+		logger.Log("error", err)
+		os.Exit(1)
 	}
 
 	publisher := publishing.NewPublisher(store, conn)
@@ -100,12 +101,11 @@ func main() {
 	service = publishing.NewLoggingService(logger, service)
 
 	go func() {
-		port := fmt.Sprintf(":%d", c.Port)
+		port := fmt.Sprintf(":%d", config.Port)
 
 		listener, err := net.Listen("tcp", port)
 		if err != nil {
-			logger.Log("error", err.Error())
-
+			errChannel <- err
 		}
 
 		s := grpc.NewServer()
