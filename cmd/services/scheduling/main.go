@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"net/http"
@@ -12,17 +13,14 @@ import (
 	"github.com/jukeizu/treediagram/services/scheduling"
 	nats "github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats/encoders/protobuf"
-	"github.com/shawntoffel/services-core/command"
-	"github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/logging"
 	"google.golang.org/grpc"
 )
 
-var serviceArgs command.CommandArgs
-
-func init() {
-	serviceArgs = command.ParseArgs()
-}
+const (
+	DefaultGrpcPort = 50054
+	DefaultHttpPort = 10002
+)
 
 type Config struct {
 	GrpcPort      int
@@ -31,25 +29,36 @@ type Config struct {
 	JobStorageUrl string
 }
 
+func parseConfig() Config {
+	c := Config{}
+
+	flag.IntVar(&c.GrpcPort, "p", DefaultGrpcPort, "port")
+	flag.IntVar(&c.HttpPort, "http-port", DefaultHttpPort, "http-port")
+	flag.StringVar(&c.NatsServers, "nats", nats.DefaultURL, "NATS servers")
+	flag.StringVar(&c.JobStorageUrl, "db", "localhost", "Database connection url")
+
+	flag.Parse()
+
+	return c
+}
+
 func main() {
 	logger := logging.GetLogger("services.scheduling", os.Stdout)
 
-	c := Config{}
-	err := config.ReadConfig(serviceArgs.ConfigFile, &c)
-	if err != nil {
-		panic(err)
-	}
+	c := parseConfig()
 
 	storage, err := scheduling.NewJobStorage(c.JobStorageUrl)
 	if err != nil {
 		panic(err)
 	}
+
 	defer storage.Close()
 
 	nc, err := nats.Connect(c.NatsServers)
 	if err != nil {
 		panic(err)
 	}
+
 	conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
 	if err != nil {
 		panic(err)

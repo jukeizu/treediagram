@@ -31,6 +31,7 @@ type Config struct {
 
 func parseConfig() Config {
 	c := Config{}
+
 	flag.IntVar(&c.Port, "p", DefaultPort, "port")
 	flag.StringVar(&c.DiscordToken, "discord-token", "", "Discord token. This can also be specified via the "+DiscordTokenEnvironmentVariable+" environment variable.")
 	flag.StringVar(&c.NatsServers, "nats", nats.DefaultURL, "NATS servers")
