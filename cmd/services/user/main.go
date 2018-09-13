@@ -41,8 +41,11 @@ func main() {
 
 	storage, err := user.NewUserStorage(config.UserStorageUrl)
 	if err != nil {
-		panic(err)
+		logger.Log("db error", err)
+		os.Exit(1)
 	}
+
+	defer storage.Close()
 
 	service := user.NewService(storage)
 	service = user.NewLoggingService(logger, service)
@@ -59,7 +62,7 @@ func main() {
 
 		listener, err := net.Listen("tcp", port)
 		if err != nil {
-			logger.Log("error", err.Error())
+			errChannel <- err
 		}
 
 		s := grpc.NewServer()

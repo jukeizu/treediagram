@@ -49,19 +49,22 @@ func main() {
 
 	storage, err := scheduling.NewJobStorage(c.JobStorageUrl)
 	if err != nil {
-		panic(err)
+		logger.Log("db error", err)
+		os.Exit(1)
 	}
 
 	defer storage.Close()
 
 	nc, err := nats.Connect(c.NatsServers)
 	if err != nil {
-		panic(err)
+		logger.Log("error", err)
+		os.Exit(1)
 	}
 
 	conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
 	if err != nil {
-		panic(err)
+		logger.Log("error", err)
+		os.Exit(1)
 	}
 
 	service := scheduling.NewService(logger, storage, conn)
@@ -80,7 +83,7 @@ func main() {
 
 		listener, err := net.Listen("tcp", port)
 		if err != nil {
-			logger.Log("error", err.Error())
+			errChannel <- err
 		}
 
 		s := grpc.NewServer()
@@ -96,11 +99,9 @@ func main() {
 
 		httpBinding := scheduling.NewHttpBinding(logger, service)
 
-		http.Handle("/", httpBinding.NewServeMux())
-
 		logger.Log("transport", "http", "address", port, "msg", "listening")
 
-		errChannel <- http.ListenAndServe(port, nil)
+		errChannel <- http.ListenAndServe(port, httpBinding.NewServeMux())
 	}()
 
 	logger.Log("stopped", <-errChannel)

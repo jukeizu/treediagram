@@ -30,6 +30,9 @@ func NewJobStorage(url string) (JobStorage, error) {
 	}
 
 	store, err := mdb.NewStorage(c)
+	if err != nil {
+		return nil, err
+	}
 
 	j := jobStorage{}
 	j.Session = store.Session

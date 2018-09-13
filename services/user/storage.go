@@ -30,6 +30,9 @@ func NewUserStorage(url string) (UserStorage, error) {
 	}
 
 	store, err := mdb.NewStorage(c)
+	if err != nil {
+		return nil, err
+	}
 
 	j := storage{}
 	j.Session = store.Session

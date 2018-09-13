@@ -29,6 +29,9 @@ func NewMessageStorage(url string) (MessageStorage, error) {
 	}
 
 	store, err := mdb.NewStorage(c)
+	if err != nil {
+		return nil, err
+	}
 
 	m := messageStorage{}
 	m.Session = store.Session

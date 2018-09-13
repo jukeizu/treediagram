@@ -53,19 +53,22 @@ func main() {
 
 	store, err := publishing.NewMessageStorage(c.MessageStorageUrl)
 	if err != nil {
-		panic(err)
+		logger.Log("db error", err)
+		os.Exit(1)
 	}
 
 	defer store.Close()
 
 	nc, err := nats.Connect(c.NatsServers)
 	if err != nil {
-		panic(err)
+		logger.Log("error", err)
+		os.Exit(1)
 	}
 
 	conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
 	if err != nil {
-		panic(err)
+		logger.Log("error", err)
+		os.Exit(1)
 	}
 
 	defer conn.Close()
@@ -79,7 +82,8 @@ func main() {
 
 	sub, err := publisher.Subscribe(discord.DiscordPublisherSubject, discordPublisher.Publish)
 	if err != nil {
-		panic(err)
+		logger.Log("error", err)
+		os.Exit(1)
 	}
 
 	defer sub.Unsubscribe()

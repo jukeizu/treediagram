@@ -45,14 +45,16 @@ func main() {
 
 	storage, err := registration.NewCommandStorage(config.CommandStorageUrl)
 	if err != nil {
-		panic(err)
+		logger.Log("db error", err)
+		os.Exit(1)
 	}
 
 	defer storage.Close()
 
 	service, err := registration.NewService(storage)
 	if err != nil {
-		panic(err)
+		logger.Log("error", err)
+		os.Exit(1)
 	}
 
 	service = registration.NewLoggingService(logger, service)
