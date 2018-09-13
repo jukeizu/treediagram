@@ -21,7 +21,7 @@ type Config struct {
 }
 
 const (
-	DefaultPort                    = 10000
+	DefaultPort                    = 50052
 	RabbitMqUrlEnvironmentVariable = "TREEDIAGRAM_RABBITMQ_URL"
 )
 

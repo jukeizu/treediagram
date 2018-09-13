@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -9,38 +10,40 @@ import (
 	"github.com/jukeizu/treediagram/scheduler"
 	nats "github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats/encoders/protobuf"
-	"github.com/shawntoffel/services-core/command"
-	"github.com/shawntoffel/services-core/config"
 	"github.com/shawntoffel/services-core/logging"
 )
-
-var serviceArgs command.CommandArgs
-
-func init() {
-	serviceArgs = command.ParseArgs()
-}
 
 type Config struct {
 	NatsServers string
 }
 
+func parseConfig() Config {
+	c := Config{}
+
+	flag.StringVar(&c.NatsServers, "nats", nats.DefaultURL, "NATS servers")
+	flag.Parse()
+
+	return c
+}
+
 func main() {
 	logger := logging.GetLogger("scheduler", os.Stdout)
 
-	c := Config{}
-	err := config.ReadConfig(serviceArgs.ConfigFile, &c)
-	if err != nil {
-		panic(err)
-	}
+	c := parseConfig()
 
 	nc, err := nats.Connect(c.NatsServers)
 	if err != nil {
-		panic(err)
+		logger.Log("error", err)
+		os.Exit(1)
 	}
+
 	conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
 	if err != nil {
-		panic(err)
+		logger.Log("error", err)
+		os.Exit(1)
 	}
+
+	defer conn.Close()
 
 	scheduler := scheduler.NewScheduler(logger, conn)
 	scheduler.Start()
