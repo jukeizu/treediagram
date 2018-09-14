@@ -1,5 +1,5 @@
 VERSION=$(shell git describe --tags)
-BUILD=GOARCH=amd64 go build -v
+BUILD=GOARCH=amd64 go build
 
 .PHONY: all deps test proto build clean
 
@@ -21,6 +21,10 @@ proto:
 
 build:
 	$(BUILD) -o bin/treediagram-$(VERSION) ./cmd/...
+
+build-linux:
+	CGO_ENABLED=0 GOOS=linux $(BUILD) -a -installsuffix cgo -o bin/treediagram ./cmd/...
+
 
 clean:
 	@find bin -type f ! -name '*.toml' -delete -print
