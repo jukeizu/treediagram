@@ -34,8 +34,8 @@ type service struct {
 	CommandStorage CommandStorage
 }
 
-func NewService(commandStorage CommandStorage) (Service, error) {
-	return &service{CommandStorage: commandStorage}, nil
+func NewService(commandStorage CommandStorage) Service {
+	return &service{CommandStorage: commandStorage}
 }
 
 func (s *service) Add(command Command) (Command, error) {

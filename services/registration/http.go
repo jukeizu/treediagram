@@ -79,11 +79,13 @@ func MakeHandler(s Service, logger log.Logger) http.Handler {
 		MakeQueryRequestEndpoint(s),
 		DecodeQueryRequest,
 	)
+
 	router := mux.NewRouter()
+	subrouter := router.PathPrefix("/registration/").Subrouter()
 
-	router.Handle("/add", addMessageHandler).Methods("POST")
-	router.Handle("/disable", disableMessageHandler).Methods("POST")
-	router.Handle("/query", queryMessageHandler).Methods("POST")
+	subrouter.Handle("/add", addMessageHandler).Methods("POST")
+	subrouter.Handle("/disable", disableMessageHandler).Methods("POST")
+	subrouter.Handle("/query", queryMessageHandler).Methods("POST")
 
-	return router
+	return subrouter
 }

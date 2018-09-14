@@ -14,6 +14,7 @@ type loggingService struct {
 }
 
 func NewLoggingService(logger log.Logger, s pb.UserServer) pb.UserServer {
+	logger = log.With(logger, "service", "user")
 	return &loggingService{logger, s}
 }
 

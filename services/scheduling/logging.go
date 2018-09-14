@@ -14,6 +14,7 @@ type loggingService struct {
 }
 
 func NewLoggingService(logger log.Logger, s pb.SchedulingServer) pb.SchedulingServer {
+	logger = log.With(logger, "service", "scheduling")
 	return &loggingService{logger, s}
 }
 

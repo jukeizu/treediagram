@@ -1,46 +1,28 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/go-kit/kit/log"
 	"github.com/jukeizu/treediagram/scheduler"
 	nats "github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats/encoders/protobuf"
-	"github.com/shawntoffel/services-core/logging"
 )
 
-type Config struct {
-	NatsServers string
-}
+func StartScheduler(logger log.Logger, config Config) error {
+	logger = log.With(logger, "component", "scheduler")
 
-func parseConfig() Config {
-	c := Config{}
-
-	flag.StringVar(&c.NatsServers, "nats", nats.DefaultURL, "NATS servers")
-	flag.Parse()
-
-	return c
-}
-
-func main() {
-	logger := logging.GetLogger("scheduler", os.Stdout)
-
-	c := parseConfig()
-
-	nc, err := nats.Connect(c.NatsServers)
+	nc, err := nats.Connect(config.NatsServers)
 	if err != nil {
-		logger.Log("error", err)
-		os.Exit(1)
+		return err
 	}
 
 	conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
 	if err != nil {
-		logger.Log("error", err)
-		os.Exit(1)
+		return err
 	}
 
 	defer conn.Close()
@@ -57,5 +39,5 @@ func main() {
 		errs <- fmt.Errorf("%s", <-c)
 	}()
 
-	logger.Log("stopped", <-errs)
+	return <-errs
 }

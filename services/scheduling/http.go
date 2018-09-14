@@ -20,19 +20,7 @@ func NewHttpBinding(logger log.Logger, s pb.SchedulingServer) httpBinding {
 	return httpBinding{logger, s}
 }
 
-func (h httpBinding) NewServeMux() *http.ServeMux {
-	handler := h.makeHandler()
-
-	mux := http.NewServeMux()
-	mux.Handle("/create", handler)
-	mux.Handle("/jobs", handler)
-	mux.Handle("/run", handler)
-	mux.Handle("/disable", handler)
-
-	return mux
-}
-
-func (h httpBinding) makeHandler() http.Handler {
+func (h httpBinding) MakeHandler() http.Handler {
 	createJobHandler := transport.NewDefaultServer(
 		h.logger,
 		h.createJobEndpoint,
@@ -58,13 +46,14 @@ func (h httpBinding) makeHandler() http.Handler {
 	)
 
 	router := mux.NewRouter()
+	subrouter := router.PathPrefix("/scheduling/").Subrouter()
 
-	router.Handle("/create", createJobHandler).Methods("POST")
-	router.Handle("/jobs", jobsHandler).Methods("POST")
-	router.Handle("/run", runJobsHandler).Methods("POST")
-	router.Handle("/disable", disableJobHandler).Methods("POST")
+	subrouter.Handle("/create", createJobHandler).Methods("POST")
+	subrouter.Handle("/jobs", jobsHandler).Methods("POST")
+	subrouter.Handle("/run", runJobsHandler).Methods("POST")
+	subrouter.Handle("/disable", disableJobHandler).Methods("POST")
 
-	return router
+	return subrouter
 }
 
 func (h httpBinding) createJobEndpoint(ctx context.Context, r interface{}) (interface{}, error) {

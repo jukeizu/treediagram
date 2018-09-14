@@ -20,9 +20,7 @@ proto:
 	cd api/scheduling && protoc scheduling.proto --go_out=plugins=grpc:.
 
 build:
-	for CMD in `ls cmd/services`; do $(BUILD) -o bin/$$CMD-service-$(VERSION) ./cmd/services/$$CMD; done
-	for CMD in `ls cmd/listeners`; do $(BUILD) -o bin/$$CMD-listener-$(VERSION) ./cmd/listeners/$$CMD; done
-	$(BUILD) -o bin/scheduler-$(VERSION) ./cmd/scheduler
+	$(BUILD) -o bin/treediagram-$(VERSION) ./cmd/...
 
 clean:
 	@find bin -type f ! -name '*.toml' -delete -print
