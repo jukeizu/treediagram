@@ -2,49 +2,30 @@ package receiving
 
 import (
 	"context"
-	"encoding/json"
 
 	pb "github.com/jukeizu/treediagram/api/receiving"
+	nats "github.com/nats-io/go-nats"
 	"github.com/rs/xid"
-	"github.com/shawntoffel/rabbitmq"
+)
+
+const (
+	RequestSubject = "treediagram.request"
 )
 
 type service struct {
-	Queue rabbitmq.Client
+	Queue *nats.EncodedConn
 }
 
-func NewService(rabbitmqUrl string) (pb.ReceivingServer, error) {
-	rabbitmqConfig := rabbitmq.Config{
-		Durable:      true,
-		QueueName:    "treediagram",
-		Exchange:     "treediagram-exchange",
-		ExchangeType: "fanout",
-		Url:          rabbitmqUrl,
-	}
-
-	client, err := rabbitmq.NewPublisher(rabbitmqConfig)
-
-	return &service{client}, err
+func NewService(queue *nats.EncodedConn) pb.ReceivingServer {
+	return &service{queue}
 }
 
 func (s service) Request(ctx context.Context, req *pb.TreediagramRequest) (*pb.TreediagramReply, error) {
 	id := xid.New().String()
 
-	treediagramReply := &pb.TreediagramReply{
-		Id: id,
-	}
+	treediagramReply := &pb.TreediagramReply{Id: id}
 
-	marshalled, err := json.Marshal(req)
+	err := s.Queue.Publish(RequestSubject, req)
 
-	if err != nil {
-		return treediagramReply, err
-	}
-
-	err = s.Queue.Publish(marshalled)
-
-	if err != nil {
-		return treediagramReply, err
-	}
-
-	return treediagramReply, nil
+	return treediagramReply, err
 }

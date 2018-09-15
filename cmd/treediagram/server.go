@@ -61,10 +61,7 @@ func StartServer(logger log.Logger, config Config) error {
 
 	defer sub.Unsubscribe()
 
-	receivingService, err := receiving.NewService(config.RabbitmqUrl)
-	if err != nil {
-		return err
-	}
+	receivingService := receiving.NewService(natsConnection)
 	receivingService = receiving.NewLoggingService(logger, receivingService)
 
 	registrationService := registration.NewService(storage.CommandStorage)
