@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/jukeizu/treediagram/services/publishing"
-	"github.com/jukeizu/treediagram/services/registration"
-	"github.com/jukeizu/treediagram/services/scheduling"
-	"github.com/jukeizu/treediagram/services/user"
+	"github.com/jukeizu/treediagram/publishing"
+	"github.com/jukeizu/treediagram/registration"
+	"github.com/jukeizu/treediagram/scheduling"
+	"github.com/jukeizu/treediagram/user"
 )
 
 type Storage struct {

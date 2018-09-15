@@ -7,7 +7,7 @@ import (
 	"syscall"
 
 	"github.com/go-kit/kit/log"
-	"github.com/jukeizu/treediagram/scheduler"
+	"github.com/jukeizu/treediagram/scheduling"
 	nats "github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats/encoders/protobuf"
 )
@@ -27,7 +27,7 @@ func StartScheduler(logger log.Logger, config Config) error {
 
 	defer conn.Close()
 
-	scheduler := scheduler.NewScheduler(logger, conn)
+	scheduler := scheduling.NewScheduler(logger, conn)
 	scheduler.Start()
 	defer scheduler.Stop()
 

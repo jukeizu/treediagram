@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	pb "github.com/jukeizu/treediagram/api/receiving"
-	"github.com/jukeizu/treediagram/listeners/discord"
+	"github.com/jukeizu/treediagram/listening/discord"
 	"google.golang.org/grpc"
 )
 
