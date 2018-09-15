@@ -7,7 +7,7 @@ import (
 	"syscall"
 
 	"github.com/go-kit/kit/log"
-	"github.com/jukeizu/treediagram/scheduling"
+	"github.com/jukeizu/treediagram/pkg/scheduling"
 	nats "github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats/encoders/protobuf"
 )
