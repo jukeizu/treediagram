@@ -1,7 +1,9 @@
 FROM golang:1.11 as build
-ADD . /go/src/github.com/jukeizu/treediagram
 WORKDIR /go/src/github.com/jukeizu/treediagram
-RUN make deps build-linux
+COPY Makefile go.mod go.sum ./
+RUN make deps
+ADD . /go/src/github.com/jukeizu/treediagram
+RUN make build-linux
 
 FROM alpine:latest
 WORKDIR /app
