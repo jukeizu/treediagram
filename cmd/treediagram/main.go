@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 
+	"github.com/jukeizu/treediagram/internal/treediagram"
 	nats "github.com/nats-io/go-nats"
 	"github.com/shawntoffel/services-core/logging"
 )
@@ -21,17 +22,8 @@ var (
 	startScheduler = false
 )
 
-type Config struct {
-	GrpcPort          int
-	HttpPort          int
-	NatsServers       string
-	DbUrl             string
-	DiscordToken      string
-	ReceivingEndpoint string
-}
-
-func parseConfig() Config {
-	c := Config{}
+func parseConfig() treediagram.Config {
+	c := treediagram.Config{}
 
 	flag.IntVar(&c.GrpcPort, "grpc-port", DefaultGrpcPort, "grpc port")
 	flag.IntVar(&c.HttpPort, "http-port", DefaultHttpPort, "http port")
@@ -67,19 +59,19 @@ func main() {
 
 	if startServer {
 		go func() {
-			errChannel <- StartServer(logger, config)
+			errChannel <- treediagram.StartServer(logger, config)
 		}()
 	}
 
 	if startListener {
 		go func() {
-			errChannel <- StartListener(logger, config)
+			errChannel <- treediagram.StartListener(logger, config)
 		}()
 	}
 
 	if startScheduler {
 		go func() {
-			errChannel <- StartScheduler(logger, config)
+			errChannel <- treediagram.StartScheduler(logger, config)
 		}()
 	}
 
