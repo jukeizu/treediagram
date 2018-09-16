@@ -1,17 +1,32 @@
 VERSION=$(shell git describe --tags)
-BUILD=GOARCH=amd64 go build -v
+GO=GO111MODULE=on go
+BUILD=GOARCH=amd64 $(GO) build -ldflags="-s -w -X main.Version=$(VERSION)" 
+PROTOFILES=$(wildcard api/*/*.proto)
+PBFILES=$(patsubst %.proto,%.pb.go, $(PROTOFILES))
 
-.PHONY: all deps test build
+.PHONY: all deps test proto build clean $(PROTOFILES)
 
-all: deps test build
-
+all: deps test build 
 deps:
-	go get -t -v ./...
+	$(GO) get -d -v ./...
 
 test:
-	go vet ./...
-	go test -v -race ./...
+	$(GO) vet ./...
+	$(GO) test -v -race ./...
 
 build:
-	for CMD in `ls cmd/services`; do $(BUILD) -o bin/$$CMD-service-$(VERSION) ./cmd/services/$$CMD; done
-	for CMD in `ls cmd/listeners`; do $(BUILD) -o bin/$$CMD-listener-$(VERSION) ./cmd/listeners/$$CMD; done
+	$(BUILD) -o bin/treediagram-$(VERSION) ./cmd/...
+
+build-linux:
+	CGO_ENABLED=0 GOOS=linux $(BUILD) -a -installsuffix cgo -o bin/treediagram ./cmd/...
+
+docker:
+	docker build -t jukeizu/treediagram:$(VERSION) .
+
+proto: $(PBFILES)
+
+%.pb.go: %.proto
+	cd $(dir $<) && protoc $(notdir $<) --go_out=plugins=grpc:.
+
+clean:
+	@find bin -type f ! -name '*.toml' -delete -print

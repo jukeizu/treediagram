@@ -2,11 +2,11 @@ package discord
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"github.com/jukeizu/treediagram/api"
+	pb "github.com/jukeizu/treediagram/api/receiving"
 )
 
-func mapToUser(discordUser *discordgo.User) api.User {
-	user := api.User{
+func mapToUser(discordUser *discordgo.User) *pb.User {
+	user := &pb.User{
 		Id:   discordUser.ID,
 		Name: discordUser.Username,
 	}
@@ -14,8 +14,8 @@ func mapToUser(discordUser *discordgo.User) api.User {
 	return user
 }
 
-func mapToUsers(discordUsers []*discordgo.User) api.Users {
-	users := api.Users{}
+func mapToUsers(discordUsers []*discordgo.User) []*pb.User {
+	users := []*pb.User{}
 
 	for _, discordUser := range discordUsers {
 		users = append(users, mapToUser(discordUser))

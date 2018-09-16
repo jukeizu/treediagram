@@ -2,8 +2,8 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.10
-    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+      - image: golang:1.11
+    working_directory: /go/src/github.com/jukeizu/treediagram
     steps:
       - checkout
       - run: make

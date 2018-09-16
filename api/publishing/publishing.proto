@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package publishing;
+
+service Publishing {
+    rpc PublishMessage(PublishMessageRequest) returns (PublishMessageReply) {}
+}
+
+message PublishMessageRequest {
+    Message message = 1;
+}
+
+message PublishMessageReply {
+    string id = 1;
+}
+
+message Message {
+    string id = 1;
+    string source = 2;
+    string correlationId = 3;
+    string channelId = 4;
+    User user = 5;
+    bool privateMessage = 6;
+    bool isRedirect = 7;
+    string content = 8;
+    Embed embed = 9;
+    bool tts = 10;
+    repeated File files = 11;
+}
+
+message PublishMessageRequestReceived {
+    string id = 1;
+}
+
+message User {
+    string id = 1;
+    string name = 2;
+}
+
+message EmbedFooter {
+    string text = 1;
+    string iconUrl = 2;
+    string proxyIconUrl = 3;
+}
+
+message EmbedImage {
+    string url = 1;
+    string proxyUrl = 2;
+    int32 width = 3;
+    int32 height = 4;
+}
+
+message EmbedThumbnail {
+    string url = 1;
+    string proxyUrl = 2;
+    int32 width = 3;
+    int32 height = 4;
+}
+
+message EmbedVideo {
+    string url = 1;
+    string proxyUrl = 2;
+    int32 width = 3;
+    int32 height = 4;
+}
+
+message EmbedProvider {
+    string url = 1;
+    string name = 2;
+}
+
+message EmbedAuthor {
+    string url = 1;
+    string name = 2;
+    string iconUrl = 3;
+    string proxyIconUrl = 4;
+}
+
+message EmbedField {
+    string name = 1;
+    string value = 2;
+    bool inline = 3;
+}
+
+message Embed {
+    string url = 1;
+    string type = 2;
+    string title = 3;
+    string description = 4;
+    string timestamp = 5;
+    int32 color = 6;
+    EmbedFooter footer = 7;
+    EmbedImage image = 8;
+    EmbedThumbnail thumbnail = 9;
+    EmbedVideo video = 10;
+    EmbedProvider provider = 11;
+    EmbedAuthor author = 12;
+    repeated EmbedField fields = 13;
+}
+
+message File {
+    string name = 1;
+    string contentType = 2;
+    bytes bytes = 3;
+}

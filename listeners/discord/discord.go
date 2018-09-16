@@ -1,16 +1,13 @@
 package discord
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-kit/kit/log"
-	"github.com/jukeizu/treediagram/api"
+	pb "github.com/jukeizu/treediagram/api/receiving"
 )
-
-type DiscordListenerConfig struct {
-	Token string
-}
 
 type DiscordListener interface {
 	Open() error
@@ -19,16 +16,16 @@ type DiscordListener interface {
 
 type discordListener struct {
 	Session *discordgo.Session
-	Client  api.Client
+	Client  pb.ReceivingClient
 	Logger  log.Logger
 }
 
-func NewDiscordListener(config DiscordListenerConfig, client api.Client, logger log.Logger) (DiscordListener, error) {
+func NewDiscordListener(token string, client pb.ReceivingClient, logger log.Logger) (DiscordListener, error) {
 	dh := discordListener{Client: client, Logger: logger}
 
 	discordgo.Logger = dh.discordLogger
 
-	session, err := discordgo.New("Bot " + config.Token)
+	session, err := discordgo.New("Bot " + token)
 
 	if err != nil {
 		return &dh, err
@@ -60,7 +57,7 @@ func (d *discordListener) messageCreate(s *discordgo.Session, m *discordgo.Messa
 		return
 	}
 
-	request := api.TreediagramRequest{}
+	request := &pb.TreediagramRequest{}
 
 	request.Source = "discord"
 	request.CorrelationId = m.ID
@@ -71,15 +68,15 @@ func (d *discordListener) messageCreate(s *discordgo.Session, m *discordgo.Messa
 	request.Content = m.Content
 	request.Mentions = mapToUsers(m.Mentions)
 
-	response, err := d.Client.Treediagram().Request(request)
+	_, err := d.Client.Request(context.Background(), request)
 
 	if err != nil {
-		d.Logger.Log("error", err.Error(), "correlationId", request.CorrelationId, "responseId", response.Id)
+		d.Logger.Log("error", err.Error(), "correlationId", request.CorrelationId)
 	}
 }
 
 func (d *discordListener) discordLogger(level int, caller int, format string, a ...interface{}) {
 	message := fmt.Sprintf(format, a...)
 
-	d.Logger.Log("component", "discordgo", "level", level, "message", message, "version", discordgo.VERSION)
+	d.Logger.Log("component", "discordgo", "level", level, "msg", message, "version", discordgo.VERSION)
 }

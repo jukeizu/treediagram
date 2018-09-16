@@ -1,70 +1,32 @@
 package publishing
 
 import (
-	"github.com/jukeizu/treediagram/services/publishing/queue"
-	"github.com/jukeizu/treediagram/services/publishing/storage"
+	"context"
+
+	pb "github.com/jukeizu/treediagram/api/publishing"
+	nats "github.com/nats-io/go-nats"
 	"github.com/rs/xid"
 )
 
-type Service interface {
-	SendMessage(SendMessageRequest) (Response, error)
-}
-
 type service struct {
-	Queue   queue.Queue
-	Storage storage.Storage
+	Queue          *nats.EncodedConn
+	MessageStorage MessageStorage
 }
 
-func NewService(q queue.Queue, store storage.Storage) Service {
+func NewService(q *nats.EncodedConn, store MessageStorage) pb.PublishingServer {
 	return &service{q, store}
 }
 
-func (s *service) SendMessage(sendMessageRequest SendMessageRequest) (Response, error) {
-	response := Response{}
+func (s service) PublishMessage(ctx context.Context, req *pb.PublishMessageRequest) (*pb.PublishMessageReply, error) {
+	id := xid.New().String()
+	req.Message.Id = id
 
-	messageRequestId, err := s.saveSendMessageRequest(sendMessageRequest)
-
+	err := s.MessageStorage.Save(req.Message)
 	if err != nil {
-		return response, err
+		return nil, err
 	}
 
-	response.Id = messageRequestId
+	err = s.Queue.Publish(req.Message.Source, pb.PublishMessageRequestReceived{Id: id})
 
-	queueMessage := queue.QueueMessage{Id: messageRequestId}
-
-	err = s.Queue.PublishMessageRequest(queueMessage)
-
-	return response, err
-}
-
-func (s *service) saveSendMessageRequest(sendMessageRequest SendMessageRequest) (string, error) {
-	message := sendMessageRequest.Message
-	message.Id = generateId()
-
-	err := s.Storage.MessageStorage.SaveMessage(message)
-
-	if err != nil {
-		return "", err
-	}
-
-	messageRequest := storage.MessageRequest{}
-	messageRequest.Id = generateId()
-	messageRequest.CorrelationId = sendMessageRequest.CorrelationId
-	messageRequest.ChannelId = sendMessageRequest.ChannelId
-	messageRequest.User = sendMessageRequest.User
-	messageRequest.PrivateMessage = sendMessageRequest.PrivateMessage
-	messageRequest.IsRedirect = sendMessageRequest.IsRedirect
-	messageRequest.MessageId = message.Id
-
-	err = s.Storage.MessageRequestStorage.SaveMessageRequest(messageRequest)
-
-	if err != nil {
-		return "", err
-	}
-
-	return messageRequest.Id, nil
-}
-
-func generateId() string {
-	return xid.New().String()
+	return &pb.PublishMessageReply{Id: id}, err
 }
