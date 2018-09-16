@@ -1,4 +1,4 @@
-package treediagram
+package startup
 
 import (
 	"github.com/jukeizu/treediagram/pkg/publishing"

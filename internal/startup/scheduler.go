@@ -1,4 +1,4 @@
-package treediagram
+package startup
 
 import (
 	"fmt"
