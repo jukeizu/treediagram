@@ -18,7 +18,10 @@ build:
 	$(BUILD) -o bin/treediagram-$(VERSION) ./cmd/...
 
 build-linux:
-	CGO_ENABLED=0 GOOS=linux $(BUILD) -a -installsuffix cgo -o bin/treediagram ./cmd/...
+	CGO_ENABLED=0 GOOS=linux $(BUILD) -a -installsuffix cgo -ldflags="-s -w" -o bin/treediagram ./cmd/...
+
+docker:
+	docker build -t treediagram:$(VERSION) .
 
 proto: $(PBFILES)
 
