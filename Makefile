@@ -21,7 +21,7 @@ build-linux:
 	CGO_ENABLED=0 GOOS=linux $(BUILD) -a -installsuffix cgo -o bin/treediagram ./cmd/...
 
 docker:
-	docker build -t treediagram:$(VERSION) .
+	docker build -t jukeizu/treediagram:$(VERSION) .
 
 proto: $(PBFILES)
 

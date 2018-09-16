@@ -2,11 +2,28 @@ language: go
 go:
     - 1.11
 
+services:
+  - docker
+
+script:
+  - make
+  - make docker
+
+before_deploy:
+  - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+
 deploy:
-  provider: releases
-  api_key: $GITHUB_TOKEN
-  file_glob: true
-  file: bin/*
-  skip_cleanup: true
-  on:
-    tags: true
+  - provider: releases
+    api_key: $GITHUB_TOKEN
+    file_glob: true
+    file: bin/*
+    skip_cleanup: true
+    on:
+      tags: true
+
+  - provider: script
+    script:
+        - docker push $TRAVIS_REPO_SLUG:$TRAVIS_BRANCH $TRAVIS_REPO_SLUG:latest
+    skip_cleanup: true
+    on:
+      tags: true
