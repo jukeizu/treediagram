@@ -14,6 +14,7 @@ require (
 	github.com/nats-io/gnatsd v1.3.0 // indirect
 	github.com/nats-io/go-nats v1.6.0
 	github.com/nats-io/nuid v1.0.0 // indirect
+	github.com/oklog/run v1.0.0
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
 	github.com/rs/xid v1.2.1
 	github.com/shawntoffel/GoMongoDb v0.1.0

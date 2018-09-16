@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/go-kit/kit/log"
 	nats "github.com/nats-io/go-nats"
@@ -27,99 +24,26 @@ import (
 	"google.golang.org/grpc"
 )
 
-func StartServer(logger log.Logger, config Config) error {
+type ServerRunner struct {
+	Logger       log.Logger
+	Storage      *Storage
+	EncodedConn  *nats.EncodedConn
+	Subscription *nats.Subscription
+	GrpcServer   *grpc.Server
+	HttpServer   *http.Server
+	GrpcPort     int
+	HttpPort     int
+}
+
+func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	logger = log.With(logger, "component", "server")
 
 	storage, err := NewStorage(config.DbUrl)
 	if err != nil {
-		return errors.New("db: " + err.Error())
+		return nil, errors.New("db: " + err.Error())
 	}
 
-	defer storage.Close()
-
-	natsConnection, err := natsConnection(config.NatsServers)
-	if err != nil {
-		return err
-	}
-
-	defer natsConnection.Close()
-
-	publishingService := publishing.NewService(natsConnection, storage.MessageStorage)
-	publishingService = publishing.NewLoggingService(logger, publishingService)
-
-	discordPublisher, err := discord.NewDiscordPublisher(config.DiscordToken)
-	if err != nil {
-		return err
-	}
-
-	publisher := publishing.NewPublisher(storage.MessageStorage, natsConnection)
-
-	sub, err := publisher.Subscribe(discord.DiscordPublisherSubject, discordPublisher.Publish)
-	if err != nil {
-		return err
-	}
-
-	defer sub.Unsubscribe()
-
-	receivingService := receiving.NewService(natsConnection)
-	receivingService = receiving.NewLoggingService(logger, receivingService)
-
-	registrationService := registration.NewService(storage.CommandStorage)
-	registrationService = registration.NewLoggingService(logger, registrationService)
-
-	schedulingService := scheduling.NewService(logger, storage.JobStorage, natsConnection)
-	schedulingService = scheduling.NewLoggingService(logger, schedulingService)
-
-	userService := user.NewService(storage.UserStorage)
-	userService = user.NewLoggingService(logger, userService)
-
-	errChannel := make(chan error)
-
-	go func() {
-		c := make(chan os.Signal)
-		signal.Notify(c, syscall.SIGINT)
-		errChannel <- fmt.Errorf("%s", <-c)
-	}()
-
-	go func() {
-		port := fmt.Sprintf(":%d", config.GrpcPort)
-
-		listener, err := net.Listen("tcp", port)
-		if err != nil {
-			errChannel <- err
-		}
-
-		s := grpc.NewServer()
-
-		publishingpb.RegisterPublishingServer(s, publishingService)
-		receivingpb.RegisterReceivingServer(s, receivingService)
-		schedulingpb.RegisterSchedulingServer(s, schedulingService)
-		registrationpb.RegisterRegistrationServer(s, registration.GrpcBinding{Service: registrationService})
-		userpb.RegisterUserServer(s, userService)
-
-		logger.Log("transport", "grpc", "address", port, "msg", "listening")
-
-		errChannel <- s.Serve(listener)
-	}()
-
-	go func() {
-		port := fmt.Sprintf(":%d", config.HttpPort)
-
-		schedulingBinding := scheduling.NewHttpBinding(logger, schedulingService)
-
-		logger.Log("transport", "http", "address", port, "msg", "listening")
-
-		http.Handle("/scheduling/", schedulingBinding.MakeHandler())
-		http.Handle("/registration/", registration.MakeHandler(registrationService, logger))
-
-		errChannel <- http.ListenAndServe(port, nil)
-	}()
-
-	return <-errChannel
-}
-
-func natsConnection(servers string) (*nats.EncodedConn, error) {
-	nc, err := nats.Connect(servers)
+	nc, err := nats.Connect(config.NatsServers)
 	if err != nil {
 		return nil, err
 	}
@@ -129,5 +53,96 @@ func natsConnection(servers string) (*nats.EncodedConn, error) {
 		return nil, err
 	}
 
-	return conn, nil
+	discordPublisher, err := discord.NewDiscordPublisher(config.DiscordToken)
+	if err != nil {
+		return nil, err
+	}
+
+	publisher := publishing.NewPublisher(storage.MessageStorage, conn)
+	sub, err := publisher.Subscribe(discord.DiscordPublisherSubject, discordPublisher.Publish)
+	if err != nil {
+		return nil, err
+	}
+
+	publishingService := publishing.NewService(conn, storage.MessageStorage)
+	publishingService = publishing.NewLoggingService(logger, publishingService)
+
+	receivingService := receiving.NewService(conn)
+	receivingService = receiving.NewLoggingService(logger, receivingService)
+
+	registrationService := registration.NewService(storage.CommandStorage)
+	registrationService = registration.NewLoggingService(logger, registrationService)
+
+	schedulingService := scheduling.NewService(logger, storage.JobStorage, conn)
+	schedulingService = scheduling.NewLoggingService(logger, schedulingService)
+
+	userService := user.NewService(storage.UserStorage)
+	userService = user.NewLoggingService(logger, userService)
+
+	grpcServer := grpc.NewServer()
+
+	publishingpb.RegisterPublishingServer(grpcServer, publishingService)
+	receivingpb.RegisterReceivingServer(grpcServer, receivingService)
+	schedulingpb.RegisterSchedulingServer(grpcServer, schedulingService)
+	registrationpb.RegisterRegistrationServer(grpcServer, registration.GrpcBinding{Service: registrationService})
+	userpb.RegisterUserServer(grpcServer, userService)
+
+	schedulingBinding := scheduling.NewHttpBinding(logger, schedulingService)
+
+	mux := http.NewServeMux()
+	mux.Handle("/scheduling/", schedulingBinding.MakeHandler())
+	mux.Handle("/registration/", registration.MakeHandler(registrationService, logger))
+
+	httpServer := &http.Server{
+		Addr:    fmt.Sprintf(":%d", config.HttpPort),
+		Handler: mux,
+	}
+
+	serverRunner := &ServerRunner{
+		Logger:       logger,
+		Storage:      storage,
+		EncodedConn:  conn,
+		Subscription: sub,
+		GrpcServer:   grpcServer,
+		HttpServer:   httpServer,
+		GrpcPort:     config.GrpcPort,
+		HttpPort:     config.HttpPort,
+	}
+
+	return serverRunner, nil
+}
+
+func (r *ServerRunner) Start() error {
+	r.Logger.Log("msg", "starting")
+
+	errC := make(chan error)
+
+	go func() {
+		port := fmt.Sprintf(":%d", r.GrpcPort)
+		listener, err := net.Listen("tcp", port)
+		if err != nil {
+			errC <- err
+			return
+		}
+
+		r.Logger.Log("transport", "grpc", "address", port, "msg", "listening")
+		errC <- r.GrpcServer.Serve(listener)
+	}()
+
+	go func() {
+		r.Logger.Log("transport", "http", "address", r.HttpServer.Addr, "msg", "listening")
+		errC <- r.HttpServer.ListenAndServe()
+	}()
+
+	return <-errC
+}
+
+func (r *ServerRunner) Stop() {
+	r.Logger.Log("msg", "stopping")
+
+	r.Subscription.Unsubscribe()
+	r.GrpcServer.GracefulStop()
+	r.HttpServer.Shutdown(nil)
+	r.EncodedConn.Close()
+	r.Storage.Close()
 }

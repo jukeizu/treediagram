@@ -35,13 +35,13 @@ func NewScheduler(logger log.Logger, queue *nats.EncodedConn) Scheduler {
 func (s *scheduler) Start() {
 	s.Cron.Start()
 
-	s.Logger.Log("message", "started")
+	s.Logger.Log("msg", "started")
 }
 
 func (s *scheduler) Stop() {
 	s.Cron.Stop()
 
-	s.Logger.Log("message", "stopped")
+	s.Logger.Log("msg", "stopped")
 }
 
 func (s *scheduler) run() {

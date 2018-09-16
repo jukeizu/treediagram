@@ -78,5 +78,5 @@ func (d *discordListener) messageCreate(s *discordgo.Session, m *discordgo.Messa
 func (d *discordListener) discordLogger(level int, caller int, format string, a ...interface{}) {
 	message := fmt.Sprintf(format, a...)
 
-	d.Logger.Log("component", "discordgo", "level", level, "message", message, "version", discordgo.VERSION)
+	d.Logger.Log("component", "discordgo", "level", level, "msg", message, "version", discordgo.VERSION)
 }

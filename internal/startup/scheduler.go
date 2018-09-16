@@ -1,43 +1,59 @@
 package startup
 
 import (
-	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
-
 	"github.com/go-kit/kit/log"
 	"github.com/jukeizu/treediagram/pkg/scheduling"
 	nats "github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats/encoders/protobuf"
 )
 
-func StartScheduler(logger log.Logger, config Config) error {
+type SchedulerRunner struct {
+	Logger       log.Logger
+	EncodedConn  *nats.EncodedConn
+	Subscription *nats.Subscription
+	Scheduler    scheduling.Scheduler
+	quit         chan struct{}
+}
+
+func NewSchedulerRunner(logger log.Logger, config Config) (*SchedulerRunner, error) {
 	logger = log.With(logger, "component", "scheduler")
 
 	nc, err := nats.Connect(config.NatsServers)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	defer conn.Close()
-
 	scheduler := scheduling.NewScheduler(logger, conn)
-	scheduler.Start()
-	defer scheduler.Stop()
 
-	errs := make(chan error, 2)
+	scheduleRunner := &SchedulerRunner{
+		Logger:      logger,
+		EncodedConn: conn,
+		Scheduler:   scheduler,
+		quit:        make(chan struct{}),
+	}
 
-	go func() {
-		c := make(chan os.Signal)
-		signal.Notify(c, syscall.SIGINT)
-		errs <- fmt.Errorf("%s", <-c)
-	}()
+	return scheduleRunner, nil
+}
 
-	return <-errs
+func (r *SchedulerRunner) Start() error {
+	r.Logger.Log("msg", "starting")
+
+	r.Scheduler.Start()
+
+	<-r.quit
+
+	return nil
+}
+
+func (r *SchedulerRunner) Stop() {
+	r.Logger.Log("msg", "stopping")
+
+	close(r.quit)
+	r.Scheduler.Stop()
+	r.EncodedConn.Close()
 }
