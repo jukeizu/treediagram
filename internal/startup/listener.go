@@ -3,7 +3,7 @@ package startup
 import (
 	"github.com/go-kit/kit/log"
 	pb "github.com/jukeizu/treediagram/api/receiving"
-	"github.com/jukeizu/treediagram/pkg/listening/discord"
+	"github.com/jukeizu/treediagram/listeners/discord"
 	"google.golang.org/grpc"
 )
 

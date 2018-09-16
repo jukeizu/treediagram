@@ -1,10 +1,11 @@
-package scheduling
+package scheduler
 
 import (
 	"time"
 
 	"github.com/go-kit/kit/log"
 	pb "github.com/jukeizu/treediagram/api/scheduling"
+	"github.com/jukeizu/treediagram/services/scheduling"
 	nats "github.com/nats-io/go-nats"
 	"github.com/robfig/cron"
 )
@@ -49,7 +50,7 @@ func (s *scheduler) run() {
 		Time: time.Now().Unix(),
 	}
 
-	err := s.Queue.Publish(SchedulerTickSubject, request)
+	err := s.Queue.Publish(scheduling.SchedulerTickSubject, request)
 	if err != nil {
 		s.Logger.Log("error", err.Error())
 	}

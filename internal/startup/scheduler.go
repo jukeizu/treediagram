@@ -2,7 +2,7 @@ package startup
 
 import (
 	"github.com/go-kit/kit/log"
-	"github.com/jukeizu/treediagram/pkg/scheduling"
+	"github.com/jukeizu/treediagram/scheduler"
 	nats "github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats/encoders/protobuf"
 )
@@ -11,7 +11,7 @@ type SchedulerRunner struct {
 	Logger       log.Logger
 	EncodedConn  *nats.EncodedConn
 	Subscription *nats.Subscription
-	Scheduler    scheduling.Scheduler
+	Scheduler    scheduler.Scheduler
 	quit         chan struct{}
 }
 
@@ -28,7 +28,7 @@ func NewSchedulerRunner(logger log.Logger, config Config) (*SchedulerRunner, err
 		return nil, err
 	}
 
-	scheduler := scheduling.NewScheduler(logger, conn)
+	scheduler := scheduler.NewScheduler(logger, conn)
 
 	scheduleRunner := &SchedulerRunner{
 		Logger:      logger,

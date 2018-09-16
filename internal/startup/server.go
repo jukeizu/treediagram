@@ -15,12 +15,12 @@ import (
 	registrationpb "github.com/jukeizu/treediagram/api/registration"
 	schedulingpb "github.com/jukeizu/treediagram/api/scheduling"
 	userpb "github.com/jukeizu/treediagram/api/user"
-	"github.com/jukeizu/treediagram/pkg/publishing"
-	"github.com/jukeizu/treediagram/pkg/publishing/discord"
-	"github.com/jukeizu/treediagram/pkg/receiving"
-	"github.com/jukeizu/treediagram/pkg/registration"
-	"github.com/jukeizu/treediagram/pkg/scheduling"
-	"github.com/jukeizu/treediagram/pkg/user"
+	"github.com/jukeizu/treediagram/services/publishing"
+	"github.com/jukeizu/treediagram/services/publishing/discord"
+	"github.com/jukeizu/treediagram/services/receiving"
+	"github.com/jukeizu/treediagram/services/registration"
+	"github.com/jukeizu/treediagram/services/scheduling"
+	"github.com/jukeizu/treediagram/services/user"
 	"google.golang.org/grpc"
 )
 
