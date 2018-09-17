@@ -7,7 +7,7 @@ services:
 
 script:
   - make
-  - make docker
+  - docker build -t $TRAVIS_REPO_SLUG:$TRAVIS_BRANCH -t $TRAVIS_REPO_SLUG:latest
 
 before_deploy:
   - echo "$DOCKER_PASS" | docker login -u="$DOCKER_USER" --password-stdin
