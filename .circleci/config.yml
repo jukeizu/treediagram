@@ -6,4 +6,11 @@ jobs:
     working_directory: /go/src/github.com/jukeizu/treediagram
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - pkg-sum-{{ checksum "go.sum" }}
       - run: make
+      - save_cache:
+          key: pkg-sum-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg"
