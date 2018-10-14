@@ -3,6 +3,7 @@ package registration
 import (
 	"errors"
 
+	pb "github.com/jukeizu/treediagram/api/registration"
 	mdb "github.com/shawntoffel/GoMongoDb"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -15,9 +16,9 @@ const (
 type CommandStorage interface {
 	mdb.Storage
 
-	Save(Command) error
+	Save(pb.Command) error
 	Disable(string) error
-	Query(CommandQuery) ([]Command, error)
+	Query(pb.QueryCommandsRequest) ([]*pb.Command, error)
 }
 
 type storage struct {
@@ -43,7 +44,7 @@ func NewCommandStorage(url string) (CommandStorage, error) {
 	return &j, err
 }
 
-func (s *storage) Save(c Command) error {
+func (s *storage) Save(c pb.Command) error {
 	return s.Collection.Insert(c)
 }
 
@@ -56,8 +57,8 @@ func (s *storage) Disable(id string) error {
 	return err
 }
 
-func (s *storage) Query(query CommandQuery) ([]Command, error) {
-	commands := []Command{}
+func (s *storage) Query(query pb.QueryCommandsRequest) ([]*pb.Command, error) {
+	commands := []*pb.Command{}
 
 	bsonQuery := []bson.M{
 		bson.M{"server": query.Server},
@@ -67,7 +68,7 @@ func (s *storage) Query(query CommandQuery) ([]Command, error) {
 		bsonQuery = append(bsonQuery, bson.M{"_id": bson.M{"$gt": bson.ObjectIdHex(query.LastId)}})
 	}
 
-	err := s.Collection.Find(bson.M{"$and": bsonQuery}).Limit(query.PageSize).All(&commands)
+	err := s.Collection.Find(bson.M{"$and": bsonQuery}).Limit(int(query.PageSize)).All(&commands)
 
 	return commands, err
 }

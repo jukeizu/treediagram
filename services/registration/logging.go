@@ -1,56 +1,58 @@
 package registration
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-kit/kit/log"
+	pb "github.com/jukeizu/treediagram/api/registration"
 )
 
 type loggingService struct {
-	logger log.Logger
-	Service
+	logger  log.Logger
+	Service pb.RegistrationServer
 }
 
-func NewLoggingService(logger log.Logger, s Service) Service {
+func NewLoggingService(logger log.Logger, s pb.RegistrationServer) pb.RegistrationServer {
 	logger = log.With(logger, "service", "registration")
 	return &loggingService{logger, s}
 }
 
-func (s *loggingService) Add(command Command) (Command, error) {
+func (s loggingService) AddCommand(ctx context.Context, req *pb.AddCommandRequest) (*pb.AddCommandReply, error) {
 	defer func(begin time.Time) {
 		s.logger.Log(
-			"method", "Add",
-			"command", command,
+			"method", "AddCommand",
+			"command", *req.Command,
 			"took", time.Since(begin),
 		)
 
 	}(time.Now())
 
-	return s.Service.Add(command)
+	return s.Service.AddCommand(ctx, req)
 }
 
-func (s *loggingService) Disable(id string) error {
+func (s loggingService) DisableCommand(ctx context.Context, req *pb.DisableCommandRequest) (*pb.DisableCommandReply, error) {
 	defer func(begin time.Time) {
 		s.logger.Log(
-			"method", "Disable",
-			"id", id,
+			"method", "DisableCommand",
+			"id", req.Id,
 			"took", time.Since(begin),
 		)
 
 	}(time.Now())
 
-	return s.Service.Disable(id)
+	return s.Service.DisableCommand(ctx, req)
 }
 
-func (s *loggingService) Query(query CommandQuery) (CommandQueryResult, error) {
+func (s loggingService) QueryCommands(ctx context.Context, req *pb.QueryCommandsRequest) (*pb.QueryCommandsReply, error) {
 	defer func(begin time.Time) {
 		s.logger.Log(
-			"method", "Query",
-			"query", query,
+			"method", "QueryCommands",
+			"query", *req,
 			"took", time.Since(begin),
 		)
 
 	}(time.Now())
 
-	return s.Service.Query(query)
+	return s.Service.QueryCommands(ctx, req)
 }
