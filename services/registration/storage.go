@@ -1,7 +1,7 @@
 package registration
 
 import (
-	"errors"
+	"fmt"
 
 	pb "github.com/jukeizu/treediagram/api/registration"
 	mdb "github.com/shawntoffel/GoMongoDb"
@@ -12,6 +12,15 @@ const (
 	DatabaseName   = "registration"
 	CollectionName = "commands"
 )
+
+type Command struct {
+	Id       bson.ObjectId `json:"id,omitempty" bson:"_id,omitempty"`
+	Server   string        `json:"server"`
+	Name     string        `json:"name"`
+	Endpoint string        `json:"endpoint"`
+	Help     string        `json:"help"`
+	Enabled  bool          `json:"enabled"`
+}
 
 type CommandStorage interface {
 	mdb.Storage
@@ -44,31 +53,59 @@ func NewCommandStorage(url string) (CommandStorage, error) {
 	return &j, err
 }
 
-func (s *storage) Save(c pb.Command) error {
+func (s *storage) Save(pbCommand pb.Command) error {
+	c := Command{
+		Server:   pbCommand.Server,
+		Name:     pbCommand.Name,
+		Endpoint: pbCommand.Endpoint,
+		Help:     pbCommand.Help,
+		Enabled:  pbCommand.Enabled,
+	}
+
 	return s.Collection.Insert(c)
 }
 
 func (s *storage) Disable(id string) error {
 	if !bson.IsObjectIdHex(id) {
-		return errors.New("The following id is invalid: " + id)
+		return fmt.Errorf("db error: the following id is invalid: %s", id)
 	}
 	_, err := s.Collection.Upsert(bson.M{"_id": bson.ObjectIdHex(id)}, bson.M{"$set": bson.M{"enabled": false}})
+	if err != nil {
+		return fmt.Errorf("db error: %s", err)
+	}
 
-	return err
+	return nil
 }
 
 func (s *storage) Query(query pb.QueryCommandsRequest) ([]*pb.Command, error) {
-	commands := []*pb.Command{}
+	commands := []Command{}
 
 	bsonQuery := []bson.M{
-		bson.M{"server": query.Server},
+		bson.M{"server": bson.M{"$in": []string{query.Server, ""}}},
 		bson.M{"enabled": true},
 	}
 	if bson.IsObjectIdHex(query.LastId) {
 		bsonQuery = append(bsonQuery, bson.M{"_id": bson.M{"$gt": bson.ObjectIdHex(query.LastId)}})
 	}
 
-	err := s.Collection.Find(bson.M{"$and": bsonQuery}).Limit(int(query.PageSize)).All(&commands)
+	pbCommands := []*pb.Command{}
 
-	return commands, err
+	err := s.Collection.Find(bson.M{"$and": bsonQuery}).Limit(int(query.PageSize)).All(&commands)
+	if err != nil {
+		return pbCommands, fmt.Errorf("db error: %s", err)
+	}
+
+	for _, command := range commands {
+		mapped := &pb.Command{
+			Id:       command.Id.Hex(),
+			Server:   command.Server,
+			Name:     command.Name,
+			Endpoint: command.Endpoint,
+			Help:     command.Help,
+			Enabled:  command.Enabled,
+		}
+		pbCommands = append(pbCommands, mapped)
+	}
+
+	return pbCommands, nil
 }
