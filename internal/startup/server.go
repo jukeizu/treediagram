@@ -7,9 +7,6 @@ import (
 	"net/http"
 
 	"github.com/go-kit/kit/log"
-	nats "github.com/nats-io/go-nats"
-	"github.com/nats-io/go-nats/encoders/protobuf"
-
 	publishingpb "github.com/jukeizu/treediagram/api/publishing"
 	receivingpb "github.com/jukeizu/treediagram/api/receiving"
 	registrationpb "github.com/jukeizu/treediagram/api/registration"
@@ -21,6 +18,8 @@ import (
 	"github.com/jukeizu/treediagram/services/registration"
 	"github.com/jukeizu/treediagram/services/scheduling"
 	"github.com/jukeizu/treediagram/services/user"
+	nats "github.com/nats-io/go-nats"
+	"github.com/nats-io/go-nats/encoders/protobuf"
 	"google.golang.org/grpc"
 )
 
@@ -84,14 +83,15 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	publishingpb.RegisterPublishingServer(grpcServer, publishingService)
 	receivingpb.RegisterReceivingServer(grpcServer, receivingService)
 	schedulingpb.RegisterSchedulingServer(grpcServer, schedulingService)
-	registrationpb.RegisterRegistrationServer(grpcServer, registration.GrpcBinding{Service: registrationService})
+	registrationpb.RegisterRegistrationServer(grpcServer, registrationService)
 	userpb.RegisterUserServer(grpcServer, userService)
 
 	schedulingBinding := scheduling.NewHttpBinding(logger, schedulingService)
+	registrationBinding := registration.NewHttpBinding(logger, registrationService)
 
 	mux := http.NewServeMux()
 	mux.Handle("/scheduling/", schedulingBinding.MakeHandler())
-	mux.Handle("/registration/", registration.MakeHandler(registrationService, logger))
+	mux.Handle("/registration/", registrationBinding.MakeHandler())
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%d", config.HttpPort),
