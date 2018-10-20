@@ -2,8 +2,8 @@ package startup
 
 import (
 	"github.com/go-kit/kit/log"
-	pb "github.com/jukeizu/treediagram/api/receiving"
-	"github.com/jukeizu/treediagram/listeners/discord"
+	pb "github.com/jukeizu/treediagram/api/processing"
+	"github.com/jukeizu/treediagram/listener/discord"
 	"google.golang.org/grpc"
 )
 
@@ -22,7 +22,7 @@ func NewListenerRunner(logger log.Logger, config Config) (*ListenerRunner, error
 		return nil, err
 	}
 
-	client := pb.NewReceivingClient(conn)
+	client := pb.NewProcessingClient(conn)
 
 	handler, err := discord.NewDiscordListener(config.DiscordToken, client, logger)
 	if err != nil {

@@ -1,4 +1,4 @@
-package scheduling
+package scheduler
 
 import (
 	pb "github.com/jukeizu/treediagram/api/scheduling"

@@ -1,11 +1,10 @@
-package publishing
+package publisher
 
 import (
 	"context"
 	"time"
 
 	"github.com/go-kit/kit/log"
-
 	pb "github.com/jukeizu/treediagram/api/publishing"
 )
 
