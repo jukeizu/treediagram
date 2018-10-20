@@ -1,7 +1,7 @@
 VERSION=$(shell git describe --tags)
 GO=GO111MODULE=on go
 BUILD=GOARCH=amd64 $(GO) build -ldflags="-s -w -X main.Version=$(VERSION)" 
-PROTOFILES=$(wildcard api/*/*.proto)
+PROTOFILES=$(wildcard api/protobuf-spec/*/*.proto)
 PBFILES=$(patsubst %.proto,%.pb.go, $(PROTOFILES))
 
 .PHONY: all deps test proto build clean $(PROTOFILES)

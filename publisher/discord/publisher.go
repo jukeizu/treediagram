@@ -2,7 +2,7 @@ package discord
 
 import (
 	"github.com/bwmarrin/discordgo"
-	pb "github.com/jukeizu/treediagram/api/publishing"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/publishing"
 )
 
 const (

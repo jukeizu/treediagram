@@ -6,7 +6,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-kit/kit/log"
-	pb "github.com/jukeizu/treediagram/api/processing"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 )
 
 type DiscordListener interface {

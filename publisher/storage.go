@@ -1,7 +1,7 @@
 package publisher
 
 import (
-	pb "github.com/jukeizu/treediagram/api/publishing"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/publishing"
 	mdb "github.com/shawntoffel/GoMongoDb"
 	"gopkg.in/mgo.v2/bson"
 )

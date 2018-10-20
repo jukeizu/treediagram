@@ -1,7 +1,7 @@
 package publisher
 
 import (
-	pb "github.com/jukeizu/treediagram/api/publishing"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/publishing"
 	nats "github.com/nats-io/go-nats"
 )
 

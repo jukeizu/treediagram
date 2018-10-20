@@ -3,7 +3,7 @@ package publisher
 import (
 	"context"
 
-	pb "github.com/jukeizu/treediagram/api/publishing"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/publishing"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/xid"
 )

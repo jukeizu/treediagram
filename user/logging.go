@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	pb "github.com/jukeizu/treediagram/api/user"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
 )
 
 type loggingService struct {

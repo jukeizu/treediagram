@@ -3,7 +3,7 @@ package processor
 import (
 	"context"
 
-	pb "github.com/jukeizu/treediagram/api/processing"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/xid"
 )

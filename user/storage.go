@@ -1,7 +1,7 @@
 package user
 
 import (
-	pb "github.com/jukeizu/treediagram/api/user"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
 	mdb "github.com/shawntoffel/GoMongoDb"
 	"gopkg.in/mgo.v2/bson"
 )

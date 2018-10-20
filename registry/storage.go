@@ -3,7 +3,7 @@ package registry
 import (
 	"fmt"
 
-	pb "github.com/jukeizu/treediagram/api/registration"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 	mdb "github.com/shawntoffel/GoMongoDb"
 	"gopkg.in/mgo.v2/bson"
 )

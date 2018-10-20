@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
-	pb "github.com/jukeizu/treediagram/api/registration"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 	"github.com/shawntoffel/services-core/transport"
 )
 

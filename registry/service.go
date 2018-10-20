@@ -3,7 +3,7 @@ package registry
 import (
 	"context"
 
-	pb "github.com/jukeizu/treediagram/api/registration"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 )
 
 type service struct {

@@ -2,7 +2,7 @@ package startup
 
 import (
 	"github.com/go-kit/kit/log"
-	pb "github.com/jukeizu/treediagram/api/processing"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 	"github.com/jukeizu/treediagram/listener/discord"
 	"google.golang.org/grpc"
 )

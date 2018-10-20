@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 
-	pb "github.com/jukeizu/treediagram/api/user"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
 )
 
 type service struct {
