@@ -1,32 +1,32 @@
 package startup
 
 import (
-	"github.com/jukeizu/treediagram/services/publishing"
-	"github.com/jukeizu/treediagram/services/registration"
-	"github.com/jukeizu/treediagram/services/scheduling"
-	"github.com/jukeizu/treediagram/services/user"
+	"github.com/jukeizu/treediagram/processor/user"
+	"github.com/jukeizu/treediagram/publisher"
+	"github.com/jukeizu/treediagram/registry"
+	"github.com/jukeizu/treediagram/scheduler"
 )
 
 type Storage struct {
-	MessageStorage publishing.MessageStorage
-	CommandStorage registration.CommandStorage
-	JobStorage     scheduling.JobStorage
+	MessageStorage publisher.MessageStorage
+	CommandStorage registry.CommandStorage
+	JobStorage     scheduler.JobStorage
 	UserStorage    user.UserStorage
 }
 
 func NewStorage(dbUrl string) (*Storage, error) {
 
-	messageStorage, err := publishing.NewMessageStorage(dbUrl)
+	messageStorage, err := publisher.NewMessageStorage(dbUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	commandStorage, err := registration.NewCommandStorage(dbUrl)
+	commandStorage, err := registry.NewCommandStorage(dbUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	jobStorage, err := scheduling.NewJobStorage(dbUrl)
+	jobStorage, err := scheduler.NewJobStorage(dbUrl)
 	if err != nil {
 		return nil, err
 	}

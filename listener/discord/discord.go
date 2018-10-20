@@ -6,7 +6,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-kit/kit/log"
-	pb "github.com/jukeizu/treediagram/api/receiving"
+	pb "github.com/jukeizu/treediagram/api/processing"
 )
 
 type DiscordListener interface {
@@ -16,11 +16,11 @@ type DiscordListener interface {
 
 type discordListener struct {
 	Session *discordgo.Session
-	Client  pb.ReceivingClient
+	Client  pb.ProcessingClient
 	Logger  log.Logger
 }
 
-func NewDiscordListener(token string, client pb.ReceivingClient, logger log.Logger) (DiscordListener, error) {
+func NewDiscordListener(token string, client pb.ProcessingClient, logger log.Logger) (DiscordListener, error) {
 	dh := discordListener{Client: client, Logger: logger}
 
 	discordgo.Logger = dh.discordLogger

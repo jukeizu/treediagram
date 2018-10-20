@@ -1,4 +1,4 @@
-package publishing
+package publisher
 
 import (
 	pb "github.com/jukeizu/treediagram/api/publishing"

@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/jukeizu/treediagram/internal/logger"
 	"github.com/jukeizu/treediagram/internal/startup"
-	"github.com/jukeizu/treediagram/logging"
 	nats "github.com/nats-io/go-nats"
 	"github.com/oklog/run"
 )

@@ -1,9 +1,9 @@
-package receiving
+package processor
 
 import (
 	"context"
 
-	pb "github.com/jukeizu/treediagram/api/receiving"
+	pb "github.com/jukeizu/treediagram/api/processing"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/xid"
 )
@@ -16,7 +16,7 @@ type service struct {
 	Queue *nats.EncodedConn
 }
 
-func NewService(queue *nats.EncodedConn) pb.ReceivingServer {
+func NewService(queue *nats.EncodedConn) pb.ProcessingServer {
 	return &service{queue}
 }
 

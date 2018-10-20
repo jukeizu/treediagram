@@ -1,19 +1,19 @@
-package receiving
+package processor
 
 import (
 	"context"
 	"time"
 
 	"github.com/go-kit/kit/log"
-	pb "github.com/jukeizu/treediagram/api/receiving"
+	pb "github.com/jukeizu/treediagram/api/processing"
 )
 
 type loggingService struct {
 	logger  log.Logger
-	Service pb.ReceivingServer
+	Service pb.ProcessingServer
 }
 
-func NewLoggingService(logger log.Logger, s pb.ReceivingServer) pb.ReceivingServer {
+func NewLoggingService(logger log.Logger, s pb.ProcessingServer) pb.ProcessingServer {
 	logger = log.With(logger, "service", "receiving")
 	return &loggingService{logger, s}
 }
