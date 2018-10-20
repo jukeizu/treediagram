@@ -1,10 +1,10 @@
 package startup
 
 import (
-	"github.com/jukeizu/treediagram/processor/user"
 	"github.com/jukeizu/treediagram/publisher"
 	"github.com/jukeizu/treediagram/registry"
 	"github.com/jukeizu/treediagram/scheduler"
+	"github.com/jukeizu/treediagram/user"
 )
 
 type Storage struct {
