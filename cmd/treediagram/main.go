@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/jukeizu/treediagram/internal/logger"
 	"github.com/jukeizu/treediagram/internal/startup"
-	"github.com/jukeizu/treediagram/logging"
 	nats "github.com/nats-io/go-nats"
 	"github.com/oklog/run"
 )
@@ -25,7 +25,7 @@ const (
 
 var (
 	flagServer    = false
-	flagListener  = false
+	flagBot       = false
 	flagScheduler = false
 	flagVersion   = false
 )
@@ -40,7 +40,7 @@ func parseConfig() startup.Config {
 	flag.StringVar(&c.DiscordToken, "discord.token", "", "Discord token. This can also be specified via the "+DiscordTokenEnvironmentVariable+" environment variable.")
 	flag.StringVar(&c.ReceivingEndpoint, "endpoint", DefaultReceivingEndpoint, "Url of the Receiving service")
 	flag.BoolVar(&flagServer, "server", false, "Start as server")
-	flag.BoolVar(&flagListener, "listener", false, "Start as listener")
+	flag.BoolVar(&flagBot, "bot", false, "Start as bot")
 	flag.BoolVar(&flagScheduler, "scheduler", false, "Start as scheduler")
 	flag.BoolVar(&flagVersion, "v", false, "version")
 
@@ -63,9 +63,9 @@ func main() {
 		os.Exit(0)
 	}
 
-	if !flagServer && !flagListener && !flagScheduler {
+	if !flagServer && !flagBot && !flagScheduler {
 		flagServer = true
-		flagListener = true
+		flagBot = true
 		flagScheduler = true
 	}
 
@@ -85,8 +85,8 @@ func main() {
 		})
 	}
 
-	if flagListener {
-		l, err := startup.NewListenerRunner(logger, config)
+	if flagBot {
+		l, err := startup.NewBotRunner(logger, config)
 		if err != nil {
 			logger.Log("error", err)
 			os.Exit(1)

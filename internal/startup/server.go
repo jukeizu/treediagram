@@ -7,20 +7,19 @@ import (
 	"net/http"
 
 	"github.com/go-kit/kit/log"
+	processingpb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	publishingpb "github.com/jukeizu/treediagram/api/protobuf-spec/publishing"
+	registrationpb "github.com/jukeizu/treediagram/api/protobuf-spec/registration"
+	schedulingpb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
+	userpb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
+	"github.com/jukeizu/treediagram/processor"
+	"github.com/jukeizu/treediagram/publisher"
+	"github.com/jukeizu/treediagram/publisher/discord"
+	"github.com/jukeizu/treediagram/registry"
+	"github.com/jukeizu/treediagram/scheduler"
+	"github.com/jukeizu/treediagram/user"
 	nats "github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats/encoders/protobuf"
-
-	publishingpb "github.com/jukeizu/treediagram/api/publishing"
-	receivingpb "github.com/jukeizu/treediagram/api/receiving"
-	registrationpb "github.com/jukeizu/treediagram/api/registration"
-	schedulingpb "github.com/jukeizu/treediagram/api/scheduling"
-	userpb "github.com/jukeizu/treediagram/api/user"
-	"github.com/jukeizu/treediagram/services/publishing"
-	"github.com/jukeizu/treediagram/services/publishing/discord"
-	"github.com/jukeizu/treediagram/services/receiving"
-	"github.com/jukeizu/treediagram/services/registration"
-	"github.com/jukeizu/treediagram/services/scheduling"
-	"github.com/jukeizu/treediagram/services/user"
 	"google.golang.org/grpc"
 )
 
@@ -58,40 +57,41 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		return nil, err
 	}
 
-	publisher := publishing.NewPublisher(storage.MessageStorage, conn)
-	sub, err := publisher.Subscribe(discord.DiscordPublisherSubject, discordPublisher.Publish)
+	p := publisher.NewPublisher(storage.MessageStorage, conn)
+	sub, err := p.Subscribe(discord.DiscordPublisherSubject, discordPublisher.Publish)
 	if err != nil {
 		return nil, err
 	}
 
-	publishingService := publishing.NewService(conn, storage.MessageStorage)
-	publishingService = publishing.NewLoggingService(logger, publishingService)
+	publisherService := publisher.NewService(conn, storage.MessageStorage)
+	publisherService = publisher.NewLoggingService(logger, publisherService)
 
-	receivingService := receiving.NewService(conn)
-	receivingService = receiving.NewLoggingService(logger, receivingService)
+	processorService := processor.NewService(conn)
+	processorService = processor.NewLoggingService(logger, processorService)
 
-	registrationService := registration.NewService(storage.CommandStorage)
-	registrationService = registration.NewLoggingService(logger, registrationService)
+	registryService := registry.NewService(storage.CommandStorage)
+	registryService = registry.NewLoggingService(logger, registryService)
 
-	schedulingService := scheduling.NewService(logger, storage.JobStorage, conn)
-	schedulingService = scheduling.NewLoggingService(logger, schedulingService)
+	schedulerService := scheduler.NewService(logger, storage.JobStorage, conn)
+	schedulerService = scheduler.NewLoggingService(logger, schedulerService)
 
 	userService := user.NewService(storage.UserStorage)
 	userService = user.NewLoggingService(logger, userService)
 
 	grpcServer := grpc.NewServer()
 
-	publishingpb.RegisterPublishingServer(grpcServer, publishingService)
-	receivingpb.RegisterReceivingServer(grpcServer, receivingService)
-	schedulingpb.RegisterSchedulingServer(grpcServer, schedulingService)
-	registrationpb.RegisterRegistrationServer(grpcServer, registration.GrpcBinding{Service: registrationService})
+	publishingpb.RegisterPublishingServer(grpcServer, publisherService)
+	processingpb.RegisterProcessingServer(grpcServer, processorService)
+	schedulingpb.RegisterSchedulingServer(grpcServer, schedulerService)
+	registrationpb.RegisterRegistrationServer(grpcServer, registryService)
 	userpb.RegisterUserServer(grpcServer, userService)
 
-	schedulingBinding := scheduling.NewHttpBinding(logger, schedulingService)
+	schedulerHttpBinding := scheduler.NewHttpBinding(logger, schedulerService)
+	registryHttpBinding := registry.NewHttpBinding(logger, registryService)
 
 	mux := http.NewServeMux()
-	mux.Handle("/scheduling/", schedulingBinding.MakeHandler())
-	mux.Handle("/registration/", registration.MakeHandler(registrationService, logger))
+	mux.Handle("/scheduling/", schedulerHttpBinding.MakeHandler())
+	mux.Handle("/registration/", registryHttpBinding.MakeHandler())
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%d", config.HttpPort),

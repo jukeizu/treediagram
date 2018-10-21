@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+package handling;
+
+service Command {
+    rpc IsCommand(CommandRequest) returns (IsCommandReply) {}
+    rpc Handle(CommandRequest) returns (CommandReply) {}
+}
+
+service Job {
+    rpc IsJob(JobRequest) returns (IsJobReply) {}
+    rpc Handle(JobRequest) returns (JobReply) {}
+}
+
+message CommandRequest {
+    string source = 1;
+    string correlationId = 2;
+    User bot = 3;
+    User author = 4;
+    string channelId = 5;
+    string serverId = 6;
+    repeated User mentions = 7;
+    string content = 8;
+}
+
+message CommandReply {
+    repeated Result results = 1;
+}
+
+message IsCommandReply {
+    bool isCommand = 1;
+}
+
+message JobRequest {
+    string id = 1;
+    string type = 2;
+    string content = 3;
+    string user = 4;
+    string destination = 5;
+    Schedule schedule = 6;
+    bool enabled = 7;
+}
+
+message JobReply {
+    repeated Result results = 1;
+}
+
+message IsJobReply {
+    bool isJob = 1;
+}
+
+message Schedule {
+    string minute = 1;
+    string hour = 2;
+    string dayOfMonth = 3;
+    string month = 4;
+    string dayOfWeek = 5;
+}
+
+message User {
+    string id = 1;
+    string name = 2;
+}
+
+message Result {
+    string content = 1;
+    Embed embed = 2;
+    bool tts = 3;
+    repeated File files = 4;
+    bool isPrivateMessage = 5;
+    bool isRedirect = 6;
+}
+
+message EmbedFooter {
+    string text = 1;
+    string iconUrl = 2;
+    string proxyIconUrl = 3;
+}
+
+message EmbedImage {
+    string url = 1;
+    string proxyUrl = 2;
+    int32 width = 3;
+    int32 height = 4;
+}
+
+message EmbedThumbnail {
+    string url = 1;
+    string proxyUrl = 2;
+    int32 width = 3;
+    int32 height = 4;
+}
+
+message EmbedVideo {
+    string url = 1;
+    string proxyUrl = 2;
+    int32 width = 3;
+    int32 height = 4;
+}
+
+message EmbedProvider {
+    string url = 1;
+    string name = 2;
+}
+
+message EmbedAuthor {
+    string url = 1;
+    string name = 2;
+    string iconUrl = 3;
+    string proxyIconUrl = 4;
+}
+
+message EmbedField {
+    string name = 1;
+    string value = 2;
+    bool inline = 3;
+}
+
+message Embed {
+    string url = 1;
+    string type = 2;
+    string title = 3;
+    string description = 4;
+    string timestamp = 5;
+    int32 color = 6;
+    EmbedFooter footer = 7;
+    EmbedImage image = 8;
+    EmbedThumbnail thumbnail = 9;
+    EmbedVideo video = 10;
+    EmbedProvider provider = 11;
+    EmbedAuthor author = 12;
+    repeated EmbedField fields = 13;
+}
+
+message File {
+    string name = 1;
+    string contentType = 2;
+    bytes bytes = 3;
+}
