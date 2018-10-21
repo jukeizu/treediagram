@@ -9,19 +9,19 @@ import (
 	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 )
 
-type DiscordListener interface {
+type Bot interface {
 	Open() error
 	Close()
 }
 
-type discordListener struct {
+type bot struct {
 	Session *discordgo.Session
 	Client  pb.ProcessingClient
 	Logger  log.Logger
 }
 
-func NewDiscordListener(token string, client pb.ProcessingClient, logger log.Logger) (DiscordListener, error) {
-	dh := discordListener{Client: client, Logger: logger}
+func NewBot(token string, client pb.ProcessingClient, logger log.Logger) (Bot, error) {
+	dh := bot{Client: client, Logger: logger}
 
 	discordgo.Logger = dh.discordLogger
 
@@ -40,19 +40,19 @@ func NewDiscordListener(token string, client pb.ProcessingClient, logger log.Log
 	return &dh, nil
 }
 
-func (d *discordListener) Open() error {
+func (d *bot) Open() error {
 	d.Logger.Log("session", "opening")
 
 	return d.Session.Open()
 }
 
-func (d *discordListener) Close() {
+func (d *bot) Close() {
 	d.Logger.Log("session", "closing")
 
 	d.Session.Close()
 }
 
-func (d *discordListener) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
@@ -75,7 +75,7 @@ func (d *discordListener) messageCreate(s *discordgo.Session, m *discordgo.Messa
 	}
 }
 
-func (d *discordListener) discordLogger(level int, caller int, format string, a ...interface{}) {
+func (d *bot) discordLogger(level int, caller int, format string, a ...interface{}) {
 	message := fmt.Sprintf(format, a...)
 
 	d.Logger.Log("component", "discordgo", "level", level, "msg", message, "version", discordgo.VERSION)
