@@ -46,7 +46,13 @@ func (s *service) QueryCommands(ctx context.Context, req *pb.QueryCommandsReques
 		Commands: commands,
 	}
 
-	if len(reply.Commands) == int(req.PageSize) {
+	numCommands := len(reply.Commands)
+
+	if numCommands > 0 {
+		reply.LastId = reply.Commands[numCommands-1].Id
+	}
+
+	if numCommands == int(req.PageSize) {
 		reply.HasMore = true
 	}
 

@@ -2,30 +2,63 @@ package processor
 
 import (
 	"context"
+	"regexp"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/xid"
 )
 
 const (
-	RequestSubject = "treediagram.request"
+	RequestSubject = "RequestReceived"
 )
 
+type matchedCommand struct {
+	Request processing.TreediagramRequest
+	Command registration.Command
+}
+
 type service struct {
-	Queue *nats.EncodedConn
+	Queue    *nats.EncodedConn
+	Registry registration.RegistrationClient
 }
 
-func NewService(queue *nats.EncodedConn) pb.ProcessingServer {
-	return &service{queue}
+func NewService(queue *nats.EncodedConn, registrationClient registration.RegistrationClient) processing.ProcessingServer {
+	return &service{Queue: queue, Registry: registrationClient}
 }
 
-func (s service) Request(ctx context.Context, req *pb.TreediagramRequest) (*pb.TreediagramReply, error) {
+func (s service) Request(ctx context.Context, req *processing.TreediagramRequest) (*processing.TreediagramReply, error) {
+	query := &registration.QueryCommandsRequest{
+		Server: req.ServerId,
+	}
+
+	for {
+		reply, err := s.Registry.QueryCommands(ctx, query)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, command := range reply.Commands {
+			go s.checkCommand(*req, *command)
+		}
+
+		if !reply.HasMore {
+			break
+		}
+
+		query.LastId = reply.LastId
+	}
+
 	id := xid.New().String()
 
-	treediagramReply := &pb.TreediagramReply{Id: id}
+	return &processing.TreediagramReply{Id: id}, nil
+}
 
-	err := s.Queue.Publish(RequestSubject, req)
+func (s service) checkCommand(req processing.TreediagramRequest, command registration.Command) {
+	match, _ := regexp.MatchString(command.Regex, req.Content)
 
-	return treediagramReply, err
+	if match {
+		s.Queue.Publish(RequestSubject, matchedCommand{Request: req, Command: command})
+	}
 }

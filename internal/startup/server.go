@@ -66,7 +66,14 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	publisherService := publisher.NewService(conn, storage.MessageStorage)
 	publisherService = publisher.NewLoggingService(logger, publisherService)
 
-	processorService := processor.NewService(conn)
+	registryConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+
+	registryClient := registrationpb.NewRegistrationClient(registryConn)
+
+	processorService := processor.NewService(conn, registryClient)
 	processorService = processor.NewLoggingService(logger, processorService)
 
 	registryService := registry.NewService(storage.CommandStorage)

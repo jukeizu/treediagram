@@ -17,6 +17,7 @@ type Command struct {
 	Id       bson.ObjectId `json:"id,omitempty" bson:"_id,omitempty"`
 	Server   string        `json:"server"`
 	Name     string        `json:"name"`
+	Regex    string        `json:"regex"`
 	Endpoint string        `json:"endpoint"`
 	Help     string        `json:"help"`
 	Enabled  bool          `json:"enabled"`
@@ -57,6 +58,7 @@ func (s *storage) Save(pbCommand pb.Command) error {
 	c := Command{
 		Server:   pbCommand.Server,
 		Name:     pbCommand.Name,
+		Regex:    pbCommand.Regex,
 		Endpoint: pbCommand.Endpoint,
 		Help:     pbCommand.Help,
 		Enabled:  pbCommand.Enabled,
@@ -100,6 +102,7 @@ func (s *storage) Query(query pb.QueryCommandsRequest) ([]*pb.Command, error) {
 			Id:       command.Id.Hex(),
 			Server:   command.Server,
 			Name:     command.Name,
+			Regex:    command.Regex,
 			Endpoint: command.Endpoint,
 			Help:     command.Help,
 			Enabled:  command.Enabled,

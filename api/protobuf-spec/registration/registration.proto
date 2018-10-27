@@ -12,6 +12,8 @@ message Command {
     string id = 1;
     string server = 2;
     string name = 3;
+    string regex = 4;
+    bool requireMention = 5;
     string endpoint = 6;
     string help = 7;
     bool enabled = 8;
@@ -26,6 +28,7 @@ message QueryCommandsRequest {
 message QueryCommandsReply {
     repeated Command Commands = 1;
     bool hasMore = 2;
+    string lastId = 3;
 }
 
 message AddCommandRequest {
