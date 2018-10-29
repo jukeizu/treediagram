@@ -19,7 +19,6 @@ import (
 	"github.com/jukeizu/treediagram/scheduler"
 	"github.com/jukeizu/treediagram/user"
 	nats "github.com/nats-io/go-nats"
-	"github.com/nats-io/go-nats/encoders/protobuf"
 	"google.golang.org/grpc"
 )
 
@@ -28,6 +27,7 @@ type ServerRunner struct {
 	Storage      *Storage
 	EncodedConn  *nats.EncodedConn
 	Subscription *nats.Subscription
+	Processor    processor.Processor
 	GrpcServer   *grpc.Server
 	HttpServer   *http.Server
 	GrpcPort     int
@@ -47,7 +47,8 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		return nil, err
 	}
 
-	conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
+	// conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
+	conn, err := nats.NewEncodedConn(nc, nats.JSON_ENCODER)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +74,12 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 
 	registryClient := registrationpb.NewRegistrationClient(registryConn)
 
-	processorService := processor.NewService(conn, registryClient)
+	proc, err := processor.New(logger, conn, registryClient)
+	if err != nil {
+		return nil, err
+	}
+
+	processorService := processor.NewService(conn)
 	processorService = processor.NewLoggingService(logger, processorService)
 
 	registryService := registry.NewService(storage.CommandStorage)
@@ -110,6 +116,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		Storage:      storage,
 		EncodedConn:  conn,
 		Subscription: sub,
+		Processor:    proc,
 		GrpcServer:   grpcServer,
 		HttpServer:   httpServer,
 		GrpcPort:     config.GrpcPort,
@@ -148,6 +155,7 @@ func (r *ServerRunner) Stop() {
 	r.Logger.Log("msg", "stopping")
 
 	r.Subscription.Unsubscribe()
+	r.Processor.Stop()
 	r.GrpcServer.GracefulStop()
 	r.HttpServer.Shutdown(nil)
 	r.EncodedConn.Close()
