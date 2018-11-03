@@ -23,13 +23,3 @@ func mapToUsers(discordUsers []*discordgo.User) []*pb.User {
 
 	return users
 }
-
-func getServerId(s *discordgo.Session, channelId string) string {
-	channel, err := s.State.Channel(channelId)
-
-	if err != nil || channel == nil {
-		return ""
-	}
-
-	return channel.GuildID
-}
