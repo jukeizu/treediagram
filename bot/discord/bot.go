@@ -64,7 +64,7 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	request.Bot = mapToUser(s.State.User)
 	request.Author = mapToUser(m.Author)
 	request.ChannelId = m.ChannelID
-	request.ServerId = getServerId(s, m.ChannelID)
+	request.ServerId = m.GuildID
 	request.Content = m.Content
 	request.Mentions = mapToUsers(m.Mentions)
 
