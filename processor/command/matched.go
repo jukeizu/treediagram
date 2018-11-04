@@ -19,7 +19,6 @@ const (
 type Matched struct {
 	logger log.Logger
 	queue  *nats.EncodedConn
-	sub    *nats.Subscription
 }
 
 type matchedCommand struct {
@@ -27,21 +26,21 @@ type matchedCommand struct {
 	Command registration.Command          `json:"command"`
 }
 
-func NewCommandMatchedProcessor(logger log.Logger, queue *nats.EncodedConn) (Matched, error) {
-	m := Matched{logger: logger, queue: queue}
-
-	sub, err := m.queue.QueueSubscribe(CommandMatchedSubject, ProcessorQueueGroup, m.process)
-	if err != nil {
-		return m, err
-	}
-
-	m.sub = sub
-
-	return m, nil
+func NewCommandMatchedProcessor(logger log.Logger, queue *nats.EncodedConn) Matched {
+	return Matched{logger: logger, queue: queue}
 }
 
-func (m Matched) Stop() {
-	m.sub.Unsubscribe()
+func (m Matched) Subscribe() error {
+	if m.queue == nil {
+		return nil
+	}
+
+	_, err := m.queue.QueueSubscribe(CommandMatchedSubject, ProcessorQueueGroup, m.process)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (m Matched) process(e matchedCommand) {

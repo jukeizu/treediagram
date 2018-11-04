@@ -19,24 +19,23 @@ type Received struct {
 	logger   log.Logger
 	queue    *nats.EncodedConn
 	registry registration.RegistrationClient
-	sub      *nats.Subscription
 }
 
-func NewCommandReceivedProcessor(logger log.Logger, queue *nats.EncodedConn, registrationClient registration.RegistrationClient) (Received, error) {
-	r := Received{logger: logger, queue: queue, registry: registrationClient}
+func NewCommandReceivedProcessor(logger log.Logger, queue *nats.EncodedConn, registrationClient registration.RegistrationClient) Received {
+	return Received{logger: logger, queue: queue, registry: registrationClient}
+}
 
-	sub, err := r.queue.QueueSubscribe(RequestReceivedSubject, ProcessorQueueGroup, r.process)
-	if err != nil {
-		return r, err
+func (r Received) Subscribe() error {
+	if r.queue == nil {
+		return nil
 	}
 
-	r.sub = sub
+	_, err := r.queue.QueueSubscribe(RequestReceivedSubject, ProcessorQueueGroup, r.process)
+	if err != nil {
+		return err
+	}
 
-	return r, nil
-}
-
-func (r Received) Stop() {
-	r.sub.Unsubscribe()
+	return nil
 }
 
 func (r Received) process(req *processing.TreediagramRequest) {

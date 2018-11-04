@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sync"
 
 	"github.com/go-kit/kit/log"
 	processingpb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
@@ -23,15 +24,15 @@ import (
 )
 
 type ServerRunner struct {
-	Logger       log.Logger
-	Storage      *Storage
-	EncodedConn  *nats.EncodedConn
-	Subscription *nats.Subscription
-	Processor    processor.Processor
-	GrpcServer   *grpc.Server
-	HttpServer   *http.Server
-	GrpcPort     int
-	HttpPort     int
+	Logger      log.Logger
+	Storage     *Storage
+	Conn        *nats.Conn
+	EncodedConn *nats.EncodedConn
+	GrpcServer  *grpc.Server
+	HttpServer  *http.Server
+	GrpcPort    int
+	HttpPort    int
+	WaitGroup   *sync.WaitGroup
 }
 
 func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
@@ -42,7 +43,14 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		return nil, errors.New("db: " + err.Error())
 	}
 
-	nc, err := nats.Connect(config.NatsServers)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+
+	nc, err := nats.Connect(config.NatsServers,
+		nats.ClosedHandler(func(_ *nats.Conn) {
+			wg.Done()
+		}))
+
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +67,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	}
 
 	p := publisher.NewPublisher(storage.MessageStorage, conn)
-	sub, err := p.Subscribe(discord.DiscordPublisherSubject, discordPublisher.Publish)
+	_, err = p.Subscribe(discord.DiscordPublisherSubject, discordPublisher.Publish)
 	if err != nil {
 		return nil, err
 	}
@@ -74,12 +82,10 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 
 	registryClient := registrationpb.NewRegistrationClient(registryConn)
 
-	proc, err := processor.New(logger, conn, registryClient)
+	processorService, err := processor.NewService(logger, conn, registryClient)
 	if err != nil {
 		return nil, err
 	}
-
-	processorService := processor.NewService(conn)
 	processorService = processor.NewLoggingService(logger, processorService)
 
 	registryService := registry.NewService(storage.CommandStorage)
@@ -112,15 +118,15 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	}
 
 	serverRunner := &ServerRunner{
-		Logger:       logger,
-		Storage:      storage,
-		EncodedConn:  conn,
-		Subscription: sub,
-		Processor:    proc,
-		GrpcServer:   grpcServer,
-		HttpServer:   httpServer,
-		GrpcPort:     config.GrpcPort,
-		HttpPort:     config.HttpPort,
+		Logger:      logger,
+		Storage:     storage,
+		Conn:        nc,
+		EncodedConn: conn,
+		GrpcServer:  grpcServer,
+		HttpServer:  httpServer,
+		GrpcPort:    config.GrpcPort,
+		HttpPort:    config.HttpPort,
+		WaitGroup:   &wg,
 	}
 
 	return serverRunner, nil
@@ -154,10 +160,11 @@ func (r *ServerRunner) Start() error {
 func (r *ServerRunner) Stop() {
 	r.Logger.Log("msg", "stopping")
 
-	r.Subscription.Unsubscribe()
-	r.Processor.Stop()
 	r.GrpcServer.GracefulStop()
 	r.HttpServer.Shutdown(nil)
-	r.EncodedConn.Close()
+	r.EncodedConn.Drain()
+	r.Conn.Drain()
 	r.Storage.Close()
+
+	r.WaitGroup.Wait()
 }
