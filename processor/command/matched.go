@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
-	"github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 	nats "github.com/nats-io/go-nats"
 )
 
@@ -17,17 +16,13 @@ const (
 )
 
 type Matched struct {
-	logger log.Logger
-	queue  *nats.EncodedConn
+	logger  log.Logger
+	queue   *nats.EncodedConn
+	storage Storage
 }
 
-type matchedCommand struct {
-	Request processing.TreediagramRequest `json:"request"`
-	Command registration.Command          `json:"command"`
-}
-
-func NewCommandMatchedProcessor(logger log.Logger, queue *nats.EncodedConn) Matched {
-	return Matched{logger: logger, queue: queue}
+func NewCommandMatchedProcessor(logger log.Logger, queue *nats.EncodedConn, storage Storage) Matched {
+	return Matched{logger: logger, queue: queue, storage: storage}
 }
 
 func (m Matched) Subscribe() error {
@@ -43,15 +38,20 @@ func (m Matched) Subscribe() error {
 	return nil
 }
 
-func (m Matched) process(e matchedCommand) {
-	m.logger.Log("msg", "received matched command", "command", e.Command.Id)
+func (m Matched) process(pm processing.Match) {
+	m.logger.Log("msg", "received matched command", "match", pm.Id)
 
-	body, err := json.Marshal(e.Command)
+	match, err := m.storage.Match(pm.Id)
+	if err != nil {
+		m.logger.Log("error", "could not retrieve match from db: "+err.Error())
+	}
+
+	body, err := json.Marshal(match.Request)
 	if err != nil {
 		m.logger.Log("error", "could not marshal command: "+err.Error())
 	}
 
-	resp, err := http.Post(e.Command.Endpoint, "application/json", bytes.NewBuffer(body))
+	resp, err := http.Post(match.Command.Endpoint, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		m.logger.Log("error", "error sending command request: "+err.Error())
 	}

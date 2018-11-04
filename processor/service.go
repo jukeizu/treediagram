@@ -15,16 +15,16 @@ type service struct {
 	Queue *nats.EncodedConn
 }
 
-func NewService(logger log.Logger, queue *nats.EncodedConn, registrationClient registration.RegistrationClient) (processing.ProcessingServer, error) {
+func NewService(logger log.Logger, queue *nats.EncodedConn, registrationClient registration.RegistrationClient, storage command.Storage) (processing.ProcessingServer, error) {
 	s := &service{Queue: queue}
 
-	received := command.NewCommandReceivedProcessor(logger, queue, registrationClient)
+	received := command.NewCommandReceivedProcessor(logger, queue, registrationClient, storage)
 	err := received.Subscribe()
 	if err != nil {
 		return s, err
 	}
 
-	matched := command.NewCommandMatchedProcessor(logger, queue)
+	matched := command.NewCommandMatchedProcessor(logger, queue, storage)
 	err = matched.Subscribe()
 	if err != nil {
 		return s, err

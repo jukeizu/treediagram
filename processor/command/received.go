@@ -19,10 +19,11 @@ type Received struct {
 	logger   log.Logger
 	queue    *nats.EncodedConn
 	registry registration.RegistrationClient
+	storage  Storage
 }
 
-func NewCommandReceivedProcessor(logger log.Logger, queue *nats.EncodedConn, registrationClient registration.RegistrationClient) Received {
-	return Received{logger: logger, queue: queue, registry: registrationClient}
+func NewCommandReceivedProcessor(logger log.Logger, queue *nats.EncodedConn, registrationClient registration.RegistrationClient, storage Storage) Received {
+	return Received{logger: logger, queue: queue, registry: registrationClient, storage: storage}
 }
 
 func (r Received) Subscribe() error {
@@ -61,14 +62,37 @@ func (r Received) process(req *processing.TreediagramRequest) {
 }
 
 func (r Received) checkCommand(req processing.TreediagramRequest, command registration.Command) {
-	match, _ := regexp.MatchString(command.Regex, req.Content)
+	match, err := regexp.MatchString(command.Regex, req.Content)
+	if err != nil {
+		r.logger.Log("error", "regexp: "+err.Error())
+		return
+	}
 
-	if match {
-		r.logger.Log("msg", "publishing a command match", "command", command.Id)
+	if !match {
+		return
+	}
 
-		err := r.queue.Publish(CommandMatchedSubject, matchedCommand{Request: req, Command: command})
-		if err != nil {
-			r.logger.Log("error", "error publishing commandMatched: "+err.Error())
-		}
+	m := Match{
+		Request: toRequest(req),
+		Command: Command{
+			Id:       command.Id,
+			Endpoint: command.Endpoint,
+		},
+	}
+
+	id, err := r.storage.SaveMatch(m)
+	if err != nil {
+		r.logger.Log("error", "db: error saving match: "+err.Error())
+	}
+
+	pm := &processing.Match{
+		Id: id,
+	}
+
+	r.logger.Log("msg", "publishing a command match", "match", pm.Id, "command", command.Id)
+
+	err = r.queue.Publish(CommandMatchedSubject, pm)
+	if err != nil {
+		r.logger.Log("error", "error publishing commandMatched: "+err.Error())
 	}
 }

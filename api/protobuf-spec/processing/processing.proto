@@ -25,3 +25,7 @@ message TreediagramRequest {
 message TreediagramReply {
     string id = 1;
 }
+
+message Match {
+    string Id = 1;
+}

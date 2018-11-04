@@ -1,6 +1,7 @@
 package startup
 
 import (
+	"github.com/jukeizu/treediagram/processor/command"
 	"github.com/jukeizu/treediagram/publisher"
 	"github.com/jukeizu/treediagram/registry"
 	"github.com/jukeizu/treediagram/scheduler"
@@ -8,13 +9,18 @@ import (
 )
 
 type Storage struct {
-	MessageStorage publisher.MessageStorage
-	CommandStorage registry.CommandStorage
-	JobStorage     scheduler.JobStorage
-	UserStorage    user.UserStorage
+	ProcessorStorage command.Storage
+	MessageStorage   publisher.MessageStorage
+	CommandStorage   registry.CommandStorage
+	JobStorage       scheduler.JobStorage
+	UserStorage      user.UserStorage
 }
 
 func NewStorage(dbUrl string) (*Storage, error) {
+	processorStorage, err := command.NewStorage(dbUrl)
+	if err != nil {
+		return nil, err
+	}
 
 	messageStorage, err := publisher.NewMessageStorage(dbUrl)
 	if err != nil {
@@ -37,16 +43,18 @@ func NewStorage(dbUrl string) (*Storage, error) {
 	}
 
 	s := &Storage{
-		MessageStorage: messageStorage,
-		CommandStorage: commandStorage,
-		JobStorage:     jobStorage,
-		UserStorage:    userStorage,
+		ProcessorStorage: processorStorage,
+		MessageStorage:   messageStorage,
+		CommandStorage:   commandStorage,
+		JobStorage:       jobStorage,
+		UserStorage:      userStorage,
 	}
 
 	return s, nil
 }
 
 func (s *Storage) Close() {
+	s.ProcessorStorage.Close()
 	s.MessageStorage.Close()
 	s.CommandStorage.Close()
 	s.JobStorage.Close()

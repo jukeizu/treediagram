@@ -20,6 +20,7 @@ import (
 	"github.com/jukeizu/treediagram/scheduler"
 	"github.com/jukeizu/treediagram/user"
 	nats "github.com/nats-io/go-nats"
+	"github.com/nats-io/go-nats/encoders/protobuf"
 	"google.golang.org/grpc"
 )
 
@@ -55,8 +56,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		return nil, err
 	}
 
-	// conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
-	conn, err := nats.NewEncodedConn(nc, nats.JSON_ENCODER)
+	conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 
 	registryClient := registrationpb.NewRegistrationClient(registryConn)
 
-	processorService, err := processor.NewService(logger, conn, registryClient)
+	processorService, err := processor.NewService(logger, conn, registryClient, storage.ProcessorStorage)
 	if err != nil {
 		return nil, err
 	}
