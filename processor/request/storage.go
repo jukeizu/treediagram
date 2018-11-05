@@ -1,4 +1,4 @@
-package command
+package request
 
 import (
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"

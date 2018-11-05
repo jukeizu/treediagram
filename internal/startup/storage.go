@@ -1,7 +1,7 @@
 package startup
 
 import (
-	"github.com/jukeizu/treediagram/processor/command"
+	"github.com/jukeizu/treediagram/processor/request"
 	"github.com/jukeizu/treediagram/publisher"
 	"github.com/jukeizu/treediagram/registry"
 	"github.com/jukeizu/treediagram/scheduler"
@@ -9,7 +9,7 @@ import (
 )
 
 type Storage struct {
-	ProcessorStorage command.Storage
+	ProcessorStorage request.Storage
 	MessageStorage   publisher.MessageStorage
 	CommandStorage   registry.CommandStorage
 	JobStorage       scheduler.JobStorage
@@ -17,7 +17,7 @@ type Storage struct {
 }
 
 func NewStorage(dbUrl string) (*Storage, error) {
-	processorStorage, err := command.NewStorage(dbUrl)
+	processorStorage, err := request.NewStorage(dbUrl)
 	if err != nil {
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-package command
+package request
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	ProcessorQueueGroup    = "processor"
 	RequestReceivedSubject = "requestReceived"
 )
 

@@ -35,7 +35,7 @@ func (m *User) Reset()         { *m = User{} }
 func (m *User) String() string { return proto.CompactTextString(m) }
 func (*User) ProtoMessage()    {}
 func (*User) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_b8799dbbbd904ec6, []int{0}
+	return fileDescriptor_processing_494fa1f929ba078c, []int{0}
 }
 func (m *User) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_User.Unmarshal(m, b)
@@ -87,7 +87,7 @@ func (m *TreediagramRequest) Reset()         { *m = TreediagramRequest{} }
 func (m *TreediagramRequest) String() string { return proto.CompactTextString(m) }
 func (*TreediagramRequest) ProtoMessage()    {}
 func (*TreediagramRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_b8799dbbbd904ec6, []int{1}
+	return fileDescriptor_processing_494fa1f929ba078c, []int{1}
 }
 func (m *TreediagramRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TreediagramRequest.Unmarshal(m, b)
@@ -174,7 +174,7 @@ func (m *TreediagramReply) Reset()         { *m = TreediagramReply{} }
 func (m *TreediagramReply) String() string { return proto.CompactTextString(m) }
 func (*TreediagramReply) ProtoMessage()    {}
 func (*TreediagramReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_b8799dbbbd904ec6, []int{2}
+	return fileDescriptor_processing_494fa1f929ba078c, []int{2}
 }
 func (m *TreediagramReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TreediagramReply.Unmarshal(m, b)
@@ -212,7 +212,7 @@ func (m *Match) Reset()         { *m = Match{} }
 func (m *Match) String() string { return proto.CompactTextString(m) }
 func (*Match) ProtoMessage()    {}
 func (*Match) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_b8799dbbbd904ec6, []int{3}
+	return fileDescriptor_processing_494fa1f929ba078c, []int{3}
 }
 func (m *Match) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Match.Unmarshal(m, b)
@@ -239,11 +239,767 @@ func (m *Match) GetId() string {
 	return ""
 }
 
+type ReplyReceived struct {
+	Id                   string   `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ReplyReceived) Reset()         { *m = ReplyReceived{} }
+func (m *ReplyReceived) String() string { return proto.CompactTextString(m) }
+func (*ReplyReceived) ProtoMessage()    {}
+func (*ReplyReceived) Descriptor() ([]byte, []int) {
+	return fileDescriptor_processing_494fa1f929ba078c, []int{4}
+}
+func (m *ReplyReceived) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ReplyReceived.Unmarshal(m, b)
+}
+func (m *ReplyReceived) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ReplyReceived.Marshal(b, m, deterministic)
+}
+func (dst *ReplyReceived) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ReplyReceived.Merge(dst, src)
+}
+func (m *ReplyReceived) XXX_Size() int {
+	return xxx_messageInfo_ReplyReceived.Size(m)
+}
+func (m *ReplyReceived) XXX_DiscardUnknown() {
+	xxx_messageInfo_ReplyReceived.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ReplyReceived proto.InternalMessageInfo
+
+func (m *ReplyReceived) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+type Reply struct {
+	Results              []*Result `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
+}
+
+func (m *Reply) Reset()         { *m = Reply{} }
+func (m *Reply) String() string { return proto.CompactTextString(m) }
+func (*Reply) ProtoMessage()    {}
+func (*Reply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_processing_494fa1f929ba078c, []int{5}
+}
+func (m *Reply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Reply.Unmarshal(m, b)
+}
+func (m *Reply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Reply.Marshal(b, m, deterministic)
+}
+func (dst *Reply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Reply.Merge(dst, src)
+}
+func (m *Reply) XXX_Size() int {
+	return xxx_messageInfo_Reply.Size(m)
+}
+func (m *Reply) XXX_DiscardUnknown() {
+	xxx_messageInfo_Reply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Reply proto.InternalMessageInfo
+
+func (m *Reply) GetResults() []*Result {
+	if m != nil {
+		return m.Results
+	}
+	return nil
+}
+
+type Result struct {
+	Content              string   `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+	Embed                *Embed   `protobuf:"bytes,2,opt,name=embed,proto3" json:"embed,omitempty"`
+	Tts                  bool     `protobuf:"varint,3,opt,name=tts,proto3" json:"tts,omitempty"`
+	Files                []*File  `protobuf:"bytes,4,rep,name=files,proto3" json:"files,omitempty"`
+	IsPrivateMessage     bool     `protobuf:"varint,5,opt,name=isPrivateMessage,proto3" json:"isPrivateMessage,omitempty"`
+	IsRedirect           bool     `protobuf:"varint,6,opt,name=isRedirect,proto3" json:"isRedirect,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Result) Reset()         { *m = Result{} }
+func (m *Result) String() string { return proto.CompactTextString(m) }
+func (*Result) ProtoMessage()    {}
+func (*Result) Descriptor() ([]byte, []int) {
+	return fileDescriptor_processing_494fa1f929ba078c, []int{6}
+}
+func (m *Result) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Result.Unmarshal(m, b)
+}
+func (m *Result) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Result.Marshal(b, m, deterministic)
+}
+func (dst *Result) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Result.Merge(dst, src)
+}
+func (m *Result) XXX_Size() int {
+	return xxx_messageInfo_Result.Size(m)
+}
+func (m *Result) XXX_DiscardUnknown() {
+	xxx_messageInfo_Result.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Result proto.InternalMessageInfo
+
+func (m *Result) GetContent() string {
+	if m != nil {
+		return m.Content
+	}
+	return ""
+}
+
+func (m *Result) GetEmbed() *Embed {
+	if m != nil {
+		return m.Embed
+	}
+	return nil
+}
+
+func (m *Result) GetTts() bool {
+	if m != nil {
+		return m.Tts
+	}
+	return false
+}
+
+func (m *Result) GetFiles() []*File {
+	if m != nil {
+		return m.Files
+	}
+	return nil
+}
+
+func (m *Result) GetIsPrivateMessage() bool {
+	if m != nil {
+		return m.IsPrivateMessage
+	}
+	return false
+}
+
+func (m *Result) GetIsRedirect() bool {
+	if m != nil {
+		return m.IsRedirect
+	}
+	return false
+}
+
+type EmbedFooter struct {
+	Text                 string   `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	IconUrl              string   `protobuf:"bytes,2,opt,name=iconUrl,proto3" json:"iconUrl,omitempty"`
+	ProxyIconUrl         string   `protobuf:"bytes,3,opt,name=proxyIconUrl,proto3" json:"proxyIconUrl,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *EmbedFooter) Reset()         { *m = EmbedFooter{} }
+func (m *EmbedFooter) String() string { return proto.CompactTextString(m) }
+func (*EmbedFooter) ProtoMessage()    {}
+func (*EmbedFooter) Descriptor() ([]byte, []int) {
+	return fileDescriptor_processing_494fa1f929ba078c, []int{7}
+}
+func (m *EmbedFooter) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EmbedFooter.Unmarshal(m, b)
+}
+func (m *EmbedFooter) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EmbedFooter.Marshal(b, m, deterministic)
+}
+func (dst *EmbedFooter) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EmbedFooter.Merge(dst, src)
+}
+func (m *EmbedFooter) XXX_Size() int {
+	return xxx_messageInfo_EmbedFooter.Size(m)
+}
+func (m *EmbedFooter) XXX_DiscardUnknown() {
+	xxx_messageInfo_EmbedFooter.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EmbedFooter proto.InternalMessageInfo
+
+func (m *EmbedFooter) GetText() string {
+	if m != nil {
+		return m.Text
+	}
+	return ""
+}
+
+func (m *EmbedFooter) GetIconUrl() string {
+	if m != nil {
+		return m.IconUrl
+	}
+	return ""
+}
+
+func (m *EmbedFooter) GetProxyIconUrl() string {
+	if m != nil {
+		return m.ProxyIconUrl
+	}
+	return ""
+}
+
+type EmbedImage struct {
+	Url                  string   `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	ProxyUrl             string   `protobuf:"bytes,2,opt,name=proxyUrl,proto3" json:"proxyUrl,omitempty"`
+	Width                int32    `protobuf:"varint,3,opt,name=width,proto3" json:"width,omitempty"`
+	Height               int32    `protobuf:"varint,4,opt,name=height,proto3" json:"height,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *EmbedImage) Reset()         { *m = EmbedImage{} }
+func (m *EmbedImage) String() string { return proto.CompactTextString(m) }
+func (*EmbedImage) ProtoMessage()    {}
+func (*EmbedImage) Descriptor() ([]byte, []int) {
+	return fileDescriptor_processing_494fa1f929ba078c, []int{8}
+}
+func (m *EmbedImage) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EmbedImage.Unmarshal(m, b)
+}
+func (m *EmbedImage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EmbedImage.Marshal(b, m, deterministic)
+}
+func (dst *EmbedImage) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EmbedImage.Merge(dst, src)
+}
+func (m *EmbedImage) XXX_Size() int {
+	return xxx_messageInfo_EmbedImage.Size(m)
+}
+func (m *EmbedImage) XXX_DiscardUnknown() {
+	xxx_messageInfo_EmbedImage.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EmbedImage proto.InternalMessageInfo
+
+func (m *EmbedImage) GetUrl() string {
+	if m != nil {
+		return m.Url
+	}
+	return ""
+}
+
+func (m *EmbedImage) GetProxyUrl() string {
+	if m != nil {
+		return m.ProxyUrl
+	}
+	return ""
+}
+
+func (m *EmbedImage) GetWidth() int32 {
+	if m != nil {
+		return m.Width
+	}
+	return 0
+}
+
+func (m *EmbedImage) GetHeight() int32 {
+	if m != nil {
+		return m.Height
+	}
+	return 0
+}
+
+type EmbedThumbnail struct {
+	Url                  string   `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	ProxyUrl             string   `protobuf:"bytes,2,opt,name=proxyUrl,proto3" json:"proxyUrl,omitempty"`
+	Width                int32    `protobuf:"varint,3,opt,name=width,proto3" json:"width,omitempty"`
+	Height               int32    `protobuf:"varint,4,opt,name=height,proto3" json:"height,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *EmbedThumbnail) Reset()         { *m = EmbedThumbnail{} }
+func (m *EmbedThumbnail) String() string { return proto.CompactTextString(m) }
+func (*EmbedThumbnail) ProtoMessage()    {}
+func (*EmbedThumbnail) Descriptor() ([]byte, []int) {
+	return fileDescriptor_processing_494fa1f929ba078c, []int{9}
+}
+func (m *EmbedThumbnail) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EmbedThumbnail.Unmarshal(m, b)
+}
+func (m *EmbedThumbnail) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EmbedThumbnail.Marshal(b, m, deterministic)
+}
+func (dst *EmbedThumbnail) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EmbedThumbnail.Merge(dst, src)
+}
+func (m *EmbedThumbnail) XXX_Size() int {
+	return xxx_messageInfo_EmbedThumbnail.Size(m)
+}
+func (m *EmbedThumbnail) XXX_DiscardUnknown() {
+	xxx_messageInfo_EmbedThumbnail.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EmbedThumbnail proto.InternalMessageInfo
+
+func (m *EmbedThumbnail) GetUrl() string {
+	if m != nil {
+		return m.Url
+	}
+	return ""
+}
+
+func (m *EmbedThumbnail) GetProxyUrl() string {
+	if m != nil {
+		return m.ProxyUrl
+	}
+	return ""
+}
+
+func (m *EmbedThumbnail) GetWidth() int32 {
+	if m != nil {
+		return m.Width
+	}
+	return 0
+}
+
+func (m *EmbedThumbnail) GetHeight() int32 {
+	if m != nil {
+		return m.Height
+	}
+	return 0
+}
+
+type EmbedVideo struct {
+	Url                  string   `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	ProxyUrl             string   `protobuf:"bytes,2,opt,name=proxyUrl,proto3" json:"proxyUrl,omitempty"`
+	Width                int32    `protobuf:"varint,3,opt,name=width,proto3" json:"width,omitempty"`
+	Height               int32    `protobuf:"varint,4,opt,name=height,proto3" json:"height,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *EmbedVideo) Reset()         { *m = EmbedVideo{} }
+func (m *EmbedVideo) String() string { return proto.CompactTextString(m) }
+func (*EmbedVideo) ProtoMessage()    {}
+func (*EmbedVideo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_processing_494fa1f929ba078c, []int{10}
+}
+func (m *EmbedVideo) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EmbedVideo.Unmarshal(m, b)
+}
+func (m *EmbedVideo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EmbedVideo.Marshal(b, m, deterministic)
+}
+func (dst *EmbedVideo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EmbedVideo.Merge(dst, src)
+}
+func (m *EmbedVideo) XXX_Size() int {
+	return xxx_messageInfo_EmbedVideo.Size(m)
+}
+func (m *EmbedVideo) XXX_DiscardUnknown() {
+	xxx_messageInfo_EmbedVideo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EmbedVideo proto.InternalMessageInfo
+
+func (m *EmbedVideo) GetUrl() string {
+	if m != nil {
+		return m.Url
+	}
+	return ""
+}
+
+func (m *EmbedVideo) GetProxyUrl() string {
+	if m != nil {
+		return m.ProxyUrl
+	}
+	return ""
+}
+
+func (m *EmbedVideo) GetWidth() int32 {
+	if m != nil {
+		return m.Width
+	}
+	return 0
+}
+
+func (m *EmbedVideo) GetHeight() int32 {
+	if m != nil {
+		return m.Height
+	}
+	return 0
+}
+
+type EmbedProvider struct {
+	Url                  string   `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *EmbedProvider) Reset()         { *m = EmbedProvider{} }
+func (m *EmbedProvider) String() string { return proto.CompactTextString(m) }
+func (*EmbedProvider) ProtoMessage()    {}
+func (*EmbedProvider) Descriptor() ([]byte, []int) {
+	return fileDescriptor_processing_494fa1f929ba078c, []int{11}
+}
+func (m *EmbedProvider) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EmbedProvider.Unmarshal(m, b)
+}
+func (m *EmbedProvider) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EmbedProvider.Marshal(b, m, deterministic)
+}
+func (dst *EmbedProvider) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EmbedProvider.Merge(dst, src)
+}
+func (m *EmbedProvider) XXX_Size() int {
+	return xxx_messageInfo_EmbedProvider.Size(m)
+}
+func (m *EmbedProvider) XXX_DiscardUnknown() {
+	xxx_messageInfo_EmbedProvider.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EmbedProvider proto.InternalMessageInfo
+
+func (m *EmbedProvider) GetUrl() string {
+	if m != nil {
+		return m.Url
+	}
+	return ""
+}
+
+func (m *EmbedProvider) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+type EmbedAuthor struct {
+	Url                  string   `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	IconUrl              string   `protobuf:"bytes,3,opt,name=iconUrl,proto3" json:"iconUrl,omitempty"`
+	ProxyIconUrl         string   `protobuf:"bytes,4,opt,name=proxyIconUrl,proto3" json:"proxyIconUrl,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *EmbedAuthor) Reset()         { *m = EmbedAuthor{} }
+func (m *EmbedAuthor) String() string { return proto.CompactTextString(m) }
+func (*EmbedAuthor) ProtoMessage()    {}
+func (*EmbedAuthor) Descriptor() ([]byte, []int) {
+	return fileDescriptor_processing_494fa1f929ba078c, []int{12}
+}
+func (m *EmbedAuthor) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EmbedAuthor.Unmarshal(m, b)
+}
+func (m *EmbedAuthor) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EmbedAuthor.Marshal(b, m, deterministic)
+}
+func (dst *EmbedAuthor) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EmbedAuthor.Merge(dst, src)
+}
+func (m *EmbedAuthor) XXX_Size() int {
+	return xxx_messageInfo_EmbedAuthor.Size(m)
+}
+func (m *EmbedAuthor) XXX_DiscardUnknown() {
+	xxx_messageInfo_EmbedAuthor.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EmbedAuthor proto.InternalMessageInfo
+
+func (m *EmbedAuthor) GetUrl() string {
+	if m != nil {
+		return m.Url
+	}
+	return ""
+}
+
+func (m *EmbedAuthor) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *EmbedAuthor) GetIconUrl() string {
+	if m != nil {
+		return m.IconUrl
+	}
+	return ""
+}
+
+func (m *EmbedAuthor) GetProxyIconUrl() string {
+	if m != nil {
+		return m.ProxyIconUrl
+	}
+	return ""
+}
+
+type EmbedField struct {
+	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Value                string   `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	Inline               bool     `protobuf:"varint,3,opt,name=inline,proto3" json:"inline,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *EmbedField) Reset()         { *m = EmbedField{} }
+func (m *EmbedField) String() string { return proto.CompactTextString(m) }
+func (*EmbedField) ProtoMessage()    {}
+func (*EmbedField) Descriptor() ([]byte, []int) {
+	return fileDescriptor_processing_494fa1f929ba078c, []int{13}
+}
+func (m *EmbedField) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EmbedField.Unmarshal(m, b)
+}
+func (m *EmbedField) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EmbedField.Marshal(b, m, deterministic)
+}
+func (dst *EmbedField) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EmbedField.Merge(dst, src)
+}
+func (m *EmbedField) XXX_Size() int {
+	return xxx_messageInfo_EmbedField.Size(m)
+}
+func (m *EmbedField) XXX_DiscardUnknown() {
+	xxx_messageInfo_EmbedField.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EmbedField proto.InternalMessageInfo
+
+func (m *EmbedField) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *EmbedField) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
+func (m *EmbedField) GetInline() bool {
+	if m != nil {
+		return m.Inline
+	}
+	return false
+}
+
+type Embed struct {
+	Url                  string          `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	Type                 string          `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	Title                string          `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Description          string          `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	Timestamp            string          `protobuf:"bytes,5,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Color                int32           `protobuf:"varint,6,opt,name=color,proto3" json:"color,omitempty"`
+	Footer               *EmbedFooter    `protobuf:"bytes,7,opt,name=footer,proto3" json:"footer,omitempty"`
+	Image                *EmbedImage     `protobuf:"bytes,8,opt,name=image,proto3" json:"image,omitempty"`
+	Thumbnail            *EmbedThumbnail `protobuf:"bytes,9,opt,name=thumbnail,proto3" json:"thumbnail,omitempty"`
+	Video                *EmbedVideo     `protobuf:"bytes,10,opt,name=video,proto3" json:"video,omitempty"`
+	Provider             *EmbedProvider  `protobuf:"bytes,11,opt,name=provider,proto3" json:"provider,omitempty"`
+	Author               *EmbedAuthor    `protobuf:"bytes,12,opt,name=author,proto3" json:"author,omitempty"`
+	Fields               []*EmbedField   `protobuf:"bytes,13,rep,name=fields,proto3" json:"fields,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *Embed) Reset()         { *m = Embed{} }
+func (m *Embed) String() string { return proto.CompactTextString(m) }
+func (*Embed) ProtoMessage()    {}
+func (*Embed) Descriptor() ([]byte, []int) {
+	return fileDescriptor_processing_494fa1f929ba078c, []int{14}
+}
+func (m *Embed) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Embed.Unmarshal(m, b)
+}
+func (m *Embed) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Embed.Marshal(b, m, deterministic)
+}
+func (dst *Embed) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Embed.Merge(dst, src)
+}
+func (m *Embed) XXX_Size() int {
+	return xxx_messageInfo_Embed.Size(m)
+}
+func (m *Embed) XXX_DiscardUnknown() {
+	xxx_messageInfo_Embed.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Embed proto.InternalMessageInfo
+
+func (m *Embed) GetUrl() string {
+	if m != nil {
+		return m.Url
+	}
+	return ""
+}
+
+func (m *Embed) GetType() string {
+	if m != nil {
+		return m.Type
+	}
+	return ""
+}
+
+func (m *Embed) GetTitle() string {
+	if m != nil {
+		return m.Title
+	}
+	return ""
+}
+
+func (m *Embed) GetDescription() string {
+	if m != nil {
+		return m.Description
+	}
+	return ""
+}
+
+func (m *Embed) GetTimestamp() string {
+	if m != nil {
+		return m.Timestamp
+	}
+	return ""
+}
+
+func (m *Embed) GetColor() int32 {
+	if m != nil {
+		return m.Color
+	}
+	return 0
+}
+
+func (m *Embed) GetFooter() *EmbedFooter {
+	if m != nil {
+		return m.Footer
+	}
+	return nil
+}
+
+func (m *Embed) GetImage() *EmbedImage {
+	if m != nil {
+		return m.Image
+	}
+	return nil
+}
+
+func (m *Embed) GetThumbnail() *EmbedThumbnail {
+	if m != nil {
+		return m.Thumbnail
+	}
+	return nil
+}
+
+func (m *Embed) GetVideo() *EmbedVideo {
+	if m != nil {
+		return m.Video
+	}
+	return nil
+}
+
+func (m *Embed) GetProvider() *EmbedProvider {
+	if m != nil {
+		return m.Provider
+	}
+	return nil
+}
+
+func (m *Embed) GetAuthor() *EmbedAuthor {
+	if m != nil {
+		return m.Author
+	}
+	return nil
+}
+
+func (m *Embed) GetFields() []*EmbedField {
+	if m != nil {
+		return m.Fields
+	}
+	return nil
+}
+
+type File struct {
+	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	ContentType          string   `protobuf:"bytes,2,opt,name=contentType,proto3" json:"contentType,omitempty"`
+	Bytes                []byte   `protobuf:"bytes,3,opt,name=bytes,proto3" json:"bytes,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *File) Reset()         { *m = File{} }
+func (m *File) String() string { return proto.CompactTextString(m) }
+func (*File) ProtoMessage()    {}
+func (*File) Descriptor() ([]byte, []int) {
+	return fileDescriptor_processing_494fa1f929ba078c, []int{15}
+}
+func (m *File) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_File.Unmarshal(m, b)
+}
+func (m *File) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_File.Marshal(b, m, deterministic)
+}
+func (dst *File) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_File.Merge(dst, src)
+}
+func (m *File) XXX_Size() int {
+	return xxx_messageInfo_File.Size(m)
+}
+func (m *File) XXX_DiscardUnknown() {
+	xxx_messageInfo_File.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_File proto.InternalMessageInfo
+
+func (m *File) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *File) GetContentType() string {
+	if m != nil {
+		return m.ContentType
+	}
+	return ""
+}
+
+func (m *File) GetBytes() []byte {
+	if m != nil {
+		return m.Bytes
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*User)(nil), "processing.User")
 	proto.RegisterType((*TreediagramRequest)(nil), "processing.TreediagramRequest")
 	proto.RegisterType((*TreediagramReply)(nil), "processing.TreediagramReply")
 	proto.RegisterType((*Match)(nil), "processing.Match")
+	proto.RegisterType((*ReplyReceived)(nil), "processing.ReplyReceived")
+	proto.RegisterType((*Reply)(nil), "processing.Reply")
+	proto.RegisterType((*Result)(nil), "processing.Result")
+	proto.RegisterType((*EmbedFooter)(nil), "processing.EmbedFooter")
+	proto.RegisterType((*EmbedImage)(nil), "processing.EmbedImage")
+	proto.RegisterType((*EmbedThumbnail)(nil), "processing.EmbedThumbnail")
+	proto.RegisterType((*EmbedVideo)(nil), "processing.EmbedVideo")
+	proto.RegisterType((*EmbedProvider)(nil), "processing.EmbedProvider")
+	proto.RegisterType((*EmbedAuthor)(nil), "processing.EmbedAuthor")
+	proto.RegisterType((*EmbedField)(nil), "processing.EmbedField")
+	proto.RegisterType((*Embed)(nil), "processing.Embed")
+	proto.RegisterType((*File)(nil), "processing.File")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -318,27 +1074,59 @@ var _Processing_serviceDesc = grpc.ServiceDesc{
 	Metadata: "processing.proto",
 }
 
-func init() { proto.RegisterFile("processing.proto", fileDescriptor_processing_b8799dbbbd904ec6) }
+func init() { proto.RegisterFile("processing.proto", fileDescriptor_processing_494fa1f929ba078c) }
 
-var fileDescriptor_processing_b8799dbbbd904ec6 = []byte{
-	// 295 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x91, 0xc1, 0x6a, 0x3a, 0x31,
-	0x10, 0xc6, 0xff, 0xae, 0xba, 0xea, 0xfc, 0x69, 0x91, 0x39, 0xb4, 0x41, 0xa4, 0x48, 0xe8, 0x41,
-	0x4a, 0xf1, 0x60, 0x9f, 0x22, 0x87, 0x42, 0x91, 0x96, 0x9e, 0x63, 0x32, 0xb8, 0x0b, 0xbb, 0xc9,
-	0x36, 0xc9, 0x16, 0x7c, 0x9d, 0x3e, 0x69, 0xd9, 0xb0, 0xae, 0xda, 0xd6, 0x5b, 0xe6, 0xfb, 0x4d,
-	0x66, 0x3e, 0xbe, 0x81, 0x69, 0xe5, 0xac, 0x22, 0xef, 0x73, 0xb3, 0x5b, 0x55, 0xce, 0x06, 0x8b,
-	0x70, 0x54, 0xf8, 0x03, 0x0c, 0xde, 0x3c, 0x39, 0xbc, 0x86, 0x24, 0xd7, 0xac, 0xb7, 0xe8, 0x2d,
-	0x27, 0x9b, 0x24, 0xd7, 0x88, 0x30, 0x30, 0xb2, 0x24, 0x96, 0x44, 0x25, 0xbe, 0xf9, 0x57, 0x02,
-	0xf8, 0xea, 0x88, 0x74, 0x2e, 0x77, 0x4e, 0x96, 0x1b, 0xfa, 0xa8, 0xc9, 0x07, 0xbc, 0x81, 0xd4,
-	0xdb, 0xda, 0x29, 0x6a, 0xbf, 0xb7, 0x15, 0xde, 0xc3, 0x95, 0xb2, 0xce, 0x51, 0x21, 0x43, 0x6e,
-	0x8d, 0xd0, 0xed, 0xac, 0x73, 0x11, 0x39, 0xf4, 0xb7, 0x36, 0xb0, 0xfe, 0xa2, 0xb7, 0xfc, 0xbf,
-	0x9e, 0xae, 0x4e, 0xcc, 0x36, 0xbe, 0x36, 0x0d, 0xc4, 0x25, 0xa4, 0xb2, 0x0e, 0x99, 0x75, 0x6c,
-	0x70, 0xa1, 0xad, 0xe5, 0x38, 0x87, 0x89, 0xca, 0xa4, 0x31, 0x54, 0x08, 0xcd, 0x86, 0x71, 0xdf,
-	0x51, 0xc0, 0x19, 0x8c, 0x3d, 0xb9, 0x4f, 0x72, 0x42, 0xb3, 0x34, 0xc2, 0xae, 0xc6, 0x47, 0x18,
-	0x97, 0x64, 0x1a, 0x53, 0x9e, 0x8d, 0x16, 0xfd, 0x3f, 0xb7, 0x74, 0x1d, 0xc8, 0x60, 0xa4, 0xac,
-	0x09, 0x64, 0x02, 0x1b, 0xc7, 0x41, 0x87, 0x92, 0x73, 0x98, 0x9e, 0x65, 0x54, 0x15, 0xfb, 0x9f,
-	0xe1, 0xf2, 0x5b, 0x18, 0x3e, 0xcb, 0xa0, 0xb2, 0x06, 0x88, 0x0e, 0x08, 0xbd, 0x7e, 0x07, 0x78,
-	0xe9, 0x76, 0xa2, 0x80, 0xd1, 0x21, 0xe3, 0xbb, 0x53, 0x2f, 0xbf, 0x6f, 0x30, 0x9b, 0x5f, 0xe4,
-	0x55, 0xb1, 0xe7, 0xff, 0xb6, 0x69, 0xbc, 0xfc, 0xd3, 0x77, 0x00, 0x00, 0x00, 0xff, 0xff, 0xd1,
-	0xa2, 0x38, 0xc1, 0x0d, 0x02, 0x00, 0x00,
+var fileDescriptor_processing_494fa1f929ba078c = []byte{
+	// 809 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0x4f, 0x6f, 0xdb, 0x36,
+	0x14, 0x9f, 0x63, 0xcb, 0x76, 0x9e, 0x93, 0xc2, 0x23, 0x8a, 0x96, 0x0b, 0x8a, 0xce, 0x10, 0x86,
+	0x2d, 0x28, 0x82, 0x0c, 0xc8, 0x10, 0x60, 0xd7, 0x1d, 0x1a, 0xc0, 0x87, 0x0e, 0x01, 0x91, 0x6e,
+	0xc7, 0x41, 0x96, 0x5e, 0x62, 0x02, 0x94, 0xa8, 0x92, 0xb4, 0x57, 0x7f, 0x9d, 0x7d, 0xa3, 0x7d,
+	0x9b, 0x1d, 0x07, 0x3e, 0x52, 0xb2, 0x32, 0x39, 0x43, 0x2f, 0xb9, 0xf1, 0xfd, 0xff, 0x51, 0xef,
+	0xf7, 0x1e, 0x05, 0xf3, 0xda, 0xe8, 0x1c, 0xad, 0x95, 0xd5, 0xc3, 0x65, 0x6d, 0xb4, 0xd3, 0x0c,
+	0xf6, 0x9a, 0xf4, 0x1d, 0x8c, 0x3e, 0x5a, 0x34, 0xec, 0x05, 0x1c, 0xc9, 0x82, 0x0f, 0x16, 0x83,
+	0xf3, 0x63, 0x71, 0x24, 0x0b, 0xc6, 0x60, 0x54, 0x65, 0x25, 0xf2, 0x23, 0xd2, 0xd0, 0x39, 0xfd,
+	0xeb, 0x08, 0xd8, 0x9d, 0x41, 0x2c, 0x64, 0xf6, 0x60, 0xb2, 0x52, 0xe0, 0xa7, 0x0d, 0x5a, 0xc7,
+	0x5e, 0xc1, 0xd8, 0xea, 0x8d, 0xc9, 0x31, 0x86, 0x47, 0x89, 0x7d, 0x07, 0xa7, 0xb9, 0x36, 0x06,
+	0x55, 0xe6, 0xa4, 0xae, 0x96, 0x45, 0xcc, 0xf5, 0x58, 0xc9, 0x52, 0x18, 0xae, 0xb4, 0xe3, 0xc3,
+	0xc5, 0xe0, 0x7c, 0x76, 0x35, 0xbf, 0xec, 0x80, 0xf5, 0xb8, 0x84, 0x37, 0xb2, 0x73, 0x18, 0x67,
+	0x1b, 0xb7, 0xd6, 0x86, 0x8f, 0x9e, 0x70, 0x8b, 0x76, 0xf6, 0x06, 0x8e, 0xf3, 0x75, 0x56, 0x55,
+	0xa8, 0x96, 0x05, 0x4f, 0xa8, 0xde, 0x5e, 0xc1, 0xce, 0x60, 0x6a, 0xd1, 0x6c, 0xd1, 0x2c, 0x0b,
+	0x3e, 0x26, 0x63, 0x2b, 0xb3, 0x0b, 0x98, 0x96, 0x58, 0x79, 0x50, 0x96, 0x4f, 0x16, 0xc3, 0x83,
+	0x55, 0x5a, 0x0f, 0xc6, 0x61, 0x92, 0xeb, 0xca, 0x61, 0xe5, 0xf8, 0x94, 0x12, 0x35, 0x62, 0x9a,
+	0xc2, 0xfc, 0xd1, 0x37, 0xaa, 0xd5, 0xee, 0xbf, 0x1f, 0x37, 0x7d, 0x0d, 0xc9, 0x87, 0xcc, 0xe5,
+	0x6b, 0x6f, 0x58, 0xb6, 0x86, 0x65, 0x91, 0x7e, 0x0b, 0xa7, 0x14, 0x21, 0x30, 0x47, 0xb9, 0xc5,
+	0xa2, 0xe7, 0x70, 0x0d, 0x49, 0x48, 0x79, 0x01, 0x13, 0x83, 0x76, 0xa3, 0x9c, 0xe5, 0x03, 0x42,
+	0xcb, 0xba, 0x68, 0x05, 0x99, 0x44, 0xe3, 0x92, 0xfe, 0x3d, 0x80, 0x71, 0xd0, 0x75, 0x91, 0x0f,
+	0x1e, 0x21, 0x67, 0x3f, 0x40, 0x82, 0xe5, 0x0a, 0x43, 0x9f, 0x66, 0x57, 0x5f, 0x77, 0x13, 0xbe,
+	0xf7, 0x06, 0x11, 0xec, 0x6c, 0x0e, 0x43, 0xe7, 0x2c, 0xb5, 0x6c, 0x2a, 0xfc, 0x91, 0x7d, 0x0f,
+	0xc9, 0xbd, 0x54, 0x68, 0xf9, 0xa8, 0xff, 0xe5, 0x6e, 0xa4, 0x42, 0x11, 0xcc, 0xec, 0x1d, 0xcc,
+	0xa5, 0xbd, 0x35, 0x72, 0x9b, 0x39, 0xfc, 0x80, 0xd6, 0x66, 0x0f, 0x48, 0x5d, 0x9a, 0x8a, 0x9e,
+	0x9e, 0xbd, 0x05, 0x90, 0x56, 0x60, 0x21, 0x0d, 0xe6, 0x8e, 0xda, 0x35, 0x15, 0x1d, 0x4d, 0xfa,
+	0x07, 0xcc, 0x08, 0xd5, 0x8d, 0xd6, 0x0e, 0x8d, 0x27, 0xac, 0xc3, 0xcf, 0xcd, 0xa5, 0xe8, 0xec,
+	0xef, 0x2a, 0x73, 0x5d, 0x7d, 0x34, 0x2a, 0x72, 0xaf, 0x11, 0x59, 0x0a, 0x27, 0xb5, 0xd1, 0x9f,
+	0x77, 0xcb, 0x68, 0x1e, 0x92, 0xf9, 0x91, 0x2e, 0x5d, 0x03, 0x50, 0x81, 0x65, 0xe9, 0xe1, 0xcc,
+	0x61, 0xb8, 0x31, 0x2a, 0xa6, 0xf7, 0x47, 0xcf, 0x26, 0xf2, 0xdf, 0xa7, 0x6f, 0x65, 0xf6, 0x12,
+	0x92, 0x3f, 0x65, 0xe1, 0xd6, 0x94, 0x38, 0x11, 0x41, 0xf0, 0x93, 0xb2, 0x46, 0xf9, 0xb0, 0x76,
+	0xc4, 0xe3, 0x44, 0x44, 0x29, 0x55, 0xf0, 0x82, 0x2a, 0xdd, 0xad, 0x37, 0xe5, 0xaa, 0xca, 0xa4,
+	0x7a, 0xd6, 0x6a, 0xcd, 0xbd, 0x7e, 0x93, 0x05, 0xea, 0x67, 0xad, 0x74, 0x0d, 0xa7, 0x54, 0xe9,
+	0xd6, 0xe8, 0xad, 0x2c, 0xd0, 0x1c, 0x28, 0x76, 0x68, 0xcf, 0x7c, 0x8a, 0x9d, 0xfd, 0x25, 0xcc,
+	0xf4, 0x17, 0x05, 0x75, 0x7b, 0x3d, 0xfc, 0xff, 0x5e, 0x8f, 0x0e, 0xf4, 0xfa, 0xd7, 0xf8, 0x4d,
+	0x6e, 0x24, 0xaa, 0xfd, 0xf2, 0x1b, 0x74, 0xf2, 0xbf, 0x84, 0x64, 0x9b, 0xa9, 0x4d, 0x53, 0x34,
+	0x08, 0xfe, 0xe6, 0xb2, 0x52, 0xb2, 0xc2, 0x38, 0x0d, 0x51, 0x4a, 0xff, 0x19, 0x42, 0xf2, 0xbe,
+	0x19, 0x96, 0x3e, 0x7a, 0xb7, 0xab, 0x5b, 0xf4, 0xfe, 0xec, 0xb3, 0x3b, 0xe9, 0x14, 0x46, 0xec,
+	0x41, 0x60, 0x0b, 0x98, 0x15, 0x68, 0x73, 0x23, 0x6b, 0xbf, 0x75, 0x22, 0xf0, 0xae, 0xca, 0xef,
+	0x3b, 0x27, 0x4b, 0xb4, 0x2e, 0x2b, 0xeb, 0x66, 0xdf, 0xb5, 0x0a, 0x9f, 0x35, 0xd7, 0x4a, 0x1b,
+	0x9a, 0x9e, 0x44, 0x04, 0x81, 0xfd, 0x08, 0xe3, 0x7b, 0x9a, 0x19, 0x3e, 0xa1, 0x41, 0x7f, 0xdd,
+	0x1b, 0xf4, 0x30, 0x52, 0x22, 0xba, 0xb1, 0x0b, 0x48, 0xa4, 0x9f, 0x01, 0x5a, 0x75, 0xb3, 0xab,
+	0x57, 0x3d, 0x7f, 0x9a, 0x10, 0x11, 0x9c, 0xd8, 0xcf, 0x70, 0xec, 0x1a, 0x1e, 0xf3, 0x63, 0x8a,
+	0x38, 0xeb, 0x45, 0xb4, 0x4c, 0x17, 0x7b, 0x67, 0x5f, 0xc7, 0xd3, 0x44, 0x73, 0x78, 0xa2, 0x0e,
+	0x31, 0x56, 0x04, 0x27, 0x76, 0x4d, 0x34, 0x25, 0x5e, 0xf1, 0x19, 0x05, 0x7c, 0xd3, 0x0b, 0x68,
+	0x88, 0x27, 0x5a, 0x57, 0x7f, 0xfb, 0xf8, 0x96, 0x9c, 0x3c, 0x71, 0xfb, 0x40, 0xbb, 0xf6, 0x49,
+	0xb9, 0x84, 0xf1, 0xbd, 0x67, 0x85, 0xe5, 0xa7, 0xb4, 0xdc, 0xfa, 0xb0, 0x88, 0x34, 0x22, 0x7a,
+	0xa5, 0x02, 0x46, 0x7e, 0xe5, 0x1d, 0x24, 0xd1, 0x02, 0x66, 0x71, 0xdb, 0xde, 0xed, 0x19, 0xd0,
+	0x55, 0xf9, 0x96, 0xad, 0x76, 0x0e, 0xc3, 0x76, 0x3d, 0x11, 0x41, 0xb8, 0xfa, 0x1d, 0xe0, 0xb6,
+	0x2d, 0xca, 0x96, 0x30, 0x69, 0xde, 0xde, 0xb7, 0x5d, 0x30, 0xfd, 0xb7, 0xf9, 0xec, 0xcd, 0x93,
+	0xf6, 0x5a, 0xed, 0xd2, 0xaf, 0x56, 0x63, 0xfa, 0x23, 0xf8, 0xe9, 0xdf, 0x00, 0x00, 0x00, 0xff,
+	0xff, 0xa6, 0xc9, 0x30, 0x1e, 0x25, 0x08, 0x00, 0x00,
 }
