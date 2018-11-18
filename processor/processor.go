@@ -13,7 +13,7 @@ const (
 	ProcessorQueueGroup    = "processor"
 	MessageReceivedSubject = "message.received"
 	IntentReceivedSubject  = "processor.intent.received"
-	MatchReceivedSubject   = "processor.match.received"
+	CommandReceivedSubject = "processor.command.received"
 )
 
 type Processor struct {
@@ -40,7 +40,7 @@ func (p Processor) Start() error {
 		return err
 	}
 
-	_, err = p.queue.QueueSubscribe(MatchReceivedSubject, ProcessorQueueGroup, p.processMatch)
+	_, err = p.queue.QueueSubscribe(CommandReceivedSubject, ProcessorQueueGroup, p.processCommand)
 	if err != nil {
 		return err
 	}
@@ -69,15 +69,15 @@ func (p Processor) processMessage(m Message) {
 			return
 		}
 
-		p.publishMatches(m, reply.Intents)
+		p.publishCommands(m, reply.Intents)
 	}(m)
 }
 
-func (p Processor) publishMatches(m Message, intents []*registration.Intent) {
+func (p Processor) publishCommands(m Message, intents []*registration.Intent) {
 	for _, intent := range intents {
-		c := NewIntent(*intent)
+		i := NewIntent(*intent)
 
-		isMatch, err := c.IsMatch(m)
+		isMatch, err := i.IsMatch(m)
 		if err != nil {
 			p.logger.Log("error", err.Error())
 		}
@@ -86,26 +86,26 @@ func (p Processor) publishMatches(m Message, intents []*registration.Intent) {
 			continue
 		}
 
-		match := Match{
+		command := Command{
 			Message: m,
-			Intent:  c,
+			Intent:  i,
 		}
 
-		err = p.queue.Publish(MatchReceivedSubject, match)
+		err = p.queue.Publish(CommandReceivedSubject, command)
 		if err != nil {
 			p.logger.Log("error", err.Error())
 		}
 	}
 }
 
-func (p Processor) processMatch(match Match) {
+func (p Processor) processCommand(command Command) {
 	p.wg.Add(1)
-	go func(match Match) {
+	go func(command Command) {
 		defer p.wg.Done()
 
-		_, err := match.ExecuteIntent()
+		_, err := command.Execute()
 		if err != nil {
 			p.logger.Log("error", err.Error())
 		}
-	}(match)
+	}(command)
 }
