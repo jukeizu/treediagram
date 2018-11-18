@@ -59,7 +59,7 @@ func (m Matcher) checkMatch(request Request, rc *registration.Command) error {
 
 	err = m.queue.Publish(CommandMatchedSubject, request)
 	if err != nil {
-		errors.New("error publishing command match: " + err.Error())
+		return errors.New("error publishing command match: " + err.Error())
 	}
 
 	return nil

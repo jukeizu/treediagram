@@ -10,17 +10,18 @@ import (
 	"github.com/go-kit/kit/log"
 	processingpb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 	publishingpb "github.com/jukeizu/treediagram/api/protobuf-spec/publishing"
+	receivingpb "github.com/jukeizu/treediagram/api/protobuf-spec/receiving"
 	registrationpb "github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 	schedulingpb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
 	userpb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
 	"github.com/jukeizu/treediagram/processor"
 	"github.com/jukeizu/treediagram/publisher"
 	"github.com/jukeizu/treediagram/publisher/discord"
+	"github.com/jukeizu/treediagram/receiver"
 	"github.com/jukeizu/treediagram/registry"
 	"github.com/jukeizu/treediagram/scheduler"
 	"github.com/jukeizu/treediagram/user"
 	nats "github.com/nats-io/go-nats"
-	"github.com/nats-io/go-nats/encoders/protobuf"
 	"google.golang.org/grpc"
 )
 
@@ -56,7 +57,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		return nil, err
 	}
 
-	conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
+	conn, err := nats.NewEncodedConn(nc, nats.JSON_ENCODER)
 	if err != nil {
 		return nil, err
 	}
@@ -97,6 +98,8 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	userService := user.NewService(storage.UserStorage)
 	userService = user.NewLoggingService(logger, userService)
 
+	receiverService := receiver.NewService(conn)
+
 	grpcServer := grpc.NewServer()
 
 	publishingpb.RegisterPublishingServer(grpcServer, publisherService)
@@ -104,6 +107,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	schedulingpb.RegisterSchedulingServer(grpcServer, schedulerService)
 	registrationpb.RegisterRegistrationServer(grpcServer, registryService)
 	userpb.RegisterUserServer(grpcServer, userService)
+	receivingpb.RegisterReceivingServer(grpcServer, receiverService)
 
 	schedulerHttpBinding := scheduler.NewHttpBinding(logger, schedulerService)
 	registryHttpBinding := registry.NewHttpBinding(logger, registryService)
