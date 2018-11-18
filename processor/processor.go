@@ -12,7 +12,6 @@ import (
 const (
 	ProcessorQueueGroup    = "processor"
 	MessageReceivedSubject = "message.received"
-	IntentReceivedSubject  = "processor.intent.received"
 	CommandReceivedSubject = "processor.command.received"
 )
 

@@ -10,7 +10,7 @@ import (
 
 const (
 	DatabaseName   = "registration"
-	CollectionName = "commands"
+	CollectionName = "intents"
 )
 
 type Intent struct {
