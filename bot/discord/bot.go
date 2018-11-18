@@ -57,19 +57,19 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	request := &pb.Message{
-		Source:        "discord",
-		CorrelationId: m.ID,
-		Bot:           mapToUser(s.State.User),
-		Author:        mapToUser(m.Author),
-		ChannelId:     m.ChannelID,
-		ServerId:      m.GuildID,
-		Content:       m.Content,
-		Mentions:      mapToUsers(m.Mentions),
+		Id:        m.ID,
+		Source:    "discord",
+		Bot:       mapToUser(s.State.User),
+		Author:    mapToUser(m.Author),
+		ChannelId: m.ChannelID,
+		ServerId:  m.GuildID,
+		Content:   m.Content,
+		Mentions:  mapToUsers(m.Mentions),
 	}
 
 	reply, err := d.Client.Send(context.Background(), request)
 	if err != nil {
-		d.Logger.Log("error", err.Error(), "correlationId", request.CorrelationId)
+		d.Logger.Log("error", err.Error(), "id", request.Id)
 		return
 	}
 

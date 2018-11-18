@@ -20,12 +20,7 @@ func NewService(queue *nats.EncodedConn) receiving.ReceivingServer {
 }
 
 func (s service) Send(ctx context.Context, req *receiving.Message) (*receiving.Reply, error) {
-	message := NewMessage(req)
+	err := s.queue.Publish(MessageReceivedSubject, req)
 
-	err := s.queue.Publish(MessageReceivedSubject, message)
-	if err != nil {
-		return nil, err
-	}
-
-	return &receiving.Reply{Id: message.Id}, nil
+	return &receiving.Reply{Id: req.Id}, err
 }

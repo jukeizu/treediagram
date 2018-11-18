@@ -12,8 +12,8 @@ message User {
 }
 
 message Message {
-    string source = 1;
-    string correlationId = 2;
+    string id = 1;
+    string source = 2;
     User bot = 3;
     User author = 4;
     string channelId = 5;
