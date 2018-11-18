@@ -13,7 +13,7 @@ const (
 	CollectionName = "commands"
 )
 
-type Command struct {
+type Intent struct {
 	Id       bson.ObjectId `json:"id,omitempty" bson:"_id,omitempty"`
 	Server   string        `json:"server"`
 	Name     string        `json:"name"`
@@ -24,19 +24,19 @@ type Command struct {
 	Enabled  bool          `json:"enabled"`
 }
 
-type CommandStorage interface {
+type IntentStorage interface {
 	mdb.Storage
 
-	Save(pb.Command) error
+	Save(pb.Intent) error
 	Disable(string) error
-	Query(pb.QueryCommandsRequest) ([]*pb.Command, error)
+	Query(pb.QueryIntentsRequest) ([]*pb.Intent, error)
 }
 
 type storage struct {
 	mdb.Store
 }
 
-func NewCommandStorage(url string) (CommandStorage, error) {
+func NewIntentStorage(url string) (IntentStorage, error) {
 	c := mdb.DbConfig{
 		Url:            url,
 		DatabaseName:   DatabaseName,
@@ -55,15 +55,15 @@ func NewCommandStorage(url string) (CommandStorage, error) {
 	return &j, err
 }
 
-func (s *storage) Save(pbCommand pb.Command) error {
-	c := Command{
-		Server:   pbCommand.Server,
-		Name:     pbCommand.Name,
-		Regex:    pbCommand.Regex,
-		Response: pbCommand.Response,
-		Endpoint: pbCommand.Endpoint,
-		Help:     pbCommand.Help,
-		Enabled:  pbCommand.Enabled,
+func (s *storage) Save(pbIntent pb.Intent) error {
+	c := Intent{
+		Server:   pbIntent.Server,
+		Name:     pbIntent.Name,
+		Regex:    pbIntent.Regex,
+		Response: pbIntent.Response,
+		Endpoint: pbIntent.Endpoint,
+		Help:     pbIntent.Help,
+		Enabled:  pbIntent.Enabled,
 	}
 
 	return s.Collection.Insert(c)
@@ -81,8 +81,8 @@ func (s *storage) Disable(id string) error {
 	return nil
 }
 
-func (s *storage) Query(query pb.QueryCommandsRequest) ([]*pb.Command, error) {
-	commands := []Command{}
+func (s *storage) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
+	commands := []Intent{}
 
 	bsonQuery := []bson.M{
 		bson.M{"server": bson.M{"$in": []string{query.Server, ""}}},
@@ -92,15 +92,15 @@ func (s *storage) Query(query pb.QueryCommandsRequest) ([]*pb.Command, error) {
 		bsonQuery = append(bsonQuery, bson.M{"_id": bson.M{"$gt": bson.ObjectIdHex(query.LastId)}})
 	}
 
-	pbCommands := []*pb.Command{}
+	pbIntents := []*pb.Intent{}
 
 	err := s.Collection.Find(bson.M{"$and": bsonQuery}).Limit(int(query.PageSize)).All(&commands)
 	if err != nil {
-		return pbCommands, fmt.Errorf("db error: %s", err)
+		return pbIntents, fmt.Errorf("db error: %s", err)
 	}
 
 	for _, command := range commands {
-		mapped := &pb.Command{
+		mapped := &pb.Intent{
 			Id:       command.Id.Hex(),
 			Server:   command.Server,
 			Name:     command.Name,
@@ -110,8 +110,8 @@ func (s *storage) Query(query pb.QueryCommandsRequest) ([]*pb.Command, error) {
 			Help:     command.Help,
 			Enabled:  command.Enabled,
 		}
-		pbCommands = append(pbCommands, mapped)
+		pbIntents = append(pbIntents, mapped)
 	}
 
-	return pbCommands, nil
+	return pbIntents, nil
 }

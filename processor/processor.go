@@ -12,7 +12,7 @@ import (
 const (
 	ProcessorQueueGroup    = "processor"
 	MessageReceivedSubject = "message.received"
-	CommandReceivedSubject = "processor.command.received"
+	IntentReceivedSubject  = "processor.intent.received"
 	MatchReceivedSubject   = "processor.match.received"
 )
 
@@ -61,21 +61,21 @@ func (p Processor) processMessage(m Message) {
 		defer p.wg.Done()
 		p.logger.Log("message received", m)
 
-		query := &registration.QueryCommandsRequest{Server: m.ServerId}
+		query := &registration.QueryIntentsRequest{Server: m.ServerId}
 
-		reply, err := p.registry.QueryCommands(context.Background(), query)
+		reply, err := p.registry.QueryIntents(context.Background(), query)
 		if err != nil {
-			p.logger.Log("error", "could not query for commands: "+err.Error())
+			p.logger.Log("error", "could not query for intents: "+err.Error())
 			return
 		}
 
-		p.publishMatches(m, reply.Commands)
+		p.publishMatches(m, reply.Intents)
 	}(m)
 }
 
-func (p Processor) publishMatches(m Message, commands []*registration.Command) {
-	for _, command := range commands {
-		c := NewCommand(*command)
+func (p Processor) publishMatches(m Message, intents []*registration.Intent) {
+	for _, intent := range intents {
+		c := NewIntent(*intent)
 
 		isMatch, err := c.IsMatch(m)
 		if err != nil {
@@ -88,7 +88,7 @@ func (p Processor) publishMatches(m Message, commands []*registration.Command) {
 
 		match := Match{
 			Message: m,
-			Command: c,
+			Intent:  c,
 		}
 
 		err = p.queue.Publish(MatchReceivedSubject, match)
@@ -103,7 +103,7 @@ func (p Processor) processMatch(match Match) {
 	go func(match Match) {
 		defer p.wg.Done()
 
-		_, err := match.ExecuteCommand()
+		_, err := match.ExecuteIntent()
 		if err != nil {
 			p.logger.Log("error", err.Error())
 		}

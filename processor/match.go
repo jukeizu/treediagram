@@ -4,13 +4,13 @@ import "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 
 type Match struct {
 	Message Message `json:"message"`
-	Command Command `json:"command"`
+	Intent  Intent  `json:"intent"`
 }
 
-func (p Match) ExecuteCommand() (processing.Reply, error) {
+func (p Match) ExecuteIntent() (processing.Reply, error) {
 	reply := processing.Reply{}
 
-	reply.Results = []*processing.Result{&processing.Result{Content: p.Command.Response}}
+	reply.Results = []*processing.Result{&processing.Result{Content: p.Intent.Response}}
 
 	return reply, nil
 }

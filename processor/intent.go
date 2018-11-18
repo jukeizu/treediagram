@@ -7,7 +7,7 @@ import (
 	"github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 )
 
-type Command struct {
+type Intent struct {
 	Id       string `json:"id"`
 	Server   string `json:"server"`
 	Name     string `json:"name"`
@@ -18,8 +18,8 @@ type Command struct {
 	Enabled  bool   `json:"enabled"`
 }
 
-func NewCommand(rc registration.Command) Command {
-	c := Command{
+func NewIntent(rc registration.Intent) Intent {
+	c := Intent{
 		Id:       rc.Id,
 		Server:   rc.Server,
 		Name:     rc.Name,
@@ -33,7 +33,7 @@ func NewCommand(rc registration.Command) Command {
 	return c
 }
 
-func (c Command) IsMatch(m Message) (bool, error) {
+func (c Intent) IsMatch(m Message) (bool, error) {
 	match, err := regexp.MatchString(c.Regex, m.Content)
 	if err != nil {
 		return match, errors.New("regexp: " + err.Error())

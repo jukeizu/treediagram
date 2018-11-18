@@ -84,7 +84,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 
 	registryClient := registrationpb.NewRegistrationClient(registryConn)
 
-	processorService, err := processor.NewService(logger, conn, registryClient, storage.ProcessorStorage)
+	processorService, err := processor.NewService(logger, conn, registryClient)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		return nil, err
 	}
 
-	registryService := registry.NewService(storage.CommandStorage)
+	registryService := registry.NewService(storage.IntentStorage)
 	registryService = registry.NewLoggingService(logger, registryService)
 
 	schedulerService := scheduler.NewService(logger, storage.JobStorage, conn)
