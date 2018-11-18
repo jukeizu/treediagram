@@ -1,4 +1,5 @@
-VERSION=$(shell git describe --tags)
+TAG=$(shell git describe --tags)
+VERSION=$(TAG:v%=%)
 GO=GO111MODULE=on go
 BUILD=GOARCH=amd64 $(GO) build -ldflags="-s -w -X main.Version=$(VERSION)" 
 PROTOFILES=$(wildcard api/protobuf-spec/*/*.proto)
