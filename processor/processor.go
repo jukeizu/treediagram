@@ -3,30 +3,36 @@ package processor
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 	nats "github.com/nats-io/go-nats"
+	"github.com/rs/xid"
 )
 
 const (
-	ProcessorQueueGroup    = "processor"
-	MessageReceivedSubject = "message.received"
-	CommandReceivedSubject = "processor.command.received"
+	ProcessorQueueGroup        = "processor"
+	ProcessorCommandQueueGroup = "processor.command"
+	MessageReceivedSubject     = "message.received"
+	CommandReceivedSubject     = "processor.command.received"
+	ReplyReceivedSubject       = "processor.reply.received"
 )
 
 type Processor struct {
 	logger   log.Logger
 	queue    *nats.EncodedConn
 	registry registration.RegistrationClient
+	storage  Storage
 	wg       *sync.WaitGroup
 }
 
-func New(logger log.Logger, queue *nats.EncodedConn, registry registration.RegistrationClient) Processor {
+func New(logger log.Logger, queue *nats.EncodedConn, registry registration.RegistrationClient, storage Storage) Processor {
 	p := Processor{
 		logger:   log.With(logger, "component", "processor"),
 		queue:    queue,
 		registry: registry,
+		storage:  storage,
 		wg:       &sync.WaitGroup{},
 	}
 
@@ -40,6 +46,11 @@ func (p Processor) Start() error {
 	}
 
 	_, err = p.queue.QueueSubscribe(CommandReceivedSubject, ProcessorQueueGroup, p.processCommand)
+	if err != nil {
+		return err
+	}
+
+	_, err = p.queue.QueueSubscribe(CommandReceivedSubject, ProcessorCommandQueueGroup, p.saveCommand)
 	if err != nil {
 		return err
 	}
@@ -86,9 +97,12 @@ func (p Processor) publishCommands(m Message, intents []*registration.Intent) {
 		}
 
 		command := Command{
+			Id:      xid.New().String(),
 			Message: m,
 			Intent:  i,
 		}
+
+		p.logger.Log("message has intent", command)
 
 		err = p.queue.Publish(CommandReceivedSubject, command)
 		if err != nil {
@@ -102,9 +116,55 @@ func (p Processor) processCommand(command Command) {
 	go func(command Command) {
 		defer p.wg.Done()
 
-		_, err := command.Execute()
+		p.logger.Log("executing command", command)
+
+		reply, err := command.Execute()
 		if err != nil {
-			p.logger.Log("error", err.Error())
+			p.saveErrorEvent(command.Id, err)
+			return
+		}
+
+		reply.Id = xid.New().String()
+
+		p.logger.Log("received reply", reply.Id, "command", command)
+
+		err = p.storage.SaveReply(reply)
+		if err != nil {
+			p.saveErrorEvent(command.Id, err)
+			return
+		}
+
+		err = p.queue.Publish(ReplyReceivedSubject, reply.Id)
+		if err != nil {
+			p.saveErrorEvent(command.Id, err)
+			return
 		}
 	}(command)
+}
+
+func (p Processor) saveCommand(command Command) {
+	err := p.storage.SaveCommand(command)
+	if err != nil {
+		p.logger.Log("error", err.Error())
+	}
+}
+
+func (p Processor) saveCommandEvent(commandId string, t string, d string) {
+	e := CommandEvent{
+		CommandId:   commandId,
+		Type:        t,
+		Description: d,
+		Timestamp:   time.Now().Unix(),
+	}
+
+	p.logger.Log("command.event", e)
+
+	err := p.storage.SaveCommandEvent(e)
+	if err != nil {
+		p.logger.Log("error", "error saving command event: "+err.Error())
+	}
+}
+
+func (p Processor) saveErrorEvent(commandId string, commandError error) {
+	p.saveCommandEvent(commandId, "error", commandError.Error())
 }

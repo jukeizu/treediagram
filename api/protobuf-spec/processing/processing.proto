@@ -35,7 +35,8 @@ message ReplyReceived {
 }
 
 message Reply {
-    repeated Result results = 1;
+    string Id = 1;
+    repeated Result results = 2;
 }
 
 message Result {

@@ -90,7 +90,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	}
 	processorService = processor.NewLoggingService(logger, processorService)
 
-	processor := processor.New(logger, conn, registryClient)
+	processor := processor.New(logger, conn, registryClient, storage.ProcessorStorage)
 	err = processor.Start()
 	if err != nil {
 		return nil, err
