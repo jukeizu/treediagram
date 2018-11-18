@@ -18,6 +18,7 @@ type Command struct {
 	Server   string        `json:"server"`
 	Name     string        `json:"name"`
 	Regex    string        `json:"regex"`
+	Response string        `json:"response"`
 	Endpoint string        `json:"endpoint"`
 	Help     string        `json:"help"`
 	Enabled  bool          `json:"enabled"`
@@ -59,6 +60,7 @@ func (s *storage) Save(pbCommand pb.Command) error {
 		Server:   pbCommand.Server,
 		Name:     pbCommand.Name,
 		Regex:    pbCommand.Regex,
+		Response: pbCommand.Response,
 		Endpoint: pbCommand.Endpoint,
 		Help:     pbCommand.Help,
 		Enabled:  pbCommand.Enabled,
@@ -103,6 +105,7 @@ func (s *storage) Query(query pb.QueryCommandsRequest) ([]*pb.Command, error) {
 			Server:   command.Server,
 			Name:     command.Name,
 			Regex:    command.Regex,
+			Response: command.Response,
 			Endpoint: command.Endpoint,
 			Help:     command.Help,
 			Enabled:  command.Enabled,

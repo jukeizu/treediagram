@@ -35,6 +35,7 @@ type ServerRunner struct {
 	GrpcPort    int
 	HttpPort    int
 	WaitGroup   *sync.WaitGroup
+	Processor   processor.Processor
 }
 
 func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
@@ -89,6 +90,12 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	}
 	processorService = processor.NewLoggingService(logger, processorService)
 
+	processor := processor.New(logger, conn, registryClient)
+	err = processor.Start()
+	if err != nil {
+		return nil, err
+	}
+
 	registryService := registry.NewService(storage.CommandStorage)
 	registryService = registry.NewLoggingService(logger, registryService)
 
@@ -131,6 +138,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		GrpcPort:    config.GrpcPort,
 		HttpPort:    config.HttpPort,
 		WaitGroup:   &wg,
+		Processor:   processor,
 	}
 
 	return serverRunner, nil
@@ -164,10 +172,13 @@ func (r *ServerRunner) Start() error {
 func (r *ServerRunner) Stop() {
 	r.Logger.Log("msg", "stopping")
 
-	r.GrpcServer.GracefulStop()
-	r.HttpServer.Shutdown(nil)
 	r.EncodedConn.Drain()
 	r.Conn.Drain()
+
+	r.Processor.Stop()
+
+	r.GrpcServer.GracefulStop()
+	r.HttpServer.Shutdown(nil)
 	r.Storage.Close()
 
 	r.WaitGroup.Wait()

@@ -13,11 +13,12 @@ message Command {
     string server = 2;
     string name = 3;
     string regex = 4;
-    bool requireMention = 5;
+    string response = 5;
     string endpoint = 6;
     string help = 7;
     bool enabled = 8;
 }
+
 
 message QueryCommandsRequest {
     string server = 1;
