@@ -27,5 +27,10 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
+
+  - provider: script
+    script:
+        - make docker-deploy
+    skip_cleanup: true
+    on:
       branch: dev
-      branch: master
