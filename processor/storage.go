@@ -70,7 +70,7 @@ func (s Storage) CommandEvents(id string) ([]CommandEvent, error) {
 	return c, err
 }
 
-func (s Storage) SaveReply(r processing.Reply) error {
+func (s Storage) SaveReply(r *processing.Reply) error {
 	return s.ReplyCollection.Insert(r)
 }
 

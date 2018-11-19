@@ -15,10 +15,24 @@ type CommandEvent struct {
 	Timestamp   int64  `json:"timestamp"`
 }
 
-func (c Command) Execute() (processing.Reply, error) {
-	reply := processing.Reply{}
+func (c Command) Execute() (*processing.Reply, error) {
+	reply := &processing.Reply{}
 
-	reply.Messages = []*processing.Message{&processing.Message{Content: c.Intent.Response}}
+	if len(c.Intent.Endpoint) > 0 {
+		client := Client{}
+
+		r, err := client.Do(c)
+		if err != nil {
+			return reply, err
+		}
+
+		reply.Messages = r.Messages
+	}
+
+	if len(c.Intent.Response) > 0 {
+		m := &processing.Message{Content: c.Intent.Response}
+		reply.Messages = append(reply.Messages, m)
+	}
 
 	return reply, nil
 }
