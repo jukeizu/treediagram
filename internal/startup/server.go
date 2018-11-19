@@ -5,33 +5,37 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sync"
 
 	"github.com/go-kit/kit/log"
 	processingpb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 	publishingpb "github.com/jukeizu/treediagram/api/protobuf-spec/publishing"
+	receivingpb "github.com/jukeizu/treediagram/api/protobuf-spec/receiving"
 	registrationpb "github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 	schedulingpb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
 	userpb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
 	"github.com/jukeizu/treediagram/processor"
 	"github.com/jukeizu/treediagram/publisher"
 	"github.com/jukeizu/treediagram/publisher/discord"
+	"github.com/jukeizu/treediagram/receiver"
 	"github.com/jukeizu/treediagram/registry"
 	"github.com/jukeizu/treediagram/scheduler"
 	"github.com/jukeizu/treediagram/user"
 	nats "github.com/nats-io/go-nats"
-	"github.com/nats-io/go-nats/encoders/protobuf"
 	"google.golang.org/grpc"
 )
 
 type ServerRunner struct {
-	Logger       log.Logger
-	Storage      *Storage
-	EncodedConn  *nats.EncodedConn
-	Subscription *nats.Subscription
-	GrpcServer   *grpc.Server
-	HttpServer   *http.Server
-	GrpcPort     int
-	HttpPort     int
+	Logger      log.Logger
+	Storage     *Storage
+	Conn        *nats.Conn
+	EncodedConn *nats.EncodedConn
+	GrpcServer  *grpc.Server
+	HttpServer  *http.Server
+	GrpcPort    int
+	HttpPort    int
+	WaitGroup   *sync.WaitGroup
+	Processor   processor.Processor
 }
 
 func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
@@ -42,12 +46,19 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		return nil, errors.New("db: " + err.Error())
 	}
 
-	nc, err := nats.Connect(config.NatsServers)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+
+	nc, err := nats.Connect(config.NatsServers,
+		nats.ClosedHandler(func(_ *nats.Conn) {
+			wg.Done()
+		}))
+
 	if err != nil {
 		return nil, err
 	}
 
-	conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
+	conn, err := nats.NewEncodedConn(nc, nats.JSON_ENCODER)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +69,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	}
 
 	p := publisher.NewPublisher(storage.MessageStorage, conn)
-	sub, err := p.Subscribe(discord.DiscordPublisherSubject, discordPublisher.Publish)
+	_, err = p.Subscribe(discord.DiscordPublisherSubject, discordPublisher.Publish)
 	if err != nil {
 		return nil, err
 	}
@@ -66,10 +77,25 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	publisherService := publisher.NewService(conn, storage.MessageStorage)
 	publisherService = publisher.NewLoggingService(logger, publisherService)
 
-	processorService := processor.NewService(conn)
-	processorService = processor.NewLoggingService(logger, processorService)
+	registryConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
 
-	registryService := registry.NewService(storage.CommandStorage)
+	registryClient := registrationpb.NewRegistrationClient(registryConn)
+
+	processorService, err := processor.NewService(logger, storage.ProcessorStorage)
+	if err != nil {
+		return nil, err
+	}
+
+	processor := processor.New(logger, conn, registryClient, storage.ProcessorStorage)
+	err = processor.Start()
+	if err != nil {
+		return nil, err
+	}
+
+	registryService := registry.NewService(storage.IntentStorage)
 	registryService = registry.NewLoggingService(logger, registryService)
 
 	schedulerService := scheduler.NewService(logger, storage.JobStorage, conn)
@@ -78,6 +104,8 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	userService := user.NewService(storage.UserStorage)
 	userService = user.NewLoggingService(logger, userService)
 
+	receiverService := receiver.NewService(conn)
+
 	grpcServer := grpc.NewServer()
 
 	publishingpb.RegisterPublishingServer(grpcServer, publisherService)
@@ -85,6 +113,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	schedulingpb.RegisterSchedulingServer(grpcServer, schedulerService)
 	registrationpb.RegisterRegistrationServer(grpcServer, registryService)
 	userpb.RegisterUserServer(grpcServer, userService)
+	receivingpb.RegisterReceivingServer(grpcServer, receiverService)
 
 	schedulerHttpBinding := scheduler.NewHttpBinding(logger, schedulerService)
 	registryHttpBinding := registry.NewHttpBinding(logger, registryService)
@@ -99,14 +128,16 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	}
 
 	serverRunner := &ServerRunner{
-		Logger:       logger,
-		Storage:      storage,
-		EncodedConn:  conn,
-		Subscription: sub,
-		GrpcServer:   grpcServer,
-		HttpServer:   httpServer,
-		GrpcPort:     config.GrpcPort,
-		HttpPort:     config.HttpPort,
+		Logger:      logger,
+		Storage:     storage,
+		Conn:        nc,
+		EncodedConn: conn,
+		GrpcServer:  grpcServer,
+		HttpServer:  httpServer,
+		GrpcPort:    config.GrpcPort,
+		HttpPort:    config.HttpPort,
+		WaitGroup:   &wg,
+		Processor:   processor,
 	}
 
 	return serverRunner, nil
@@ -140,9 +171,14 @@ func (r *ServerRunner) Start() error {
 func (r *ServerRunner) Stop() {
 	r.Logger.Log("msg", "stopping")
 
-	r.Subscription.Unsubscribe()
+	r.EncodedConn.Drain()
+	r.Conn.Drain()
+
+	r.Processor.Stop()
+
 	r.GrpcServer.GracefulStop()
 	r.HttpServer.Shutdown(nil)
-	r.EncodedConn.Close()
 	r.Storage.Close()
+
+	r.WaitGroup.Wait()
 }

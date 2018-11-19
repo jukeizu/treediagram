@@ -2,7 +2,7 @@ package discord
 
 import (
 	"github.com/bwmarrin/discordgo"
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/receiving"
 )
 
 func mapToUser(discordUser *discordgo.User) *pb.User {

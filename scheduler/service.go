@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	JobsSubject          = "treediagram.jobs"
-	SchedulerTickSubject = "treediagram.scheduler.tick"
+	JobsSubject          = "jobs"
+	SchedulerTickSubject = "scheduler.tick"
 )
 
 type service struct {

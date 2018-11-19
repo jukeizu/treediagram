@@ -3,43 +3,47 @@ syntax = "proto3";
 package registration;
 
 service Registration {
-    rpc AddCommand(AddCommandRequest) returns (AddCommandReply) {}
-    rpc DisableCommand(DisableCommandRequest) returns (DisableCommandReply) {}
-    rpc QueryCommands(QueryCommandsRequest) returns (QueryCommandsReply) {}
+    rpc AddIntent(AddIntentRequest) returns (AddIntentReply) {}
+    rpc DisableIntent(DisableIntentRequest) returns (DisableIntentReply) {}
+    rpc QueryIntents(QueryIntentsRequest) returns (QueryIntentsReply) {}
 }
 
-message Command {
+message Intent {
     string id = 1;
     string server = 2;
     string name = 3;
+    string regex = 4;
+    string response = 5;
     string endpoint = 6;
     string help = 7;
     bool enabled = 8;
 }
 
-message QueryCommandsRequest {
+
+message QueryIntentsRequest {
     string server = 1;
     string lastId = 2;
     int32 pageSize = 3;
 }
 
-message QueryCommandsReply {
-    repeated Command Commands = 1;
+message QueryIntentsReply {
+    repeated Intent intents = 1;
     bool hasMore = 2;
+    string lastId = 3;
 }
 
-message AddCommandRequest {
-    Command command = 1;
+message AddIntentRequest {
+    Intent intent = 1;
 }
 
-message AddCommandReply {
-    Command command = 1;
+message AddIntentReply {
+    Intent intent = 1;
 }
 
-message DisableCommandRequest {
+message DisableIntentRequest {
     string id = 1;
 }
 
-message DisableCommandReply {
+message DisableIntentReply {
     string id = 1;
 }

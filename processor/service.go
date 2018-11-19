@@ -3,29 +3,18 @@ package processor
 import (
 	"context"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
-	nats "github.com/nats-io/go-nats"
-	"github.com/rs/xid"
-)
-
-const (
-	RequestSubject = "treediagram.request"
+	"github.com/go-kit/kit/log"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 )
 
 type service struct {
-	Queue *nats.EncodedConn
+	storage Storage
 }
 
-func NewService(queue *nats.EncodedConn) pb.ProcessingServer {
-	return &service{queue}
+func NewService(logger log.Logger, storage Storage) (processing.ProcessingServer, error) {
+	return &service{storage: storage}, nil
 }
 
-func (s service) Request(ctx context.Context, req *pb.TreediagramRequest) (*pb.TreediagramReply, error) {
-	id := xid.New().String()
-
-	treediagramReply := &pb.TreediagramReply{Id: id}
-
-	err := s.Queue.Publish(RequestSubject, req)
-
-	return treediagramReply, err
+func (s service) Messages(ctx context.Context, req *processing.MessagesRequest) (*processing.Reply, error) {
+	return s.storage.Reply(req.Id)
 }
