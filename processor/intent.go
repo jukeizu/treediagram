@@ -19,7 +19,7 @@ type Intent struct {
 }
 
 func NewIntent(rc registration.Intent) Intent {
-	c := Intent{
+	i := Intent{
 		Id:       rc.Id,
 		Server:   rc.Server,
 		Name:     rc.Name,
@@ -30,11 +30,11 @@ func NewIntent(rc registration.Intent) Intent {
 		Enabled:  rc.Enabled,
 	}
 
-	return c
+	return i
 }
 
-func (c Intent) IsMatch(r Request) (bool, error) {
-	match, err := regexp.MatchString(c.Regex, r.Content)
+func (i Intent) IsMatch(r Request) (bool, error) {
+	match, err := regexp.MatchString(i.Regex, r.Content)
 	if err != nil {
 		return match, errors.New("regexp: " + err.Error())
 	}
