@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	MessageReceivedSubject = "message.received"
+	RequestReceivedSubject = "request.received"
 )
 
 type service struct {
@@ -19,8 +19,8 @@ func NewService(queue *nats.EncodedConn) receiving.ReceivingServer {
 	return &service{queue: queue}
 }
 
-func (s service) Send(ctx context.Context, req *receiving.Message) (*receiving.Reply, error) {
-	err := s.queue.Publish(MessageReceivedSubject, req)
+func (s service) Send(ctx context.Context, req *receiving.Request) (*receiving.Reply, error) {
+	err := s.queue.Publish(RequestReceivedSubject, req)
 
 	return &receiving.Reply{Id: req.Id}, err
 }

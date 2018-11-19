@@ -3,7 +3,7 @@ syntax = "proto3";
 package receiving;
 
 service Receiving {
-    rpc Send(Message) returns (Reply) {}
+    rpc Send(Request) returns (Reply) {}
 }
 
 message User {
@@ -11,7 +11,7 @@ message User {
     string name = 2;
 }
 
-message Message {
+message Request {
     string id = 1;
     string source = 2;
     User bot = 3;

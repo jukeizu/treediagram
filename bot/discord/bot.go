@@ -56,7 +56,7 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	request := &pb.Message{
+	request := &pb.Request{
 		Id:        m.ID,
 		Source:    "discord",
 		Bot:       mapToUser(s.State.User),
