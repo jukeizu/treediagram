@@ -7,46 +7,52 @@ import (
 )
 
 type service struct {
-	CommandStorage CommandStorage
+	IntentStorage IntentStorage
 }
 
-func NewService(commandStorage CommandStorage) pb.RegistrationServer {
-	return &service{CommandStorage: commandStorage}
+func NewService(commandStorage IntentStorage) pb.RegistrationServer {
+	return &service{IntentStorage: commandStorage}
 }
 
-func (s *service) AddCommand(ctx context.Context, req *pb.AddCommandRequest) (*pb.AddCommandReply, error) {
-	err := s.CommandStorage.Save(*req.Command)
+func (s *service) AddIntent(ctx context.Context, req *pb.AddIntentRequest) (*pb.AddIntentReply, error) {
+	err := s.IntentStorage.Save(*req.Intent)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.AddCommandReply{Command: req.Command}, nil
+	return &pb.AddIntentReply{Intent: req.Intent}, nil
 }
 
-func (s *service) DisableCommand(ctx context.Context, req *pb.DisableCommandRequest) (*pb.DisableCommandReply, error) {
-	err := s.CommandStorage.Disable(req.Id)
+func (s *service) DisableIntent(ctx context.Context, req *pb.DisableIntentRequest) (*pb.DisableIntentReply, error) {
+	err := s.IntentStorage.Disable(req.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.DisableCommandReply{Id: req.Id}, nil
+	return &pb.DisableIntentReply{Id: req.Id}, nil
 }
 
-func (s *service) QueryCommands(ctx context.Context, req *pb.QueryCommandsRequest) (*pb.QueryCommandsReply, error) {
+func (s *service) QueryIntents(ctx context.Context, req *pb.QueryIntentsRequest) (*pb.QueryIntentsReply, error) {
 	if req.PageSize < 1 {
 		req.PageSize = 50
 	}
 
-	commands, err := s.CommandStorage.Query(*req)
+	intents, err := s.IntentStorage.Query(*req)
 	if err != nil {
 		return nil, err
 	}
 
-	reply := &pb.QueryCommandsReply{
-		Commands: commands,
+	reply := &pb.QueryIntentsReply{
+		Intents: intents,
 	}
 
-	if len(reply.Commands) == int(req.PageSize) {
+	numIntents := len(reply.Intents)
+
+	if numIntents > 0 {
+		reply.LastId = reply.Intents[numIntents-1].Id
+	}
+
+	if numIntents == int(req.PageSize) {
 		reply.HasMore = true
 	}
 

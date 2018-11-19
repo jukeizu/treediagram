@@ -23,10 +23,12 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
-type Command struct {
+type Intent struct {
 	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Server               string   `protobuf:"bytes,2,opt,name=server,proto3" json:"server,omitempty"`
 	Name                 string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Regex                string   `protobuf:"bytes,4,opt,name=regex,proto3" json:"regex,omitempty"`
+	Response             string   `protobuf:"bytes,5,opt,name=response,proto3" json:"response,omitempty"`
 	Endpoint             string   `protobuf:"bytes,6,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
 	Help                 string   `protobuf:"bytes,7,opt,name=help,proto3" json:"help,omitempty"`
 	Enabled              bool     `protobuf:"varint,8,opt,name=enabled,proto3" json:"enabled,omitempty"`
@@ -35,73 +37,87 @@ type Command struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Command) Reset()         { *m = Command{} }
-func (m *Command) String() string { return proto.CompactTextString(m) }
-func (*Command) ProtoMessage()    {}
-func (*Command) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_e30a17296e672955, []int{0}
+func (m *Intent) Reset()         { *m = Intent{} }
+func (m *Intent) String() string { return proto.CompactTextString(m) }
+func (*Intent) ProtoMessage()    {}
+func (*Intent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_registration_c42a00ef2729c08d, []int{0}
 }
-func (m *Command) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Command.Unmarshal(m, b)
+func (m *Intent) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Intent.Unmarshal(m, b)
 }
-func (m *Command) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Command.Marshal(b, m, deterministic)
+func (m *Intent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Intent.Marshal(b, m, deterministic)
 }
-func (dst *Command) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Command.Merge(dst, src)
+func (dst *Intent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Intent.Merge(dst, src)
 }
-func (m *Command) XXX_Size() int {
-	return xxx_messageInfo_Command.Size(m)
+func (m *Intent) XXX_Size() int {
+	return xxx_messageInfo_Intent.Size(m)
 }
-func (m *Command) XXX_DiscardUnknown() {
-	xxx_messageInfo_Command.DiscardUnknown(m)
+func (m *Intent) XXX_DiscardUnknown() {
+	xxx_messageInfo_Intent.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Command proto.InternalMessageInfo
+var xxx_messageInfo_Intent proto.InternalMessageInfo
 
-func (m *Command) GetId() string {
+func (m *Intent) GetId() string {
 	if m != nil {
 		return m.Id
 	}
 	return ""
 }
 
-func (m *Command) GetServer() string {
+func (m *Intent) GetServer() string {
 	if m != nil {
 		return m.Server
 	}
 	return ""
 }
 
-func (m *Command) GetName() string {
+func (m *Intent) GetName() string {
 	if m != nil {
 		return m.Name
 	}
 	return ""
 }
 
-func (m *Command) GetEndpoint() string {
+func (m *Intent) GetRegex() string {
+	if m != nil {
+		return m.Regex
+	}
+	return ""
+}
+
+func (m *Intent) GetResponse() string {
+	if m != nil {
+		return m.Response
+	}
+	return ""
+}
+
+func (m *Intent) GetEndpoint() string {
 	if m != nil {
 		return m.Endpoint
 	}
 	return ""
 }
 
-func (m *Command) GetHelp() string {
+func (m *Intent) GetHelp() string {
 	if m != nil {
 		return m.Help
 	}
 	return ""
 }
 
-func (m *Command) GetEnabled() bool {
+func (m *Intent) GetEnabled() bool {
 	if m != nil {
 		return m.Enabled
 	}
 	return false
 }
 
-type QueryCommandsRequest struct {
+type QueryIntentsRequest struct {
 	Server               string   `protobuf:"bytes,1,opt,name=server,proto3" json:"server,omitempty"`
 	LastId               string   `protobuf:"bytes,2,opt,name=lastId,proto3" json:"lastId,omitempty"`
 	PageSize             int32    `protobuf:"varint,3,opt,name=pageSize,proto3" json:"pageSize,omitempty"`
@@ -110,243 +126,251 @@ type QueryCommandsRequest struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *QueryCommandsRequest) Reset()         { *m = QueryCommandsRequest{} }
-func (m *QueryCommandsRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryCommandsRequest) ProtoMessage()    {}
-func (*QueryCommandsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_e30a17296e672955, []int{1}
+func (m *QueryIntentsRequest) Reset()         { *m = QueryIntentsRequest{} }
+func (m *QueryIntentsRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryIntentsRequest) ProtoMessage()    {}
+func (*QueryIntentsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_registration_c42a00ef2729c08d, []int{1}
 }
-func (m *QueryCommandsRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_QueryCommandsRequest.Unmarshal(m, b)
+func (m *QueryIntentsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_QueryIntentsRequest.Unmarshal(m, b)
 }
-func (m *QueryCommandsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_QueryCommandsRequest.Marshal(b, m, deterministic)
+func (m *QueryIntentsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_QueryIntentsRequest.Marshal(b, m, deterministic)
 }
-func (dst *QueryCommandsRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryCommandsRequest.Merge(dst, src)
+func (dst *QueryIntentsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIntentsRequest.Merge(dst, src)
 }
-func (m *QueryCommandsRequest) XXX_Size() int {
-	return xxx_messageInfo_QueryCommandsRequest.Size(m)
+func (m *QueryIntentsRequest) XXX_Size() int {
+	return xxx_messageInfo_QueryIntentsRequest.Size(m)
 }
-func (m *QueryCommandsRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryCommandsRequest.DiscardUnknown(m)
+func (m *QueryIntentsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIntentsRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryCommandsRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryIntentsRequest proto.InternalMessageInfo
 
-func (m *QueryCommandsRequest) GetServer() string {
+func (m *QueryIntentsRequest) GetServer() string {
 	if m != nil {
 		return m.Server
 	}
 	return ""
 }
 
-func (m *QueryCommandsRequest) GetLastId() string {
+func (m *QueryIntentsRequest) GetLastId() string {
 	if m != nil {
 		return m.LastId
 	}
 	return ""
 }
 
-func (m *QueryCommandsRequest) GetPageSize() int32 {
+func (m *QueryIntentsRequest) GetPageSize() int32 {
 	if m != nil {
 		return m.PageSize
 	}
 	return 0
 }
 
-type QueryCommandsReply struct {
-	Commands             []*Command `protobuf:"bytes,1,rep,name=Commands,proto3" json:"Commands,omitempty"`
-	HasMore              bool       `protobuf:"varint,2,opt,name=hasMore,proto3" json:"hasMore,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
-	XXX_unrecognized     []byte     `json:"-"`
-	XXX_sizecache        int32      `json:"-"`
+type QueryIntentsReply struct {
+	Intents              []*Intent `protobuf:"bytes,1,rep,name=intents,proto3" json:"intents,omitempty"`
+	HasMore              bool      `protobuf:"varint,2,opt,name=hasMore,proto3" json:"hasMore,omitempty"`
+	LastId               string    `protobuf:"bytes,3,opt,name=lastId,proto3" json:"lastId,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
 }
 
-func (m *QueryCommandsReply) Reset()         { *m = QueryCommandsReply{} }
-func (m *QueryCommandsReply) String() string { return proto.CompactTextString(m) }
-func (*QueryCommandsReply) ProtoMessage()    {}
-func (*QueryCommandsReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_e30a17296e672955, []int{2}
+func (m *QueryIntentsReply) Reset()         { *m = QueryIntentsReply{} }
+func (m *QueryIntentsReply) String() string { return proto.CompactTextString(m) }
+func (*QueryIntentsReply) ProtoMessage()    {}
+func (*QueryIntentsReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_registration_c42a00ef2729c08d, []int{2}
 }
-func (m *QueryCommandsReply) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_QueryCommandsReply.Unmarshal(m, b)
+func (m *QueryIntentsReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_QueryIntentsReply.Unmarshal(m, b)
 }
-func (m *QueryCommandsReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_QueryCommandsReply.Marshal(b, m, deterministic)
+func (m *QueryIntentsReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_QueryIntentsReply.Marshal(b, m, deterministic)
 }
-func (dst *QueryCommandsReply) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryCommandsReply.Merge(dst, src)
+func (dst *QueryIntentsReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIntentsReply.Merge(dst, src)
 }
-func (m *QueryCommandsReply) XXX_Size() int {
-	return xxx_messageInfo_QueryCommandsReply.Size(m)
+func (m *QueryIntentsReply) XXX_Size() int {
+	return xxx_messageInfo_QueryIntentsReply.Size(m)
 }
-func (m *QueryCommandsReply) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryCommandsReply.DiscardUnknown(m)
+func (m *QueryIntentsReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIntentsReply.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryCommandsReply proto.InternalMessageInfo
+var xxx_messageInfo_QueryIntentsReply proto.InternalMessageInfo
 
-func (m *QueryCommandsReply) GetCommands() []*Command {
+func (m *QueryIntentsReply) GetIntents() []*Intent {
 	if m != nil {
-		return m.Commands
+		return m.Intents
 	}
 	return nil
 }
 
-func (m *QueryCommandsReply) GetHasMore() bool {
+func (m *QueryIntentsReply) GetHasMore() bool {
 	if m != nil {
 		return m.HasMore
 	}
 	return false
 }
 
-type AddCommandRequest struct {
-	Command              *Command `protobuf:"bytes,1,opt,name=command,proto3" json:"command,omitempty"`
+func (m *QueryIntentsReply) GetLastId() string {
+	if m != nil {
+		return m.LastId
+	}
+	return ""
+}
+
+type AddIntentRequest struct {
+	Intent               *Intent  `protobuf:"bytes,1,opt,name=intent,proto3" json:"intent,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *AddCommandRequest) Reset()         { *m = AddCommandRequest{} }
-func (m *AddCommandRequest) String() string { return proto.CompactTextString(m) }
-func (*AddCommandRequest) ProtoMessage()    {}
-func (*AddCommandRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_e30a17296e672955, []int{3}
+func (m *AddIntentRequest) Reset()         { *m = AddIntentRequest{} }
+func (m *AddIntentRequest) String() string { return proto.CompactTextString(m) }
+func (*AddIntentRequest) ProtoMessage()    {}
+func (*AddIntentRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_registration_c42a00ef2729c08d, []int{3}
 }
-func (m *AddCommandRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_AddCommandRequest.Unmarshal(m, b)
+func (m *AddIntentRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AddIntentRequest.Unmarshal(m, b)
 }
-func (m *AddCommandRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_AddCommandRequest.Marshal(b, m, deterministic)
+func (m *AddIntentRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AddIntentRequest.Marshal(b, m, deterministic)
 }
-func (dst *AddCommandRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AddCommandRequest.Merge(dst, src)
+func (dst *AddIntentRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AddIntentRequest.Merge(dst, src)
 }
-func (m *AddCommandRequest) XXX_Size() int {
-	return xxx_messageInfo_AddCommandRequest.Size(m)
+func (m *AddIntentRequest) XXX_Size() int {
+	return xxx_messageInfo_AddIntentRequest.Size(m)
 }
-func (m *AddCommandRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_AddCommandRequest.DiscardUnknown(m)
+func (m *AddIntentRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_AddIntentRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_AddCommandRequest proto.InternalMessageInfo
+var xxx_messageInfo_AddIntentRequest proto.InternalMessageInfo
 
-func (m *AddCommandRequest) GetCommand() *Command {
+func (m *AddIntentRequest) GetIntent() *Intent {
 	if m != nil {
-		return m.Command
+		return m.Intent
 	}
 	return nil
 }
 
-type AddCommandReply struct {
-	Command              *Command `protobuf:"bytes,1,opt,name=command,proto3" json:"command,omitempty"`
+type AddIntentReply struct {
+	Intent               *Intent  `protobuf:"bytes,1,opt,name=intent,proto3" json:"intent,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *AddCommandReply) Reset()         { *m = AddCommandReply{} }
-func (m *AddCommandReply) String() string { return proto.CompactTextString(m) }
-func (*AddCommandReply) ProtoMessage()    {}
-func (*AddCommandReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_e30a17296e672955, []int{4}
+func (m *AddIntentReply) Reset()         { *m = AddIntentReply{} }
+func (m *AddIntentReply) String() string { return proto.CompactTextString(m) }
+func (*AddIntentReply) ProtoMessage()    {}
+func (*AddIntentReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_registration_c42a00ef2729c08d, []int{4}
 }
-func (m *AddCommandReply) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_AddCommandReply.Unmarshal(m, b)
+func (m *AddIntentReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AddIntentReply.Unmarshal(m, b)
 }
-func (m *AddCommandReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_AddCommandReply.Marshal(b, m, deterministic)
+func (m *AddIntentReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AddIntentReply.Marshal(b, m, deterministic)
 }
-func (dst *AddCommandReply) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AddCommandReply.Merge(dst, src)
+func (dst *AddIntentReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AddIntentReply.Merge(dst, src)
 }
-func (m *AddCommandReply) XXX_Size() int {
-	return xxx_messageInfo_AddCommandReply.Size(m)
+func (m *AddIntentReply) XXX_Size() int {
+	return xxx_messageInfo_AddIntentReply.Size(m)
 }
-func (m *AddCommandReply) XXX_DiscardUnknown() {
-	xxx_messageInfo_AddCommandReply.DiscardUnknown(m)
+func (m *AddIntentReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_AddIntentReply.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_AddCommandReply proto.InternalMessageInfo
+var xxx_messageInfo_AddIntentReply proto.InternalMessageInfo
 
-func (m *AddCommandReply) GetCommand() *Command {
+func (m *AddIntentReply) GetIntent() *Intent {
 	if m != nil {
-		return m.Command
+		return m.Intent
 	}
 	return nil
 }
 
-type DisableCommandRequest struct {
+type DisableIntentRequest struct {
 	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *DisableCommandRequest) Reset()         { *m = DisableCommandRequest{} }
-func (m *DisableCommandRequest) String() string { return proto.CompactTextString(m) }
-func (*DisableCommandRequest) ProtoMessage()    {}
-func (*DisableCommandRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_e30a17296e672955, []int{5}
+func (m *DisableIntentRequest) Reset()         { *m = DisableIntentRequest{} }
+func (m *DisableIntentRequest) String() string { return proto.CompactTextString(m) }
+func (*DisableIntentRequest) ProtoMessage()    {}
+func (*DisableIntentRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_registration_c42a00ef2729c08d, []int{5}
 }
-func (m *DisableCommandRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_DisableCommandRequest.Unmarshal(m, b)
+func (m *DisableIntentRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DisableIntentRequest.Unmarshal(m, b)
 }
-func (m *DisableCommandRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_DisableCommandRequest.Marshal(b, m, deterministic)
+func (m *DisableIntentRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DisableIntentRequest.Marshal(b, m, deterministic)
 }
-func (dst *DisableCommandRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DisableCommandRequest.Merge(dst, src)
+func (dst *DisableIntentRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DisableIntentRequest.Merge(dst, src)
 }
-func (m *DisableCommandRequest) XXX_Size() int {
-	return xxx_messageInfo_DisableCommandRequest.Size(m)
+func (m *DisableIntentRequest) XXX_Size() int {
+	return xxx_messageInfo_DisableIntentRequest.Size(m)
 }
-func (m *DisableCommandRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_DisableCommandRequest.DiscardUnknown(m)
+func (m *DisableIntentRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_DisableIntentRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_DisableCommandRequest proto.InternalMessageInfo
+var xxx_messageInfo_DisableIntentRequest proto.InternalMessageInfo
 
-func (m *DisableCommandRequest) GetId() string {
+func (m *DisableIntentRequest) GetId() string {
 	if m != nil {
 		return m.Id
 	}
 	return ""
 }
 
-type DisableCommandReply struct {
+type DisableIntentReply struct {
 	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *DisableCommandReply) Reset()         { *m = DisableCommandReply{} }
-func (m *DisableCommandReply) String() string { return proto.CompactTextString(m) }
-func (*DisableCommandReply) ProtoMessage()    {}
-func (*DisableCommandReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_registration_e30a17296e672955, []int{6}
+func (m *DisableIntentReply) Reset()         { *m = DisableIntentReply{} }
+func (m *DisableIntentReply) String() string { return proto.CompactTextString(m) }
+func (*DisableIntentReply) ProtoMessage()    {}
+func (*DisableIntentReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_registration_c42a00ef2729c08d, []int{6}
 }
-func (m *DisableCommandReply) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_DisableCommandReply.Unmarshal(m, b)
+func (m *DisableIntentReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DisableIntentReply.Unmarshal(m, b)
 }
-func (m *DisableCommandReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_DisableCommandReply.Marshal(b, m, deterministic)
+func (m *DisableIntentReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DisableIntentReply.Marshal(b, m, deterministic)
 }
-func (dst *DisableCommandReply) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DisableCommandReply.Merge(dst, src)
+func (dst *DisableIntentReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DisableIntentReply.Merge(dst, src)
 }
-func (m *DisableCommandReply) XXX_Size() int {
-	return xxx_messageInfo_DisableCommandReply.Size(m)
+func (m *DisableIntentReply) XXX_Size() int {
+	return xxx_messageInfo_DisableIntentReply.Size(m)
 }
-func (m *DisableCommandReply) XXX_DiscardUnknown() {
-	xxx_messageInfo_DisableCommandReply.DiscardUnknown(m)
+func (m *DisableIntentReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_DisableIntentReply.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_DisableCommandReply proto.InternalMessageInfo
+var xxx_messageInfo_DisableIntentReply proto.InternalMessageInfo
 
-func (m *DisableCommandReply) GetId() string {
+func (m *DisableIntentReply) GetId() string {
 	if m != nil {
 		return m.Id
 	}
@@ -354,13 +378,13 @@ func (m *DisableCommandReply) GetId() string {
 }
 
 func init() {
-	proto.RegisterType((*Command)(nil), "registration.Command")
-	proto.RegisterType((*QueryCommandsRequest)(nil), "registration.QueryCommandsRequest")
-	proto.RegisterType((*QueryCommandsReply)(nil), "registration.QueryCommandsReply")
-	proto.RegisterType((*AddCommandRequest)(nil), "registration.AddCommandRequest")
-	proto.RegisterType((*AddCommandReply)(nil), "registration.AddCommandReply")
-	proto.RegisterType((*DisableCommandRequest)(nil), "registration.DisableCommandRequest")
-	proto.RegisterType((*DisableCommandReply)(nil), "registration.DisableCommandReply")
+	proto.RegisterType((*Intent)(nil), "registration.Intent")
+	proto.RegisterType((*QueryIntentsRequest)(nil), "registration.QueryIntentsRequest")
+	proto.RegisterType((*QueryIntentsReply)(nil), "registration.QueryIntentsReply")
+	proto.RegisterType((*AddIntentRequest)(nil), "registration.AddIntentRequest")
+	proto.RegisterType((*AddIntentReply)(nil), "registration.AddIntentReply")
+	proto.RegisterType((*DisableIntentRequest)(nil), "registration.DisableIntentRequest")
+	proto.RegisterType((*DisableIntentReply)(nil), "registration.DisableIntentReply")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -375,9 +399,9 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type RegistrationClient interface {
-	AddCommand(ctx context.Context, in *AddCommandRequest, opts ...grpc.CallOption) (*AddCommandReply, error)
-	DisableCommand(ctx context.Context, in *DisableCommandRequest, opts ...grpc.CallOption) (*DisableCommandReply, error)
-	QueryCommands(ctx context.Context, in *QueryCommandsRequest, opts ...grpc.CallOption) (*QueryCommandsReply, error)
+	AddIntent(ctx context.Context, in *AddIntentRequest, opts ...grpc.CallOption) (*AddIntentReply, error)
+	DisableIntent(ctx context.Context, in *DisableIntentRequest, opts ...grpc.CallOption) (*DisableIntentReply, error)
+	QueryIntents(ctx context.Context, in *QueryIntentsRequest, opts ...grpc.CallOption) (*QueryIntentsReply, error)
 }
 
 type registrationClient struct {
@@ -388,27 +412,27 @@ func NewRegistrationClient(cc *grpc.ClientConn) RegistrationClient {
 	return &registrationClient{cc}
 }
 
-func (c *registrationClient) AddCommand(ctx context.Context, in *AddCommandRequest, opts ...grpc.CallOption) (*AddCommandReply, error) {
-	out := new(AddCommandReply)
-	err := c.cc.Invoke(ctx, "/registration.Registration/AddCommand", in, out, opts...)
+func (c *registrationClient) AddIntent(ctx context.Context, in *AddIntentRequest, opts ...grpc.CallOption) (*AddIntentReply, error) {
+	out := new(AddIntentReply)
+	err := c.cc.Invoke(ctx, "/registration.Registration/AddIntent", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *registrationClient) DisableCommand(ctx context.Context, in *DisableCommandRequest, opts ...grpc.CallOption) (*DisableCommandReply, error) {
-	out := new(DisableCommandReply)
-	err := c.cc.Invoke(ctx, "/registration.Registration/DisableCommand", in, out, opts...)
+func (c *registrationClient) DisableIntent(ctx context.Context, in *DisableIntentRequest, opts ...grpc.CallOption) (*DisableIntentReply, error) {
+	out := new(DisableIntentReply)
+	err := c.cc.Invoke(ctx, "/registration.Registration/DisableIntent", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *registrationClient) QueryCommands(ctx context.Context, in *QueryCommandsRequest, opts ...grpc.CallOption) (*QueryCommandsReply, error) {
-	out := new(QueryCommandsReply)
-	err := c.cc.Invoke(ctx, "/registration.Registration/QueryCommands", in, out, opts...)
+func (c *registrationClient) QueryIntents(ctx context.Context, in *QueryIntentsRequest, opts ...grpc.CallOption) (*QueryIntentsReply, error) {
+	out := new(QueryIntentsReply)
+	err := c.cc.Invoke(ctx, "/registration.Registration/QueryIntents", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -417,65 +441,65 @@ func (c *registrationClient) QueryCommands(ctx context.Context, in *QueryCommand
 
 // RegistrationServer is the server API for Registration service.
 type RegistrationServer interface {
-	AddCommand(context.Context, *AddCommandRequest) (*AddCommandReply, error)
-	DisableCommand(context.Context, *DisableCommandRequest) (*DisableCommandReply, error)
-	QueryCommands(context.Context, *QueryCommandsRequest) (*QueryCommandsReply, error)
+	AddIntent(context.Context, *AddIntentRequest) (*AddIntentReply, error)
+	DisableIntent(context.Context, *DisableIntentRequest) (*DisableIntentReply, error)
+	QueryIntents(context.Context, *QueryIntentsRequest) (*QueryIntentsReply, error)
 }
 
 func RegisterRegistrationServer(s *grpc.Server, srv RegistrationServer) {
 	s.RegisterService(&_Registration_serviceDesc, srv)
 }
 
-func _Registration_AddCommand_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddCommandRequest)
+func _Registration_AddIntent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddIntentRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RegistrationServer).AddCommand(ctx, in)
+		return srv.(RegistrationServer).AddIntent(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/registration.Registration/AddCommand",
+		FullMethod: "/registration.Registration/AddIntent",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RegistrationServer).AddCommand(ctx, req.(*AddCommandRequest))
+		return srv.(RegistrationServer).AddIntent(ctx, req.(*AddIntentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Registration_DisableCommand_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DisableCommandRequest)
+func _Registration_DisableIntent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DisableIntentRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RegistrationServer).DisableCommand(ctx, in)
+		return srv.(RegistrationServer).DisableIntent(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/registration.Registration/DisableCommand",
+		FullMethod: "/registration.Registration/DisableIntent",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RegistrationServer).DisableCommand(ctx, req.(*DisableCommandRequest))
+		return srv.(RegistrationServer).DisableIntent(ctx, req.(*DisableIntentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Registration_QueryCommands_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryCommandsRequest)
+func _Registration_QueryIntents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryIntentsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RegistrationServer).QueryCommands(ctx, in)
+		return srv.(RegistrationServer).QueryIntents(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/registration.Registration/QueryCommands",
+		FullMethod: "/registration.Registration/QueryIntents",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RegistrationServer).QueryCommands(ctx, req.(*QueryCommandsRequest))
+		return srv.(RegistrationServer).QueryIntents(ctx, req.(*QueryIntentsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -485,48 +509,49 @@ var _Registration_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*RegistrationServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "AddCommand",
-			Handler:    _Registration_AddCommand_Handler,
+			MethodName: "AddIntent",
+			Handler:    _Registration_AddIntent_Handler,
 		},
 		{
-			MethodName: "DisableCommand",
-			Handler:    _Registration_DisableCommand_Handler,
+			MethodName: "DisableIntent",
+			Handler:    _Registration_DisableIntent_Handler,
 		},
 		{
-			MethodName: "QueryCommands",
-			Handler:    _Registration_QueryCommands_Handler,
+			MethodName: "QueryIntents",
+			Handler:    _Registration_QueryIntents_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "registration.proto",
 }
 
-func init() { proto.RegisterFile("registration.proto", fileDescriptor_registration_e30a17296e672955) }
+func init() { proto.RegisterFile("registration.proto", fileDescriptor_registration_c42a00ef2729c08d) }
 
-var fileDescriptor_registration_e30a17296e672955 = []byte{
-	// 370 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x93, 0xc1, 0x4e, 0xbb, 0x40,
-	0x10, 0xc6, 0xff, 0xd0, 0xbf, 0x80, 0x63, 0xad, 0x71, 0xb4, 0xcd, 0x86, 0xc4, 0x88, 0x6b, 0x8c,
-	0x3d, 0xd5, 0x58, 0x9f, 0x40, 0xed, 0xc5, 0x83, 0x26, 0xe2, 0xc1, 0xc4, 0xdb, 0xd6, 0xdd, 0xb4,
-	0x24, 0x14, 0x10, 0xa8, 0x49, 0x7d, 0x09, 0x0f, 0xbe, 0xb0, 0xd9, 0x05, 0x2a, 0x8b, 0x6d, 0x13,
-	0x6f, 0xfb, 0x7d, 0xfd, 0x76, 0xe6, 0x37, 0xb3, 0x05, 0x30, 0x15, 0x93, 0x20, 0xcb, 0x53, 0x96,
-	0x07, 0x71, 0x34, 0x48, 0xd2, 0x38, 0x8f, 0xb1, 0x5d, 0xf7, 0xe8, 0xa7, 0x01, 0xf6, 0x6d, 0x3c,
-	0x9b, 0xb1, 0x88, 0x63, 0x07, 0xcc, 0x80, 0x13, 0xc3, 0x33, 0xfa, 0xdb, 0xbe, 0x19, 0x70, 0xec,
-	0x81, 0x95, 0x89, 0xf4, 0x5d, 0xa4, 0xc4, 0x54, 0x5e, 0xa9, 0x10, 0xe1, 0x7f, 0xc4, 0x66, 0x82,
-	0xb4, 0x94, 0xab, 0xce, 0xe8, 0x82, 0x23, 0x22, 0x9e, 0xc4, 0x41, 0x94, 0x13, 0x4b, 0xf9, 0x4b,
-	0x2d, 0xf3, 0x53, 0x11, 0x26, 0xc4, 0x2e, 0xf2, 0xf2, 0x8c, 0x04, 0x6c, 0x11, 0xb1, 0x71, 0x28,
-	0x38, 0x71, 0x3c, 0xa3, 0xef, 0xf8, 0x95, 0xa4, 0x63, 0x38, 0x7c, 0x9c, 0x8b, 0x74, 0x51, 0x52,
-	0x65, 0xbe, 0x78, 0x9b, 0x8b, 0x2c, 0xaf, 0xd1, 0x18, 0x1a, 0x4d, 0x0f, 0xac, 0x90, 0x65, 0xf9,
-	0x1d, 0xaf, 0x28, 0x0b, 0x25, 0x89, 0x12, 0x36, 0x11, 0x4f, 0xc1, 0x47, 0x41, 0xba, 0xe5, 0x2f,
-	0x35, 0x65, 0x80, 0x8d, 0x1e, 0x49, 0xb8, 0xc0, 0x4b, 0x70, 0x2a, 0x83, 0x18, 0x5e, 0xab, 0xbf,
-	0x33, 0xec, 0x0e, 0xb4, 0x05, 0x96, 0xbf, 0xfa, 0xcb, 0x98, 0x1c, 0x63, 0xca, 0xb2, 0xfb, 0x38,
-	0x15, 0xaa, 0xbb, 0xe3, 0x57, 0x92, 0x8e, 0x60, 0xff, 0x9a, 0xf3, 0xea, 0x46, 0x39, 0xc3, 0x05,
-	0xd8, 0xaf, 0x85, 0xa3, 0x86, 0x58, 0xdb, 0xa0, 0x4a, 0xd1, 0x1b, 0xd8, 0xab, 0x57, 0x91, 0x94,
-	0x7f, 0xae, 0x71, 0x0e, 0xdd, 0x51, 0x90, 0xc9, 0xe5, 0x36, 0x68, 0x1a, 0xef, 0x4d, 0xcf, 0xe0,
-	0xa0, 0x19, 0x94, 0x0d, 0x1b, 0xb1, 0xe1, 0x97, 0x09, 0x6d, 0xbf, 0xd6, 0x11, 0x1f, 0x00, 0x7e,
-	0x20, 0xf1, 0x58, 0xc7, 0xf9, 0xb5, 0x04, 0xf7, 0x68, 0x7d, 0x20, 0x09, 0x17, 0xf4, 0x1f, 0xbe,
-	0x40, 0x47, 0xe7, 0xc0, 0x53, 0xfd, 0xca, 0xca, 0x71, 0xdc, 0x93, 0xcd, 0xa1, 0xa2, 0xf6, 0x33,
-	0xec, 0x6a, 0x2f, 0x8f, 0x54, 0xbf, 0xb5, 0xea, 0xaf, 0xe7, 0x7a, 0x1b, 0x33, 0xaa, 0xf0, 0xd8,
-	0x52, 0x5f, 0xd7, 0xd5, 0x77, 0x00, 0x00, 0x00, 0xff, 0xff, 0x34, 0x50, 0xf4, 0xbb, 0x73, 0x03,
-	0x00, 0x00,
+var fileDescriptor_registration_c42a00ef2729c08d = []byte{
+	// 396 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x53, 0xc1, 0xaa, 0xd3, 0x40,
+	0x14, 0x35, 0xe9, 0x6b, 0x9a, 0x77, 0xad, 0x0f, 0xbd, 0x96, 0xc7, 0x10, 0x44, 0xe3, 0x20, 0xd2,
+	0x85, 0x74, 0xf1, 0xdc, 0x8b, 0x82, 0x9b, 0x22, 0x2e, 0x8c, 0x82, 0xeb, 0x94, 0x5c, 0xda, 0x81,
+	0x38, 0x89, 0x33, 0x53, 0xb1, 0x7e, 0x82, 0x5f, 0xe5, 0xa7, 0xc9, 0xcc, 0x24, 0x25, 0x13, 0xda,
+	0xc2, 0xdb, 0xcd, 0xb9, 0xf7, 0xdc, 0x7b, 0xce, 0x99, 0x4c, 0x00, 0x15, 0x6d, 0x85, 0x36, 0xaa,
+	0x34, 0xa2, 0x91, 0xab, 0x56, 0x35, 0xa6, 0xc1, 0xf9, 0xb0, 0xc6, 0xff, 0x45, 0x90, 0xac, 0xa5,
+	0x21, 0x69, 0xf0, 0x06, 0x62, 0x51, 0xb1, 0x28, 0x8f, 0x96, 0xd7, 0x45, 0x2c, 0x2a, 0xbc, 0x85,
+	0x44, 0x93, 0xfa, 0x45, 0x8a, 0xc5, 0xae, 0xd6, 0x21, 0x44, 0xb8, 0x92, 0xe5, 0x0f, 0x62, 0x13,
+	0x57, 0x75, 0x67, 0x5c, 0xc0, 0x54, 0xd1, 0x96, 0x7e, 0xb3, 0x2b, 0x57, 0xf4, 0x00, 0x33, 0x48,
+	0x15, 0xe9, 0xb6, 0x91, 0x9a, 0xd8, 0xd4, 0x35, 0x8e, 0xd8, 0xf6, 0x48, 0x56, 0x6d, 0x23, 0xa4,
+	0x61, 0x89, 0xef, 0xf5, 0xd8, 0x2a, 0xec, 0xa8, 0x6e, 0xd9, 0xcc, 0x2b, 0xd8, 0x33, 0x32, 0x98,
+	0x91, 0x2c, 0x37, 0x35, 0x55, 0x2c, 0xcd, 0xa3, 0x65, 0x5a, 0xf4, 0x90, 0x97, 0xf0, 0xf4, 0xcb,
+	0x9e, 0xd4, 0xc1, 0xc7, 0xd0, 0x05, 0xfd, 0xdc, 0x93, 0x36, 0x03, 0xfb, 0x51, 0x60, 0xff, 0x16,
+	0x92, 0xba, 0xd4, 0x66, 0x5d, 0xf5, 0xb1, 0x3c, 0xb2, 0x86, 0xda, 0x72, 0x4b, 0x5f, 0xc5, 0x1f,
+	0x1f, 0x6d, 0x5a, 0x1c, 0x31, 0xdf, 0xc3, 0x93, 0x50, 0xa2, 0xad, 0x0f, 0xb8, 0x82, 0x99, 0xf0,
+	0x98, 0x45, 0xf9, 0x64, 0xf9, 0xf0, 0x6e, 0xb1, 0x0a, 0xae, 0xdb, 0x93, 0x8b, 0x9e, 0x64, 0x13,
+	0xec, 0x4a, 0xfd, 0xb9, 0x51, 0xe4, 0x94, 0xd3, 0xa2, 0x87, 0x03, 0x4b, 0x93, 0xa1, 0x25, 0xfe,
+	0x1e, 0x1e, 0x7f, 0xa8, 0xaa, 0x6e, 0x4f, 0x17, 0xeb, 0x0d, 0x24, 0x7e, 0xa1, 0x8b, 0x75, 0x4e,
+	0xb4, 0xe3, 0xf0, 0x77, 0x70, 0x33, 0xd8, 0x60, 0x5d, 0xdf, 0x6f, 0xfe, 0x35, 0x2c, 0x3e, 0x0a,
+	0x6d, 0xef, 0x39, 0x74, 0x31, 0x7a, 0x2b, 0xfc, 0x15, 0xe0, 0x88, 0x67, 0xb5, 0x46, 0xac, 0xbb,
+	0xbf, 0x31, 0xcc, 0x8b, 0x81, 0x1a, 0x7e, 0x82, 0xeb, 0xa3, 0x3d, 0x7c, 0x1e, 0x3a, 0x19, 0x27,
+	0xcf, 0x9e, 0x9d, 0xed, 0xb7, 0xf5, 0x81, 0x3f, 0xc0, 0xef, 0xf0, 0x28, 0xf0, 0x80, 0x3c, 0x1c,
+	0x38, 0x15, 0x24, 0xcb, 0x2f, 0x72, 0xfc, 0xe2, 0x6f, 0x30, 0x1f, 0x7e, 0x7d, 0x7c, 0x19, 0xce,
+	0x9c, 0x78, 0x7c, 0xd9, 0x8b, 0x4b, 0x14, 0xb7, 0x75, 0x93, 0xb8, 0xdf, 0xf1, 0xed, 0xff, 0x00,
+	0x00, 0x00, 0xff, 0xff, 0x58, 0xbe, 0x61, 0x0f, 0xa4, 0x03, 0x00, 0x00,
 }

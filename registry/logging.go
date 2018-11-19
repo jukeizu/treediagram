@@ -18,26 +18,26 @@ func NewLoggingService(logger log.Logger, s pb.RegistrationServer) pb.Registrati
 	return &loggingService{logger, s}
 }
 
-func (s loggingService) AddCommand(ctx context.Context, req *pb.AddCommandRequest) (reply *pb.AddCommandReply, err error) {
+func (s loggingService) AddIntent(ctx context.Context, req *pb.AddIntentRequest) (reply *pb.AddIntentReply, err error) {
 	defer func(begin time.Time) {
 		s.logger.Log(
-			"method", "AddCommand",
-			"command", *req.Command,
+			"method", "AddIntent",
+			"intent", *req.Intent,
 			"took", time.Since(begin),
 			"error", err,
 		)
 
 	}(time.Now())
 
-	reply, err = s.Service.AddCommand(ctx, req)
+	reply, err = s.Service.AddIntent(ctx, req)
 
 	return
 }
 
-func (s loggingService) DisableCommand(ctx context.Context, req *pb.DisableCommandRequest) (reply *pb.DisableCommandReply, err error) {
+func (s loggingService) DisableIntent(ctx context.Context, req *pb.DisableIntentRequest) (reply *pb.DisableIntentReply, err error) {
 	defer func(begin time.Time) {
 		s.logger.Log(
-			"method", "DisableCommand",
+			"method", "DisableIntent",
 			"id", req.Id,
 			"took", time.Since(begin),
 			"error", err,
@@ -45,15 +45,15 @@ func (s loggingService) DisableCommand(ctx context.Context, req *pb.DisableComma
 
 	}(time.Now())
 
-	reply, err = s.Service.DisableCommand(ctx, req)
+	reply, err = s.Service.DisableIntent(ctx, req)
 
 	return
 }
 
-func (s loggingService) QueryCommands(ctx context.Context, req *pb.QueryCommandsRequest) (reply *pb.QueryCommandsReply, err error) {
+func (s loggingService) QueryIntents(ctx context.Context, req *pb.QueryIntentsRequest) (reply *pb.QueryIntentsReply, err error) {
 	defer func(begin time.Time) {
 		s.logger.Log(
-			"method", "QueryCommands",
+			"method", "QueryIntents",
 			"query", *req,
 			"took", time.Since(begin),
 			"error", err,
@@ -61,7 +61,7 @@ func (s loggingService) QueryCommands(ctx context.Context, req *pb.QueryCommands
 
 	}(time.Now())
 
-	reply, err = s.Service.QueryCommands(ctx, req)
+	reply, err = s.Service.QueryIntents(ctx, req)
 
 	return
 }

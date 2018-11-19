@@ -6,7 +6,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-kit/kit/log"
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/receiving"
 )
 
 type Bot interface {
@@ -16,17 +16,16 @@ type Bot interface {
 
 type bot struct {
 	Session *discordgo.Session
-	Client  pb.ProcessingClient
+	Client  pb.ReceivingClient
 	Logger  log.Logger
 }
 
-func NewBot(token string, client pb.ProcessingClient, logger log.Logger) (Bot, error) {
+func NewBot(token string, client pb.ReceivingClient, logger log.Logger) (Bot, error) {
 	dh := bot{Client: client, Logger: logger}
 
 	discordgo.Logger = dh.discordLogger
 
 	session, err := discordgo.New("Bot " + token)
-
 	if err != nil {
 		return &dh, err
 	}
@@ -57,22 +56,24 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	request := &pb.TreediagramRequest{}
-
-	request.Source = "discord"
-	request.CorrelationId = m.ID
-	request.Bot = mapToUser(s.State.User)
-	request.Author = mapToUser(m.Author)
-	request.ChannelId = m.ChannelID
-	request.ServerId = m.GuildID
-	request.Content = m.Content
-	request.Mentions = mapToUsers(m.Mentions)
-
-	_, err := d.Client.Request(context.Background(), request)
-
-	if err != nil {
-		d.Logger.Log("error", err.Error(), "correlationId", request.CorrelationId)
+	request := &pb.Request{
+		Id:        m.ID,
+		Source:    "discord",
+		Bot:       mapToUser(s.State.User),
+		Author:    mapToUser(m.Author),
+		ChannelId: m.ChannelID,
+		ServerId:  m.GuildID,
+		Content:   m.Content,
+		Mentions:  mapToUsers(m.Mentions),
 	}
+
+	reply, err := d.Client.Send(context.Background(), request)
+	if err != nil {
+		d.Logger.Log("error", err.Error(), "id", request.Id)
+		return
+	}
+
+	d.Logger.Log("message sent", reply.Id)
 }
 
 func (d *bot) discordLogger(level int, caller int, format string, a ...interface{}) {
