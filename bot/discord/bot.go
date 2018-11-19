@@ -59,12 +59,12 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	request := &pb.Request{
 		Id:        m.ID,
 		Source:    "discord",
-		Bot:       mapToUser(s.State.User),
-		Author:    mapToUser(m.Author),
+		Bot:       mapToPbUser(s.State.User),
+		Author:    mapToPbUser(m.Author),
 		ChannelId: m.ChannelID,
 		ServerId:  m.GuildID,
 		Content:   m.Content,
-		Mentions:  mapToUsers(m.Mentions),
+		Mentions:  mapToPbUsers(m.Mentions),
 	}
 
 	reply, err := d.Client.Send(context.Background(), request)
