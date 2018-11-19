@@ -6,7 +6,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-kit/kit/log"
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/receiving"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 )
 
 type Bot interface {
@@ -16,11 +16,11 @@ type Bot interface {
 
 type bot struct {
 	Session *discordgo.Session
-	Client  pb.ReceivingClient
+	Client  pb.ProcessingClient
 	Logger  log.Logger
 }
 
-func NewBot(token string, client pb.ReceivingClient, logger log.Logger) (Bot, error) {
+func NewBot(token string, client pb.ProcessingClient, logger log.Logger) (Bot, error) {
 	dh := bot{Client: client, Logger: logger}
 
 	discordgo.Logger = dh.discordLogger
@@ -73,7 +73,7 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	d.Logger.Log("message sent", reply.Id)
+	d.Logger.Log("request sent", reply.Id)
 }
 
 func (d *bot) discordLogger(level int, caller int, format string, a ...interface{}) {

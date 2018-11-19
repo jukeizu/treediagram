@@ -84,7 +84,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 
 	registryClient := registrationpb.NewRegistrationClient(registryConn)
 
-	processorService, err := processor.NewService(logger, storage.ProcessorStorage)
+	processorService, err := processor.NewService(conn, storage.ProcessorStorage)
 	if err != nil {
 		return nil, err
 	}

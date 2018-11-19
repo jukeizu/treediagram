@@ -15,7 +15,6 @@ import (
 const (
 	ProcessorQueueGroup        = "processor"
 	ProcessorCommandQueueGroup = "processor.command"
-	RequestReceivedSubject     = "request.received"
 	CommandReceivedSubject     = "processor.command.received"
 	ReplyReceivedSubject       = "processor.reply.received"
 )
@@ -103,7 +102,7 @@ func (p Processor) publishCommands(r Request, intents []*registration.Intent) {
 			Intent:  i,
 		}
 
-		p.logger.Log("message has intent", command)
+		p.logger.Log("request has intent", command)
 
 		err = p.queue.Publish(CommandReceivedSubject, command)
 		if err != nil {

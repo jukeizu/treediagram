@@ -2,7 +2,7 @@ package startup
 
 import (
 	"github.com/go-kit/kit/log"
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/receiving"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 	"github.com/jukeizu/treediagram/bot/discord"
 	"google.golang.org/grpc"
 )
@@ -22,7 +22,7 @@ func NewBotRunner(logger log.Logger, config Config) (*BotRunner, error) {
 		return nil, err
 	}
 
-	client := pb.NewReceivingClient(conn)
+	client := pb.NewProcessingClient(conn)
 
 	handler, err := discord.NewBot(config.DiscordToken, client, logger)
 	if err != nil {
