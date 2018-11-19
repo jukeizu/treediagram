@@ -62,14 +62,22 @@ func (s Storage) SaveCommandEvent(e CommandEvent) error {
 	return s.CommandEventCollection.Insert(e)
 }
 
+func (s Storage) CommandEvents(id string) ([]CommandEvent, error) {
+	c := []CommandEvent{}
+
+	err := s.CommandEventCollection.Find(bson.M{"commandid": id}).All(&c)
+
+	return c, err
+}
+
 func (s Storage) SaveReply(r processing.Reply) error {
 	return s.ReplyCollection.Insert(r)
 }
 
-func (s Storage) Reply(id string) (processing.Reply, error) {
-	r := processing.Reply{}
+func (s Storage) Reply(id string) (*processing.Reply, error) {
+	r := &processing.Reply{}
 
-	err := s.ReplyCollection.Find(bson.M{"id": id}).One(&r)
+	err := s.ReplyCollection.Find(bson.M{"id": id}).One(r)
 
 	return r, err
 }

@@ -3,43 +3,23 @@ syntax = "proto3";
 package processing;
 
 service Processing {
-    rpc Request(TreediagramRequest) returns (TreediagramReply) {}
-}
-
-message User {
-    string id = 1;
-    string name = 2;
-}
-
-message TreediagramRequest {
-    string source = 1;
-    string correlationId = 2;
-    User bot = 3;
-    User author = 4;
-    string channelId = 5;
-    string serverId = 6;
-    repeated User mentions = 7;
-    string content = 8;
-}
-
-message TreediagramReply {
-    string id = 1;
-}
-
-message Match {
-    string Id = 1;
+    rpc Messages(MessagesRequest) returns (Reply) {}
 }
 
 message ReplyReceived {
     string Id = 1;
 }
 
-message Reply {
+message MessagesRequest {
     string Id = 1;
-    repeated Result results = 2;
 }
 
-message Result {
+message Reply {
+    string id = 1;
+    repeated Message messages = 2;
+}
+
+message Message {
     string content = 1;
     Embed embed = 2;
     bool tts = 3;

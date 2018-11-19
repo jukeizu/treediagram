@@ -4,7 +4,7 @@ import "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 
 type Command struct {
 	Id      string  `json:"id"`
-	Message Message `json:"message"`
+	Request Request `json:"request"`
 	Intent  Intent  `json:"intent"`
 }
 
@@ -18,7 +18,7 @@ type CommandEvent struct {
 func (c Command) Execute() (processing.Reply, error) {
 	reply := processing.Reply{}
 
-	reply.Results = []*processing.Result{&processing.Result{Content: c.Intent.Response}}
+	reply.Messages = []*processing.Message{&processing.Message{Content: c.Intent.Response}}
 
 	return reply, nil
 }

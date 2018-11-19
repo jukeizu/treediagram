@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/xid"
@@ -14,7 +15,7 @@ import (
 const (
 	ProcessorQueueGroup        = "processor"
 	ProcessorCommandQueueGroup = "processor.command"
-	MessageReceivedSubject     = "message.received"
+	RequestReceivedSubject     = "request.received"
 	CommandReceivedSubject     = "processor.command.received"
 	ReplyReceivedSubject       = "processor.reply.received"
 )
@@ -40,7 +41,7 @@ func New(logger log.Logger, queue *nats.EncodedConn, registry registration.Regis
 }
 
 func (p Processor) Start() error {
-	_, err := p.queue.QueueSubscribe(MessageReceivedSubject, ProcessorQueueGroup, p.processMessage)
+	_, err := p.queue.QueueSubscribe(RequestReceivedSubject, ProcessorQueueGroup, p.processRequest)
 	if err != nil {
 		return err
 	}
@@ -65,13 +66,13 @@ func (p Processor) Stop() {
 	p.wg.Wait()
 }
 
-func (p Processor) processMessage(m Message) {
+func (p Processor) processRequest(r Request) {
 	p.wg.Add(1)
-	go func(m Message) {
+	go func(r Request) {
 		defer p.wg.Done()
-		p.logger.Log("message received", m)
+		p.logger.Log("request received", r)
 
-		query := &registration.QueryIntentsRequest{Server: m.ServerId}
+		query := &registration.QueryIntentsRequest{Server: r.ServerId}
 
 		reply, err := p.registry.QueryIntents(context.Background(), query)
 		if err != nil {
@@ -79,15 +80,15 @@ func (p Processor) processMessage(m Message) {
 			return
 		}
 
-		p.publishCommands(m, reply.Intents)
-	}(m)
+		p.publishCommands(r, reply.Intents)
+	}(r)
 }
 
-func (p Processor) publishCommands(m Message, intents []*registration.Intent) {
+func (p Processor) publishCommands(r Request, intents []*registration.Intent) {
 	for _, intent := range intents {
 		i := NewIntent(*intent)
 
-		isMatch, err := i.IsMatch(m)
+		isMatch, err := i.IsMatch(r)
 		if err != nil {
 			p.logger.Log("error", err.Error())
 		}
@@ -98,7 +99,7 @@ func (p Processor) publishCommands(m Message, intents []*registration.Intent) {
 
 		command := Command{
 			Id:      xid.New().String(),
-			Message: m,
+			Request: r,
 			Intent:  i,
 		}
 
@@ -134,7 +135,9 @@ func (p Processor) processCommand(command Command) {
 			return
 		}
 
-		err = p.queue.Publish(ReplyReceivedSubject, reply.Id)
+		replyReceived := processing.ReplyReceived{Id: reply.Id}
+
+		err = p.queue.Publish(ReplyReceivedSubject, replyReceived)
 		if err != nil {
 			p.saveErrorEvent(command.Id, err)
 			return

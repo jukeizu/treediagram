@@ -1,6 +1,6 @@
 package processor
 
-type Message struct {
+type Request struct {
 	Id        string `json:"id"`
 	Source    string `json:"source"`
 	Bot       User   `json:"bot"`

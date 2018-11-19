@@ -5,23 +5,16 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
-	"github.com/jukeizu/treediagram/api/protobuf-spec/registration"
-	nats "github.com/nats-io/go-nats"
-	"github.com/rs/xid"
 )
 
 type service struct {
-	Queue *nats.EncodedConn
+	storage Storage
 }
 
-func NewService(logger log.Logger, queue *nats.EncodedConn, registrationClient registration.RegistrationClient) (processing.ProcessingServer, error) {
-	s := &service{Queue: queue}
-
-	return s, nil
+func NewService(logger log.Logger, storage Storage) (processing.ProcessingServer, error) {
+	return &service{storage: storage}, nil
 }
 
-func (s service) Request(ctx context.Context, req *processing.TreediagramRequest) (*processing.TreediagramReply, error) {
-	id := xid.New().String()
-
-	return &processing.TreediagramReply{Id: id}, nil
+func (s service) Messages(ctx context.Context, req *processing.MessagesRequest) (*processing.Reply, error) {
+	return s.storage.Reply(req.Id)
 }

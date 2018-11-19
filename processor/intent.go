@@ -33,8 +33,8 @@ func NewIntent(rc registration.Intent) Intent {
 	return c
 }
 
-func (c Intent) IsMatch(m Message) (bool, error) {
-	match, err := regexp.MatchString(c.Regex, m.Content)
+func (c Intent) IsMatch(r Request) (bool, error) {
+	match, err := regexp.MatchString(c.Regex, r.Content)
 	if err != nil {
 		return match, errors.New("regexp: " + err.Error())
 	}

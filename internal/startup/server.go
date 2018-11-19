@@ -84,11 +84,10 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 
 	registryClient := registrationpb.NewRegistrationClient(registryConn)
 
-	processorService, err := processor.NewService(logger, conn, registryClient)
+	processorService, err := processor.NewService(logger, storage.ProcessorStorage)
 	if err != nil {
 		return nil, err
 	}
-	processorService = processor.NewLoggingService(logger, processorService)
 
 	processor := processor.New(logger, conn, registryClient, storage.ProcessorStorage)
 	err = processor.Start()

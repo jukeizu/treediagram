@@ -2,7 +2,7 @@ module github.com/jukeizu/treediagram
 
 require (
 	github.com/bwmarrin/discordgo v0.19.0
-	github.com/go-kit/kit v0.7.0
+	github.com/go-kit/kit v0.8.0
 	github.com/go-logfmt/logfmt v0.3.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/protobuf v1.2.0
