@@ -24,6 +24,7 @@ deploy:
   - provider: script
     script:
         - make docker-deploy
+        - make docker-deploy-latest
     skip_cleanup: true
     on:
       tags: true
