@@ -1,5 +1,6 @@
 TAG=$(shell git describe --tags)
 VERSION=$(TAG:v%=%)
+REPO=jukeizu/treediagram
 GO=GO111MODULE=on go
 BUILD=GOARCH=amd64 $(GO) build -ldflags="-s -w -X main.Version=$(VERSION)" 
 PROTOFILES=$(wildcard api/protobuf-spec/*/*.proto)
@@ -21,8 +22,13 @@ build:
 build-linux:
 	CGO_ENABLED=0 GOOS=linux $(BUILD) -a -installsuffix cgo -o bin/treediagram ./cmd/...
 
-docker:
-	docker build -t jukeizu/treediagram:$(VERSION) .
+docker-build:
+	docker build -t $(REPO):$(VERSION) .
+
+docker-deploy:
+	docker tag $(REPO):$(VERSION) $(REPO):latest
+	docker push $(REPO):$(VERSION)
+	docker push $(REPO):latest
 
 proto: $(PBFILES)
 
