@@ -50,7 +50,7 @@ func mapToEmbed(embed *pb.Embed) *discordgo.MessageEmbed {
 	return &discordEmbed
 }
 
-func mapToMessageSend(message *pb.Message) *discordgo.MessageSend {
+func mapToMessageSend(message *pb.MessageReply) *discordgo.MessageSend {
 	if message == nil {
 		return nil
 	}

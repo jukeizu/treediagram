@@ -50,10 +50,13 @@ func (p Processor) Start() error {
 		return err
 	}
 
-	_, err = p.queue.QueueSubscribe(CommandReceivedSubject, ProcessorCommandQueueGroup, p.saveCommand)
-	if err != nil {
-		return err
-	}
+	/*
+		_, err = p.queue.QueueSubscribe(CommandReceivedSubject, ProcessorCommandQueueGroup, p.saveCommand)
+		if err != nil {
+			return err
+		}
+
+	*/
 
 	p.logger.Log("msg", "started")
 
@@ -116,32 +119,50 @@ func (p Processor) processCommand(command Command) {
 	go func(command Command) {
 		defer p.wg.Done()
 
+		err := p.storage.SaveCommand(command)
+		if err != nil {
+			p.logger.Log("error", err.Error())
+		}
+
 		p.logger.Log("executing command", command)
 
-		reply, err := command.Execute()
+		response, err := command.Execute()
 		if err != nil {
 			p.saveErrorEvent(command.Id, err)
 			return
 		}
 
-		reply.Id = xid.New().String()
-
-		p.logger.Log("received reply", reply.Id, "command", command)
-
-		err = p.storage.SaveReply(reply)
-		if err != nil {
-			p.saveErrorEvent(command.Id, err)
-			return
-		}
-
-		replyReceived := processing.ReplyReceived{Id: reply.Id}
-
-		err = p.queue.Publish(ReplyReceivedSubject, replyReceived)
-		if err != nil {
-			p.saveErrorEvent(command.Id, err)
-			return
-		}
+		p.saveResponseMessages(command, response)
 	}(command)
+}
+
+func (p Processor) saveResponseMessages(command Command, response *processing.Response) {
+	for _, message := range response.Messages {
+		messageReply := processing.MessageReply{
+			Id:               xid.New().String(),
+			CommandId:        command.Id,
+			ChannelId:        command.Request.ChannelId,
+			UserId:           command.Request.Author.Id,
+			IsPrivateMessage: message.IsPrivateMessage,
+			IsRedirect:       message.IsRedirect,
+			Content:          message.Content,
+			Embed:            message.Embed,
+			Tts:              message.Tts,
+			Files:            message.Files,
+		}
+
+		err := p.storage.SaveMessageReply(messageReply)
+		if err != nil {
+			p.saveErrorEvent(command.Id, err)
+		}
+
+		messageReplyReceived := processing.MessageReplyReceived{Id: messageReply.Id}
+
+		err = p.queue.Publish(ReplyReceivedSubject+"."+command.Request.Source, messageReplyReceived)
+		if err != nil {
+			p.saveErrorEvent(command.Id, err)
+		}
+	}
 }
 
 func (p Processor) saveCommand(command Command) {

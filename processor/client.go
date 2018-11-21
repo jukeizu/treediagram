@@ -13,7 +13,7 @@ import (
 
 type Client struct{}
 
-func (c Client) Do(command Command) (*processing.Reply, error) {
+func (c Client) Do(command Command) (*processing.Response, error) {
 	body, err := json.Marshal(command.Request)
 	if err != nil {
 		return nil, errors.New("could not marshal command request to json: " + err.Error())
@@ -26,7 +26,7 @@ func (c Client) Do(command Command) (*processing.Reply, error) {
 
 	defer resp.Body.Close()
 
-	reply := &processing.Reply{}
+	reply := &processing.Response{}
 
 	err = c.decodeJSON(resp.Body, reply)
 	if err != nil {

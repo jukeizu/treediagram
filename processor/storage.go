@@ -70,12 +70,11 @@ func (s Storage) CommandEvents(id string) ([]CommandEvent, error) {
 	return c, err
 }
 
-func (s Storage) SaveReply(r *processing.Reply) error {
+func (s Storage) SaveMessageReply(r processing.MessageReply) error {
 	return s.ReplyCollection.Insert(r)
 }
-
-func (s Storage) Reply(id string) (*processing.Reply, error) {
-	r := &processing.Reply{}
+func (s Storage) MessageReply(id string) (*processing.MessageReply, error) {
+	r := &processing.MessageReply{}
 
 	err := s.ReplyCollection.Find(bson.M{"id": id}).One(r)
 
