@@ -9,13 +9,10 @@ import (
 
 	"github.com/go-kit/kit/log"
 	processingpb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
-	publishingpb "github.com/jukeizu/treediagram/api/protobuf-spec/publishing"
 	registrationpb "github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 	schedulingpb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
 	userpb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
 	"github.com/jukeizu/treediagram/processor"
-	"github.com/jukeizu/treediagram/publisher"
-	"github.com/jukeizu/treediagram/publisher/discord"
 	"github.com/jukeizu/treediagram/registry"
 	"github.com/jukeizu/treediagram/scheduler"
 	"github.com/jukeizu/treediagram/user"
@@ -61,20 +58,6 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		return nil, err
 	}
 
-	discordPublisher, err := discord.NewDiscordPublisher(config.DiscordToken)
-	if err != nil {
-		return nil, err
-	}
-
-	p := publisher.NewPublisher(storage.MessageStorage, conn)
-	_, err = p.Subscribe(discord.DiscordPublisherSubject, discordPublisher.Publish)
-	if err != nil {
-		return nil, err
-	}
-
-	publisherService := publisher.NewService(conn, storage.MessageStorage)
-	publisherService = publisher.NewLoggingService(logger, publisherService)
-
 	registryConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
@@ -104,7 +87,6 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 
 	grpcServer := grpc.NewServer()
 
-	publishingpb.RegisterPublishingServer(grpcServer, publisherService)
 	processingpb.RegisterProcessingServer(grpcServer, processorService)
 	schedulingpb.RegisterSchedulingServer(grpcServer, schedulerService)
 	registrationpb.RegisterRegistrationServer(grpcServer, registryService)
