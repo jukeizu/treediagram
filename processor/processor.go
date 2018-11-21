@@ -50,13 +50,10 @@ func (p Processor) Start() error {
 		return err
 	}
 
-	/*
-		_, err = p.queue.QueueSubscribe(CommandReceivedSubject, ProcessorCommandQueueGroup, p.saveCommand)
-		if err != nil {
-			return err
-		}
-
-	*/
+	_, err = p.queue.QueueSubscribe(CommandReceivedSubject, ProcessorCommandQueueGroup, p.saveCommand)
+	if err != nil {
+		return err
+	}
 
 	p.logger.Log("msg", "started")
 
@@ -118,12 +115,6 @@ func (p Processor) processCommand(command Command) {
 	p.wg.Add(1)
 	go func(command Command) {
 		defer p.wg.Done()
-
-		err := p.storage.SaveCommand(command)
-		if err != nil {
-			p.logger.Log("error", err.Error())
-		}
-
 		p.logger.Log("executing command", command)
 
 		response, err := command.Execute()
