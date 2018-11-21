@@ -3,7 +3,6 @@ package discord
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-kit/kit/log"
@@ -22,19 +21,17 @@ type Bot interface {
 }
 
 type bot struct {
-	Session   *discordgo.Session
-	Client    pb.ProcessingClient
-	Queue     *nats.EncodedConn
-	Logger    log.Logger
-	WaitGroup *sync.WaitGroup
+	Session *discordgo.Session
+	Client  pb.ProcessingClient
+	Queue   *nats.EncodedConn
+	Logger  log.Logger
 }
 
 func NewBot(token string, client pb.ProcessingClient, queue *nats.EncodedConn, logger log.Logger) (Bot, error) {
 	dh := bot{
-		Client:    client,
-		Logger:    logger,
-		Queue:     queue,
-		WaitGroup: &sync.WaitGroup{},
+		Client: client,
+		Logger: logger,
+		Queue:  queue,
 	}
 
 	discordgo.Logger = dh.discordLogger
@@ -67,8 +64,6 @@ func (d *bot) Open() error {
 func (d *bot) Close() {
 	d.Logger.Log("session", "closing")
 
-	d.WaitGroup.Wait()
-
 	d.Session.Close()
 }
 
@@ -98,11 +93,6 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func (d *bot) messageReplyReceived(r *pb.MessageReplyReceived) {
-	d.WaitGroup.Add(1)
-	go func(r *pb.MessageReplyReceived) {
-		d.WaitGroup.Done()
-
-	}(r)
 	d.Logger.Log("msg", "reply received", "reply", r.Id)
 	message, err := d.Client.GetMessage(context.Background(), &pb.MessageRequest{Id: r.Id})
 	if err != nil {
