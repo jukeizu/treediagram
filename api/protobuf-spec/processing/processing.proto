@@ -3,15 +3,15 @@ syntax = "proto3";
 package processing;
 
 service Processing {
-    rpc SendRequest(Request) returns (SendReply) {}
-    rpc GetMessage(MessageRequest) returns (MessageReply) {}
+    rpc SendMessageRequest(MessageRequest) returns (SendMessageRequestReply) {}
+    rpc GetMessageReply(MessageReplyRequest) returns (MessageReply) {}
 }
 
 message MessageReplyReceived {
     string Id = 1;
 }
 
-message Request {
+message MessageRequest {
     string id = 1;
     string source = 2;
     User bot = 3;
@@ -27,11 +27,11 @@ message User {
     string name = 2;
 }
 
-message SendReply {
+message SendMessageRequestReply {
     string id = 1;
 }
 
-message MessageRequest {
+message MessageReplyRequest {
     string id = 1;
 }
 

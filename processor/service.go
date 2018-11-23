@@ -20,12 +20,12 @@ func NewService(queue *nats.EncodedConn, storage Storage) (processing.Processing
 	return &service{queue: queue, storage: storage}, nil
 }
 
-func (s service) SendRequest(ctx context.Context, req *processing.Request) (*processing.SendReply, error) {
+func (s service) SendMessageRequest(ctx context.Context, req *processing.MessageRequest) (*processing.SendMessageRequestReply, error) {
 	err := s.queue.Publish(RequestReceivedSubject, req)
 
-	return &processing.SendReply{Id: req.Id}, err
+	return &processing.SendMessageRequestReply{Id: req.Id}, err
 }
 
-func (s service) GetMessage(ctx context.Context, req *processing.MessageRequest) (*processing.MessageReply, error) {
+func (s service) GetMessageReply(ctx context.Context, req *processing.MessageReplyRequest) (*processing.MessageReply, error) {
 	return s.storage.MessageReply(req.Id)
 }
