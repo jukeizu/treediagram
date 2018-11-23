@@ -1,9 +1,6 @@
 package processor
 
 import (
-	"errors"
-	"regexp"
-
 	"github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 )
 
@@ -31,13 +28,4 @@ func NewIntent(rc registration.Intent) Intent {
 	}
 
 	return i
-}
-
-func (i Intent) IsMatch(r Request) (bool, error) {
-	match, err := regexp.MatchString(i.Regex, r.Content)
-	if err != nil {
-		return match, errors.New("regexp: " + err.Error())
-	}
-
-	return match, nil
 }

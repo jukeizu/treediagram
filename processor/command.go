@@ -1,6 +1,11 @@
 package processor
 
-import "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+import (
+	"errors"
+	"regexp"
+
+	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+)
 
 type Command struct {
 	Id      string  `json:"id"`
@@ -13,6 +18,15 @@ type CommandEvent struct {
 	Description string `json:"description"`
 	Type        string `json:"type"`
 	Timestamp   int64  `json:"timestamp"`
+}
+
+func (c Command) IsMatch() (bool, error) {
+	match, err := regexp.MatchString(c.Intent.Regex, c.Request.Content)
+	if err != nil {
+		return match, errors.New("regexp: " + err.Error())
+	}
+
+	return match, nil
 }
 
 func (c Command) Execute() (*processing.Response, error) {
