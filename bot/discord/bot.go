@@ -72,7 +72,7 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	request := &pb.Request{
+	request := &pb.MessageRequest{
 		Id:        m.ID,
 		Source:    "discord",
 		Bot:       mapToPbUser(s.State.User),
@@ -83,7 +83,7 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		Mentions:  mapToPbUsers(m.Mentions),
 	}
 
-	reply, err := d.Client.SendRequest(context.Background(), request)
+	reply, err := d.Client.SendMessageRequest(context.Background(), request)
 	if err != nil {
 		d.Logger.Log("error", err.Error(), "id", request.Id)
 		return
@@ -94,7 +94,7 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 func (d *bot) messageReplyReceived(r *pb.MessageReplyReceived) {
 	d.Logger.Log("msg", "reply received", "reply", r.Id)
-	message, err := d.Client.GetMessage(context.Background(), &pb.MessageRequest{Id: r.Id})
+	message, err := d.Client.GetMessageReply(context.Background(), &pb.MessageReplyRequest{Id: r.Id})
 	if err != nil {
 		d.Logger.Log("error", err.Error(), "id", r.Id)
 		return
