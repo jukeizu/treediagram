@@ -53,10 +53,10 @@ func (p Processor) Stop() {
 	p.wg.Wait()
 }
 
-func (p Processor) processRequest(r Request) {
-	p.logger.Log("request received", r)
+func (p Processor) processRequest(request *processing.MessageRequest) {
+	p.logger.Log("request received", request)
 
-	query := &registration.QueryIntentsRequest{Server: r.ServerId}
+	query := &registration.QueryIntentsRequest{Server: request.ServerId}
 
 	reply, err := p.registry.QueryIntents(context.Background(), query)
 	if err != nil {
@@ -65,20 +65,19 @@ func (p Processor) processRequest(r Request) {
 	}
 
 	for _, intent := range reply.Intents {
-		p.processCommand(r, *intent)
+		command := Command{
+			Request: *request,
+			Intent:  *intent,
+		}
+
+		p.processCommand(command)
 	}
 }
 
-func (p Processor) processCommand(request Request, intent registration.Intent) {
+func (p Processor) processCommand(command Command) {
 	p.wg.Add(1)
-	go func(request Request, intent registration.Intent) {
+	go func(command Command) {
 		defer p.wg.Done()
-
-		command := Command{
-			Id:      xid.New().String(),
-			Request: request,
-			Intent:  NewIntent(intent),
-		}
 
 		isMatch, err := command.IsMatch()
 		if err != nil {
@@ -88,6 +87,8 @@ func (p Processor) processCommand(request Request, intent registration.Intent) {
 		if !isMatch {
 			return
 		}
+
+		command.Id = xid.New().String()
 
 		p.saveCommand(command)
 
@@ -101,8 +102,7 @@ func (p Processor) processCommand(request Request, intent registration.Intent) {
 		for _, message := range response.Messages {
 			p.saveResponseMessage(command, *message)
 		}
-
-	}(request, intent)
+	}(command)
 }
 
 func (p Processor) saveResponseMessage(command Command, message processing.Message) {

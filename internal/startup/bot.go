@@ -30,6 +30,9 @@ func NewBotRunner(logger log.Logger, config Config) (*BotRunner, error) {
 		nats.ClosedHandler(func(_ *nats.Conn) {
 			wg.Done()
 		}))
+	if err != nil {
+		return nil, err
+	}
 
 	queue, err := nats.NewEncodedConn(nc, nats.JSON_ENCODER)
 	if err != nil {

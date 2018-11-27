@@ -5,12 +5,13 @@ import (
 	"regexp"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 )
 
 type Command struct {
-	Id      string  `json:"id"`
-	Request Request `json:"request"`
-	Intent  Intent  `json:"intent"`
+	Id      string                    `json:"id"`
+	Request processing.MessageRequest `json:"request"`
+	Intent  registration.Intent       `json:"intent"`
 }
 
 type CommandEvent struct {
