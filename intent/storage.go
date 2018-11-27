@@ -1,9 +1,9 @@
-package registry
+package intent
 
 import (
 	"fmt"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/registration"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/intent"
 	mdb "github.com/shawntoffel/GoMongoDb"
 	"gopkg.in/mgo.v2/bson"
 )

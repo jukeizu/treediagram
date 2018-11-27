@@ -1,19 +1,19 @@
-package registry
+package intent
 
 import (
 	"context"
 	"time"
 
 	"github.com/go-kit/kit/log"
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/registration"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/intent"
 )
 
 type loggingService struct {
 	logger  log.Logger
-	Service pb.RegistrationServer
+	Service pb.IntentRegistryServer
 }
 
-func NewLoggingService(logger log.Logger, s pb.RegistrationServer) pb.RegistrationServer {
+func NewLoggingService(logger log.Logger, s pb.IntentRegistryServer) pb.IntentRegistryServer {
 	logger = log.With(logger, "service", "registration")
 	return &loggingService{logger, s}
 }

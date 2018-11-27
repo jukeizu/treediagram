@@ -1,15 +1,15 @@
 package startup
 
 import (
+	"github.com/jukeizu/treediagram/intent"
 	"github.com/jukeizu/treediagram/processor"
-	"github.com/jukeizu/treediagram/registry"
 	"github.com/jukeizu/treediagram/scheduler"
 	"github.com/jukeizu/treediagram/user"
 )
 
 type Storage struct {
 	ProcessorStorage processor.Storage
-	IntentStorage    registry.IntentStorage
+	IntentStorage    intent.IntentStorage
 	JobStorage       scheduler.JobStorage
 	UserStorage      user.UserStorage
 }
@@ -20,7 +20,7 @@ func NewStorage(dbUrl string) (*Storage, error) {
 		return nil, err
 	}
 
-	commandStorage, err := registry.NewIntentStorage(dbUrl)
+	commandStorage, err := intent.NewIntentStorage(dbUrl)
 	if err != nil {
 		return nil, err
 	}

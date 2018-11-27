@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/intent"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
-	"github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/xid"
 )
@@ -20,12 +20,12 @@ const (
 type Processor struct {
 	logger   log.Logger
 	queue    *nats.EncodedConn
-	registry registration.RegistrationClient
+	registry intent.IntentRegistryClient
 	storage  Storage
 	wg       *sync.WaitGroup
 }
 
-func New(logger log.Logger, queue *nats.EncodedConn, registry registration.RegistrationClient, storage Storage) Processor {
+func New(logger log.Logger, queue *nats.EncodedConn, registry intent.IntentRegistryClient, storage Storage) Processor {
 	p := Processor{
 		logger:   log.With(logger, "component", "processor"),
 		queue:    queue,
@@ -56,7 +56,7 @@ func (p Processor) Stop() {
 func (p Processor) processRequest(request *processing.MessageRequest) {
 	p.logger.Log("request received", request)
 
-	query := &registration.QueryIntentsRequest{Server: request.ServerId}
+	query := &intent.QueryIntentsRequest{Server: request.ServerId}
 
 	reply, err := p.registry.QueryIntents(context.Background(), query)
 	if err != nil {
