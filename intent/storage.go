@@ -56,7 +56,7 @@ func NewIntentStorage(url string) (IntentStorage, error) {
 }
 
 func (s *storage) Save(pbIntent pb.Intent) error {
-	c := Intent{
+	i := Intent{
 		Server:   pbIntent.Server,
 		Name:     pbIntent.Name,
 		Regex:    pbIntent.Regex,
@@ -66,7 +66,7 @@ func (s *storage) Save(pbIntent pb.Intent) error {
 		Enabled:  pbIntent.Enabled,
 	}
 
-	return s.Collection.Insert(c)
+	return s.Collection.Insert(i)
 }
 
 func (s *storage) Disable(id string) error {
@@ -82,7 +82,7 @@ func (s *storage) Disable(id string) error {
 }
 
 func (s *storage) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
-	commands := []Intent{}
+	intents := []Intent{}
 
 	bsonQuery := []bson.M{
 		bson.M{"server": bson.M{"$in": []string{query.Server, ""}}},
@@ -94,21 +94,21 @@ func (s *storage) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
 
 	pbIntents := []*pb.Intent{}
 
-	err := s.Collection.Find(bson.M{"$and": bsonQuery}).Limit(int(query.PageSize)).All(&commands)
+	err := s.Collection.Find(bson.M{"$and": bsonQuery}).Limit(int(query.PageSize)).All(&intents)
 	if err != nil {
 		return pbIntents, fmt.Errorf("db error: %s", err)
 	}
 
-	for _, command := range commands {
+	for _, i := range intents {
 		mapped := &pb.Intent{
-			Id:       command.Id.Hex(),
-			Server:   command.Server,
-			Name:     command.Name,
-			Regex:    command.Regex,
-			Response: command.Response,
-			Endpoint: command.Endpoint,
-			Help:     command.Help,
-			Enabled:  command.Enabled,
+			Id:       i.Id.Hex(),
+			Server:   i.Server,
+			Name:     i.Name,
+			Regex:    i.Regex,
+			Response: i.Response,
+			Endpoint: i.Endpoint,
+			Help:     i.Help,
+			Enabled:  i.Enabled,
 		}
 		pbIntents = append(pbIntents, mapped)
 	}

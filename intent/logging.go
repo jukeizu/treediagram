@@ -14,7 +14,7 @@ type loggingService struct {
 }
 
 func NewLoggingService(logger log.Logger, s pb.IntentRegistryServer) pb.IntentRegistryServer {
-	logger = log.With(logger, "service", "registration")
+	logger = log.With(logger, "service", "intent")
 	return &loggingService{logger, s}
 }
 
