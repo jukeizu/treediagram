@@ -53,7 +53,7 @@ func (p Processor) Stop() {
 	p.wg.Wait()
 }
 
-func (p Processor) processRequest(r Request) {
+func (p Processor) processRequest(r processing.MessageRequest) {
 	p.logger.Log("request received", r)
 
 	query := &registration.QueryIntentsRequest{Server: r.ServerId}
@@ -69,15 +69,15 @@ func (p Processor) processRequest(r Request) {
 	}
 }
 
-func (p Processor) processCommand(request Request, intent registration.Intent) {
+func (p Processor) processCommand(request processing.MessageRequest, intent registration.Intent) {
 	p.wg.Add(1)
-	go func(request Request, intent registration.Intent) {
+	go func(request processing.MessageRequest, intent registration.Intent) {
 		defer p.wg.Done()
 
 		command := Command{
 			Id:      xid.New().String(),
 			Request: request,
-			Intent:  NewIntent(intent),
+			Intent:  intent,
 		}
 
 		isMatch, err := command.IsMatch()
