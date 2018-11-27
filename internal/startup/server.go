@@ -58,26 +58,26 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		return nil, err
 	}
 
-	registryConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure())
+	intentConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
 
-	registryClient := intentpb.NewIntentRegistryClient(registryConn)
+	intentClient := intentpb.NewIntentRegistryClient(intentConn)
 
 	processorService, err := processor.NewService(conn, storage.ProcessorStorage)
 	if err != nil {
 		return nil, err
 	}
 
-	processor := processor.New(logger, conn, registryClient, storage.ProcessorStorage)
+	processor := processor.New(logger, conn, intentClient, storage.ProcessorStorage)
 	err = processor.Start()
 	if err != nil {
 		return nil, err
 	}
 
-	registryService := intent.NewService(storage.IntentStorage)
-	registryService = intent.NewLoggingService(logger, registryService)
+	intentService := intent.NewService(storage.IntentStorage)
+	intentService = intent.NewLoggingService(logger, intentService)
 
 	schedulerService := scheduler.NewService(logger, storage.JobStorage, conn)
 	schedulerService = scheduler.NewLoggingService(logger, schedulerService)
@@ -89,15 +89,15 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 
 	processingpb.RegisterProcessingServer(grpcServer, processorService)
 	schedulingpb.RegisterSchedulingServer(grpcServer, schedulerService)
-	intentpb.RegisterIntentRegistryServer(grpcServer, registryService)
+	intentpb.RegisterIntentRegistryServer(grpcServer, intentService)
 	userpb.RegisterUserServer(grpcServer, userService)
 
 	schedulerHttpBinding := scheduler.NewHttpBinding(logger, schedulerService)
-	registryHttpBinding := intent.NewHttpBinding(logger, registryService)
+	intentHttpBinding := intent.NewHttpBinding(logger, intentService)
 
 	mux := http.NewServeMux()
 	mux.Handle("/scheduling/", schedulerHttpBinding.MakeHandler())
-	mux.Handle("/intent/", registryHttpBinding.MakeHandler())
+	mux.Handle("/intent/", intentHttpBinding.MakeHandler())
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%d", config.HttpPort),
