@@ -8,12 +8,12 @@ import (
 	"sync"
 
 	"github.com/go-kit/kit/log"
+	intentpb "github.com/jukeizu/treediagram/api/protobuf-spec/intent"
 	processingpb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
-	registrationpb "github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 	schedulingpb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
 	userpb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
+	"github.com/jukeizu/treediagram/intent"
 	"github.com/jukeizu/treediagram/processor"
-	"github.com/jukeizu/treediagram/registry"
 	"github.com/jukeizu/treediagram/scheduler"
 	"github.com/jukeizu/treediagram/user"
 	nats "github.com/nats-io/go-nats"
@@ -58,26 +58,26 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		return nil, err
 	}
 
-	registryConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure())
+	intentConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
 
-	registryClient := registrationpb.NewRegistrationClient(registryConn)
+	intentClient := intentpb.NewIntentRegistryClient(intentConn)
 
 	processorService, err := processor.NewService(conn, storage.ProcessorStorage)
 	if err != nil {
 		return nil, err
 	}
 
-	processor := processor.New(logger, conn, registryClient, storage.ProcessorStorage)
+	processor := processor.New(logger, conn, intentClient, storage.ProcessorStorage)
 	err = processor.Start()
 	if err != nil {
 		return nil, err
 	}
 
-	registryService := registry.NewService(storage.IntentStorage)
-	registryService = registry.NewLoggingService(logger, registryService)
+	intentService := intent.NewService(storage.IntentStorage)
+	intentService = intent.NewLoggingService(logger, intentService)
 
 	schedulerService := scheduler.NewService(logger, storage.JobStorage, conn)
 	schedulerService = scheduler.NewLoggingService(logger, schedulerService)
@@ -89,15 +89,15 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 
 	processingpb.RegisterProcessingServer(grpcServer, processorService)
 	schedulingpb.RegisterSchedulingServer(grpcServer, schedulerService)
-	registrationpb.RegisterRegistrationServer(grpcServer, registryService)
+	intentpb.RegisterIntentRegistryServer(grpcServer, intentService)
 	userpb.RegisterUserServer(grpcServer, userService)
 
 	schedulerHttpBinding := scheduler.NewHttpBinding(logger, schedulerService)
-	registryHttpBinding := registry.NewHttpBinding(logger, registryService)
+	intentHttpBinding := intent.NewHttpBinding(logger, intentService)
 
 	mux := http.NewServeMux()
 	mux.Handle("/scheduling/", schedulerHttpBinding.MakeHandler())
-	mux.Handle("/registration/", registryHttpBinding.MakeHandler())
+	mux.Handle("/intent/", intentHttpBinding.MakeHandler())
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf(":%d", config.HttpPort),

@@ -1,4 +1,4 @@
-package registry
+package intent
 
 import (
 	"context"
@@ -7,16 +7,16 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/registration"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/intent"
 	"github.com/shawntoffel/services-core/transport"
 )
 
 type httpBinding struct {
 	logger  log.Logger
-	Service pb.RegistrationServer
+	Service pb.IntentRegistryServer
 }
 
-func NewHttpBinding(logger log.Logger, s pb.RegistrationServer) httpBinding {
+func NewHttpBinding(logger log.Logger, s pb.IntentRegistryServer) httpBinding {
 	return httpBinding{logger, s}
 }
 
@@ -40,7 +40,7 @@ func (h httpBinding) MakeHandler() http.Handler {
 	)
 
 	router := mux.NewRouter()
-	subrouter := router.PathPrefix("/registration/").Subrouter()
+	subrouter := router.PathPrefix("/intent/").Subrouter()
 
 	subrouter.Handle("/add", addMessageHandler).Methods("POST")
 	subrouter.Handle("/disable", disableMessageHandler).Methods("POST")
