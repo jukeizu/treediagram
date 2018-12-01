@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/jukeizu/treediagram/internal/logger"
 	"github.com/jukeizu/treediagram/internal/startup"
 	nats "github.com/nats-io/go-nats"
 	"github.com/oklog/run"
@@ -53,8 +52,7 @@ func parseConfig() startup.Config {
 }
 
 func main() {
-	logger := logging.NewLogger("treediagram", Version)
-	zlogger := zerolog.New(os.Stdout).With().Timestamp().
+	logger := zerolog.New(os.Stdout).With().Timestamp().
 		Str("version", Version).
 		Logger()
 
@@ -74,9 +72,9 @@ func main() {
 	g := run.Group{}
 
 	if flagScheduler {
-		s, err := startup.NewSchedulerRunner(zlogger, config)
+		s, err := startup.NewSchedulerRunner(logger, config)
 		if err != nil {
-			logger.Log("error", err)
+			logger.Error().Err(err).Caller().Msg("")
 			os.Exit(1)
 		}
 
@@ -88,9 +86,9 @@ func main() {
 	}
 
 	if flagBot {
-		l, err := startup.NewBotRunner(zlogger, config)
+		l, err := startup.NewBotRunner(logger, config)
 		if err != nil {
-			logger.Log("error", err)
+			logger.Error().Err(err).Caller().Msg("")
 			os.Exit(1)
 		}
 
@@ -104,7 +102,7 @@ func main() {
 	if flagServer {
 		s, err := startup.NewServerRunner(logger, config)
 		if err != nil {
-			logger.Log("error", err)
+			logger.Error().Err(err).Caller().Msg("")
 			os.Exit(1)
 		}
 
@@ -122,7 +120,7 @@ func main() {
 		close(cancel)
 	})
 
-	logger.Log("stopped", g.Run())
+	logger.Info().Err(g.Run()).Msg("stopped")
 }
 
 func interrupt(cancel <-chan struct{}) error {

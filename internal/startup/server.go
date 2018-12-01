@@ -4,10 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"os"
 	"sync"
 
-	"github.com/go-kit/kit/log"
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
 	intentpb "github.com/jukeizu/treediagram/api/protobuf-spec/intent"
 	processingpb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
@@ -23,7 +21,7 @@ import (
 )
 
 type ServerRunner struct {
-	Logger      log.Logger
+	Logger      zerolog.Logger
 	Storage     *Storage
 	Conn        *nats.Conn
 	EncodedConn *nats.EncodedConn
@@ -33,10 +31,8 @@ type ServerRunner struct {
 	Processor   processor.Processor
 }
 
-func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
-	logger = log.With(logger, "component", "server")
-	zlogger := zerolog.New(os.Stdout).With().Timestamp().
-		Logger()
+func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error) {
+	logger = logger.With().Str("component", "server").Logger()
 
 	storage, err := NewStorage(config.DbUrl)
 	if err != nil {
@@ -72,20 +68,20 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		return nil, err
 	}
 
-	processor := processor.New(zlogger, conn, intentClient, storage.ProcessorStorage)
+	processor := processor.New(logger, conn, intentClient, storage.ProcessorStorage)
 	err = processor.Start()
 	if err != nil {
 		return nil, err
 	}
 
 	intentService := intent.NewService(storage.IntentStorage)
-	intentService = intent.NewLoggingService(zlogger, intentService)
+	intentService = intent.NewLoggingService(logger, intentService)
 
-	schedulerService := scheduler.NewService(zlogger, storage.JobStorage, conn)
-	schedulerService = scheduler.NewLoggingService(zlogger, schedulerService)
+	schedulerService := scheduler.NewService(logger, storage.JobStorage, conn)
+	schedulerService = scheduler.NewLoggingService(logger, schedulerService)
 
 	userService := user.NewService(storage.UserStorage)
-	userService = user.NewLoggingService(zlogger, userService)
+	userService = user.NewLoggingService(logger, userService)
 
 	grpcServer := grpc.NewServer()
 
@@ -109,7 +105,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 }
 
 func (r *ServerRunner) Start() error {
-	r.Logger.Log("msg", "starting")
+	r.Logger.Info().Msg("starting")
 
 	errC := make(chan error)
 
@@ -121,7 +117,10 @@ func (r *ServerRunner) Start() error {
 			return
 		}
 
-		r.Logger.Log("transport", "grpc", "address", port, "msg", "listening")
+		r.Logger.Info().
+			Str("transport", "grpc").
+			Str("address", port).
+			Msg("listening")
 		errC <- r.GrpcServer.Serve(listener)
 	}()
 
@@ -129,7 +128,7 @@ func (r *ServerRunner) Start() error {
 }
 
 func (r *ServerRunner) Stop() {
-	r.Logger.Log("msg", "stopping")
+	r.Logger.Info().Msg("stopping")
 
 	r.EncodedConn.Drain()
 	r.Conn.Drain()
