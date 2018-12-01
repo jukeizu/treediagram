@@ -54,6 +54,9 @@ func parseConfig() startup.Config {
 
 func main() {
 	logger := logging.NewLogger("treediagram", Version)
+	zlogger := zerolog.New(os.Stdout).With().Timestamp().
+		Str("version", Version).
+		Logger()
 
 	config := parseConfig()
 
@@ -71,7 +74,7 @@ func main() {
 	g := run.Group{}
 
 	if flagScheduler {
-		s, err := startup.NewSchedulerRunner(logger, config)
+		s, err := startup.NewSchedulerRunner(zlogger, config)
 		if err != nil {
 			logger.Log("error", err)
 			os.Exit(1)
@@ -85,7 +88,7 @@ func main() {
 	}
 
 	if flagBot {
-		l, err := startup.NewBotRunner(zerolog.New(os.Stdout).With().Timestamp().Logger(), config)
+		l, err := startup.NewBotRunner(zlogger, config)
 		if err != nil {
 			logger.Log("error", err)
 			os.Exit(1)
