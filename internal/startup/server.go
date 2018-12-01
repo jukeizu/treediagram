@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/go-kit/kit/log"
@@ -17,6 +18,7 @@ import (
 	"github.com/jukeizu/treediagram/scheduler"
 	"github.com/jukeizu/treediagram/user"
 	nats "github.com/nats-io/go-nats"
+	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 )
 
@@ -80,7 +82,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	intentService = intent.NewLoggingService(logger, intentService)
 
 	schedulerService := scheduler.NewService(logger, storage.JobStorage, conn)
-	schedulerService = scheduler.NewLoggingService(logger, schedulerService)
+	schedulerService = scheduler.NewLoggingService(zerolog.New(os.Stdout).With().Timestamp().Logger(), schedulerService)
 
 	userService := user.NewService(storage.UserStorage)
 	userService = user.NewLoggingService(logger, userService)

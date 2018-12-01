@@ -4,29 +4,27 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-kit/kit/log"
 	pb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
+	"github.com/rs/zerolog"
 )
 
 type loggingService struct {
-	logger  log.Logger
+	logger  zerolog.Logger
 	Service pb.SchedulingServer
 }
 
-func NewLoggingService(logger log.Logger, s pb.SchedulingServer) pb.SchedulingServer {
-	logger = log.With(logger, "service", "scheduling")
+func NewLoggingService(logger zerolog.Logger, s pb.SchedulingServer) pb.SchedulingServer {
+	logger = logger.With().Str("service", "scheduling").Logger()
 	return &loggingService{logger, s}
 }
 
 func (s loggingService) Create(ctx context.Context, req *pb.CreateJobRequest) (reply *pb.CreateJobReply, err error) {
 	defer func(begin time.Time) {
-		s.logger.Log(
-			"method", "Create",
-			"request", *req,
-			"reply", *reply,
-			"error", err,
-			"took", time.Since(begin),
-		)
+		s.logger.Info().
+			Str("method", "create").
+			Err(err).
+			Str("took", time.Since(begin).String()).
+			Msg("")
 	}(time.Now())
 
 	reply, err = s.Service.Create(ctx, req)
@@ -36,14 +34,10 @@ func (s loggingService) Create(ctx context.Context, req *pb.CreateJobRequest) (r
 
 func (s loggingService) Jobs(ctx context.Context, req *pb.JobsRequest) (reply *pb.JobsReply, err error) {
 	defer func(begin time.Time) {
-		if err != nil {
-			s.logger.Log(
-				"method", "Jobs",
-				"request", *req,
-				"error", err,
-				"took", time.Since(begin),
-			)
-		}
+		s.logger.Debug().
+			Str("method", "jobs").
+			Str("took", time.Since(begin).String()).
+			Msg("")
 	}(time.Now())
 
 	reply, err = s.Service.Jobs(ctx, req)
@@ -53,14 +47,11 @@ func (s loggingService) Jobs(ctx context.Context, req *pb.JobsRequest) (reply *p
 
 func (s loggingService) Run(ctx context.Context, req *pb.RunJobsRequest) (reply *pb.RunJobsReply, err error) {
 	defer func(begin time.Time) {
-		if err != nil {
-			s.logger.Log(
-				"method", "Run",
-				"request", *req,
-				"error", err,
-				"took", time.Since(begin),
-			)
-		}
+		s.logger.Info().
+			Str("method", "run").
+			Err(err).
+			Str("took", time.Since(begin).String()).
+			Msg("")
 	}(time.Now())
 
 	reply, err = s.Service.Run(ctx, req)
@@ -70,13 +61,11 @@ func (s loggingService) Run(ctx context.Context, req *pb.RunJobsRequest) (reply 
 
 func (s loggingService) Disable(ctx context.Context, req *pb.DisableJobRequest) (reply *pb.DisableJobReply, err error) {
 	defer func(begin time.Time) {
-		s.logger.Log(
-			"method", "Disable",
-			"request", *req,
-			"reply", *reply,
-			"error", err,
-			"took", time.Since(begin),
-		)
+		s.logger.Info().
+			Str("method", "disable").
+			Err(err).
+			Str("took", time.Since(begin).String()).
+			Msg("")
 	}(time.Now())
 
 	reply, err = s.Service.Disable(ctx, req)
