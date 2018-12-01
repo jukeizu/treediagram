@@ -12,6 +12,7 @@ import (
 	"github.com/jukeizu/treediagram/internal/startup"
 	nats "github.com/nats-io/go-nats"
 	"github.com/oklog/run"
+	"github.com/rs/zerolog"
 )
 
 var Version = ""
@@ -86,7 +87,7 @@ func main() {
 	}
 
 	if flagBot {
-		l, err := startup.NewBotRunner(logger, config)
+		l, err := startup.NewBotRunner(zerolog.New(os.Stdout).With().Timestamp().Logger(), config)
 		if err != nil {
 			logger.Log("error", err)
 			os.Exit(1)

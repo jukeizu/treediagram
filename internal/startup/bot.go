@@ -3,15 +3,15 @@ package startup
 import (
 	"sync"
 
-	"github.com/go-kit/kit/log"
 	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 	"github.com/jukeizu/treediagram/bot/discord"
 	nats "github.com/nats-io/go-nats"
+	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 )
 
 type BotRunner struct {
-	Logger      log.Logger
+	Logger      zerolog.Logger
 	ClientConn  *grpc.ClientConn
 	DiscordBot  discord.Bot
 	quit        chan struct{}
@@ -20,8 +20,8 @@ type BotRunner struct {
 	WaitGroup   *sync.WaitGroup
 }
 
-func NewBotRunner(logger log.Logger, config Config) (*BotRunner, error) {
-	logger = log.With(logger, "component", "bot")
+func NewBotRunner(logger zerolog.Logger, config Config) (*BotRunner, error) {
+	logger = logger.With().Str("component", "bot").Logger()
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -65,14 +65,14 @@ func NewBotRunner(logger log.Logger, config Config) (*BotRunner, error) {
 }
 
 func (r *BotRunner) Start() error {
-	r.Logger.Log("msg", "starting")
+	r.Logger.Info().Msg("starting")
 
 	err := r.DiscordBot.Open()
 	if err != nil {
 		return err
 	}
 
-	r.Logger.Log("msg", "treediagram-bot has started.")
+	r.Logger.Info().Msg("treediagram-bot has started")
 
 	<-r.quit
 
@@ -80,7 +80,7 @@ func (r *BotRunner) Start() error {
 }
 
 func (r *BotRunner) Stop() {
-	r.Logger.Log("msg", "stopping")
+	r.Logger.Info().Msg("stopping")
 
 	r.EncodedConn.Drain()
 	r.Conn.Drain()

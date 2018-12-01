@@ -40,6 +40,8 @@ github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967 h1:x7xEyJDP7Hv3LVgvWhz
 github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967/go.mod h1:JGuDeoQd7Z6yL4zQhZ3OPEVHB7fL6Ka6skscFHfmt2k=
 github.com/rs/xid v1.2.1 h1:mhH9Nq+C1fY2l1XIpgxIiUOfNpRBYH1kKcr+qfKgjRc=
 github.com/rs/xid v1.2.1/go.mod h1:+uKXf+4Djp6Md1KODXJxgGQPKngRmWyn10oCKFzNHOQ=
+github.com/rs/zerolog v1.11.0 h1:DRuq/S+4k52uJzBQciUcofXx45GrMC6yrEbb/CoK6+M=
+github.com/rs/zerolog v1.11.0/go.mod h1:YbFCdg8HfsridGWAh22vktObvhZbQsZXe4/zB0OKkWU=
 github.com/shawntoffel/GoMongoDb v0.1.0 h1:6EvATcqHz679ZSGPxU7eH/RNOAbO/aFhwyJGO0ByHkw=
 github.com/shawntoffel/GoMongoDb v0.1.0/go.mod h1:k0PwdHJ6tLNbFXtKuVd7PZoC8Rqhr+FlZrB0f3xN9/s=
 github.com/shawntoffel/services-core v0.0.1 h1:7FIln9DtutvV46RpyImSn9GkqIwCsviNg8srKPjam+s=
