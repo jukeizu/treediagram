@@ -35,6 +35,8 @@ type ServerRunner struct {
 
 func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	logger = log.With(logger, "component", "server")
+	zlogger := zerolog.New(os.Stdout).With().Timestamp().
+		Logger()
 
 	storage, err := NewStorage(config.DbUrl)
 	if err != nil {
@@ -79,8 +81,8 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	intentService := intent.NewService(storage.IntentStorage)
 	intentService = intent.NewLoggingService(logger, intentService)
 
-	schedulerService := scheduler.NewService(logger, storage.JobStorage, conn)
-	schedulerService = scheduler.NewLoggingService(zerolog.New(os.Stdout).With().Timestamp().Logger(), schedulerService)
+	schedulerService := scheduler.NewService(zlogger, storage.JobStorage, conn)
+	schedulerService = scheduler.NewLoggingService(zlogger, schedulerService)
 
 	userService := user.NewService(storage.UserStorage)
 	userService = user.NewLoggingService(logger, userService)
