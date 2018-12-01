@@ -79,7 +79,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	}
 
 	intentService := intent.NewService(storage.IntentStorage)
-	intentService = intent.NewLoggingService(logger, intentService)
+	intentService = intent.NewLoggingService(zlogger, intentService)
 
 	schedulerService := scheduler.NewService(zlogger, storage.JobStorage, conn)
 	schedulerService = scheduler.NewLoggingService(zlogger, schedulerService)
