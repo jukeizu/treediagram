@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"net/http"
 	"sync"
 
 	"github.com/go-kit/kit/log"
@@ -27,9 +26,7 @@ type ServerRunner struct {
 	Conn        *nats.Conn
 	EncodedConn *nats.EncodedConn
 	GrpcServer  *grpc.Server
-	HttpServer  *http.Server
 	GrpcPort    int
-	HttpPort    int
 	WaitGroup   *sync.WaitGroup
 	Processor   processor.Processor
 }
@@ -93,27 +90,13 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 	intentpb.RegisterIntentRegistryServer(grpcServer, intentService)
 	userpb.RegisterUserServer(grpcServer, userService)
 
-	schedulerHttpBinding := scheduler.NewHttpBinding(logger, schedulerService)
-	intentHttpBinding := intent.NewHttpBinding(logger, intentService)
-
-	mux := http.NewServeMux()
-	mux.Handle("/scheduling/", schedulerHttpBinding.MakeHandler())
-	mux.Handle("/intent/", intentHttpBinding.MakeHandler())
-
-	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%d", config.HttpPort),
-		Handler: mux,
-	}
-
 	serverRunner := &ServerRunner{
 		Logger:      logger,
 		Storage:     storage,
 		Conn:        nc,
 		EncodedConn: conn,
 		GrpcServer:  grpcServer,
-		HttpServer:  httpServer,
 		GrpcPort:    config.GrpcPort,
-		HttpPort:    config.HttpPort,
 		WaitGroup:   &wg,
 		Processor:   processor,
 	}
@@ -138,11 +121,6 @@ func (r *ServerRunner) Start() error {
 		errC <- r.GrpcServer.Serve(listener)
 	}()
 
-	go func() {
-		r.Logger.Log("transport", "http", "address", r.HttpServer.Addr, "msg", "listening")
-		errC <- r.HttpServer.ListenAndServe()
-	}()
-
 	return <-errC
 }
 
@@ -155,7 +133,6 @@ func (r *ServerRunner) Stop() {
 	r.Processor.Stop()
 
 	r.GrpcServer.GracefulStop()
-	r.HttpServer.Shutdown(nil)
 	r.Storage.Close()
 
 	r.WaitGroup.Wait()
