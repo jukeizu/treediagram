@@ -27,6 +27,7 @@ var (
 	flagBot       = false
 	flagScheduler = false
 	flagVersion   = false
+	flagDebug     = false
 )
 
 func parseConfig() startup.Config {
@@ -41,6 +42,7 @@ func parseConfig() startup.Config {
 	flag.BoolVar(&flagBot, "bot", false, "Start as bot")
 	flag.BoolVar(&flagScheduler, "scheduler", false, "Start as scheduler")
 	flag.BoolVar(&flagVersion, "v", false, "version")
+	flag.BoolVar(&flagDebug, "D", false, "enable debug logging")
 
 	flag.Parse()
 
@@ -52,16 +54,21 @@ func parseConfig() startup.Config {
 }
 
 func main() {
-	logger := zerolog.New(os.Stdout).With().Timestamp().
-		Str("version", Version).
-		Logger()
-
 	config := parseConfig()
 
 	if flagVersion {
 		fmt.Println(Version)
 		os.Exit(0)
 	}
+
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if flagDebug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
+	logger := zerolog.New(os.Stdout).With().Timestamp().
+		Str("version", Version).
+		Logger()
 
 	if !flagServer && !flagBot && !flagScheduler {
 		flagServer = true
