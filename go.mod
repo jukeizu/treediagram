@@ -6,8 +6,7 @@ require (
 	github.com/go-logfmt/logfmt v0.3.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/protobuf v1.2.0
-	github.com/gorilla/context v1.1.1 // indirect
-	github.com/gorilla/mux v1.6.2
+	github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c
 	github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/nats-io/gnatsd v1.3.0 // indirect
@@ -18,7 +17,6 @@ require (
 	github.com/rs/xid v1.2.1
 	github.com/rs/zerolog v1.11.0
 	github.com/shawntoffel/GoMongoDb v0.1.0
-	github.com/shawntoffel/services-core v0.0.1
 	golang.org/x/net v0.0.0-20180911220305-26e67e76b6c3
 	golang.org/x/sys v0.0.0-20180909124046-d0be0721c37e // indirect
 	google.golang.org/genproto v0.0.0-20180914223249-4b56f30a1fd9 // indirect
