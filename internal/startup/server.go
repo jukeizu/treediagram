@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/go-kit/kit/log"
+	_ "github.com/jnewmano/grpc-json-proxy/codec"
 	intentpb "github.com/jukeizu/treediagram/api/protobuf-spec/intent"
 	processingpb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 	schedulingpb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"

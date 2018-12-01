@@ -8,6 +8,7 @@ require (
 	github.com/golang/protobuf v1.2.0
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/mux v1.6.2
+	github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c
 	github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/nats-io/gnatsd v1.3.0 // indirect
