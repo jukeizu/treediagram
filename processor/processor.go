@@ -5,32 +5,29 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-kit/kit/log"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/intent"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
-	"github.com/jukeizu/treediagram/api/protobuf-spec/registration"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/xid"
+	"github.com/rs/zerolog"
 )
 
 const (
-	ProcessorQueueGroup        = "processor"
-	ProcessorCommandQueueGroup = "processor.command"
-	RequestReceivedSubject     = "request.received"
-	CommandReceivedSubject     = "processor.command.received"
-	ReplyReceivedSubject       = "processor.reply.received"
+	ProcessorQueueGroup  = "processor"
+	ReplyReceivedSubject = "processor.reply.received"
 )
 
 type Processor struct {
-	logger   log.Logger
+	logger   zerolog.Logger
 	queue    *nats.EncodedConn
-	registry registration.RegistrationClient
+	registry intent.IntentRegistryClient
 	storage  Storage
 	wg       *sync.WaitGroup
 }
 
-func New(logger log.Logger, queue *nats.EncodedConn, registry registration.RegistrationClient, storage Storage) Processor {
+func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intent.IntentRegistryClient, storage Storage) Processor {
 	p := Processor{
-		logger:   log.With(logger, "component", "processor"),
+		logger:   logger.With().Str("component", "processor").Logger(),
 		queue:    queue,
 		registry: registry,
 		storage:  storage,
@@ -46,69 +43,34 @@ func (p Processor) Start() error {
 		return err
 	}
 
-	_, err = p.queue.QueueSubscribe(CommandReceivedSubject, ProcessorQueueGroup, p.processCommand)
-	if err != nil {
-		return err
-	}
-
-	_, err = p.queue.QueueSubscribe(CommandReceivedSubject, ProcessorCommandQueueGroup, p.saveCommand)
-	if err != nil {
-		return err
-	}
-
-	p.logger.Log("msg", "started")
+	p.logger.Info().Msg("started")
 
 	return nil
 }
 
 func (p Processor) Stop() {
-	p.logger.Log("msg", "stopping")
+	p.logger.Info().Msg("stopping")
 	p.wg.Wait()
 }
 
-func (p Processor) processRequest(r Request) {
-	p.wg.Add(1)
-	go func(r Request) {
-		defer p.wg.Done()
-		p.logger.Log("request received", r)
+func (p Processor) processRequest(request *processing.MessageRequest) {
+	p.logger.Debug().Msgf("request received %+v", request)
 
-		query := &registration.QueryIntentsRequest{Server: r.ServerId}
+	query := &intent.QueryIntentsRequest{Server: request.ServerId}
 
-		reply, err := p.registry.QueryIntents(context.Background(), query)
-		if err != nil {
-			p.logger.Log("error", "could not query for intents: "+err.Error())
-			return
-		}
+	reply, err := p.registry.QueryIntents(context.Background(), query)
+	if err != nil {
+		p.logger.Error().Err(err).Caller().Msg("error querying for intents")
+		return
+	}
 
-		p.publishCommands(r, reply.Intents)
-	}(r)
-}
-
-func (p Processor) publishCommands(r Request, intents []*registration.Intent) {
-	for _, intent := range intents {
-		i := NewIntent(*intent)
-
-		isMatch, err := i.IsMatch(r)
-		if err != nil {
-			p.logger.Log("error", err.Error())
-		}
-
-		if !isMatch {
-			continue
-		}
-
+	for _, intent := range reply.Intents {
 		command := Command{
-			Id:      xid.New().String(),
-			Request: r,
-			Intent:  i,
+			Request: *request,
+			Intent:  *intent,
 		}
 
-		p.logger.Log("message has intent", command)
-
-		err = p.queue.Publish(CommandReceivedSubject, command)
-		if err != nil {
-			p.logger.Log("error", err.Error())
-		}
+		p.processCommand(command)
 	}
 }
 
@@ -117,39 +79,69 @@ func (p Processor) processCommand(command Command) {
 	go func(command Command) {
 		defer p.wg.Done()
 
-		p.logger.Log("executing command", command)
+		isMatch, err := command.IsMatch()
+		if err != nil {
+			p.logger.Error().Err(err).Caller().Msg("could not determine if command is match")
+		}
 
-		reply, err := command.Execute()
+		if !isMatch {
+			return
+		}
+
+		command.Id = xid.New().String()
+
+		p.saveCommand(command)
+
+		p.logger.Debug().Msg("executing command")
+		response, err := command.Execute()
 		if err != nil {
 			p.saveErrorEvent(command.Id, err)
 			return
 		}
 
-		reply.Id = xid.New().String()
-
-		p.logger.Log("received reply", reply.Id, "command", command)
-
-		err = p.storage.SaveReply(reply)
-		if err != nil {
-			p.saveErrorEvent(command.Id, err)
-			return
-		}
-
-		replyReceived := processing.ReplyReceived{Id: reply.Id}
-
-		err = p.queue.Publish(ReplyReceivedSubject, replyReceived)
-		if err != nil {
-			p.saveErrorEvent(command.Id, err)
-			return
+		for _, message := range response.Messages {
+			p.saveResponseMessage(command, *message)
 		}
 	}(command)
 }
 
-func (p Processor) saveCommand(command Command) {
-	err := p.storage.SaveCommand(command)
-	if err != nil {
-		p.logger.Log("error", err.Error())
+func (p Processor) saveResponseMessage(command Command, message processing.Message) {
+	messageReply := processing.MessageReply{
+		Id:               xid.New().String(),
+		CommandId:        command.Id,
+		ChannelId:        command.Request.ChannelId,
+		UserId:           command.Request.Author.Id,
+		IsPrivateMessage: message.IsPrivateMessage,
+		IsRedirect:       message.IsRedirect,
+		Content:          message.Content,
+		Embed:            message.Embed,
+		Tts:              message.Tts,
+		Files:            message.Files,
 	}
+
+	err := p.storage.SaveMessageReply(messageReply)
+	if err != nil {
+		p.saveErrorEvent(command.Id, err)
+	}
+
+	messageReplyReceived := processing.MessageReplyReceived{Id: messageReply.Id}
+
+	err = p.queue.Publish(ReplyReceivedSubject+"."+command.Request.Source, messageReplyReceived)
+	if err != nil {
+		p.saveErrorEvent(command.Id, err)
+	}
+}
+
+func (p Processor) saveCommand(command Command) {
+	p.wg.Add(1)
+	go func(command Command) {
+		p.wg.Done()
+
+		err := p.storage.SaveCommand(command)
+		if err != nil {
+			p.logger.Error().Err(err).Caller().Msg("error saving command")
+		}
+	}(command)
 }
 
 func (p Processor) saveCommandEvent(commandId string, t string, d string) {
@@ -160,11 +152,9 @@ func (p Processor) saveCommandEvent(commandId string, t string, d string) {
 		Timestamp:   time.Now().Unix(),
 	}
 
-	p.logger.Log("command.event", e)
-
 	err := p.storage.SaveCommandEvent(e)
 	if err != nil {
-		p.logger.Log("error", "error saving command event: "+err.Error())
+		p.logger.Error().Err(err).Caller().Msg("error saving command event")
 	}
 }
 

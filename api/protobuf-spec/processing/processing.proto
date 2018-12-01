@@ -3,20 +3,40 @@ syntax = "proto3";
 package processing;
 
 service Processing {
-    rpc Messages(MessagesRequest) returns (Reply) {}
+    rpc SendMessageRequest(MessageRequest) returns (SendMessageRequestReply) {}
+    rpc GetMessageReply(MessageReplyRequest) returns (MessageReply) {}
 }
 
-message ReplyReceived {
+message MessageReplyReceived {
     string Id = 1;
 }
 
-message MessagesRequest {
-    string Id = 1;
-}
-
-message Reply {
+message MessageRequest {
     string id = 1;
-    repeated Message messages = 2;
+    string source = 2;
+    User bot = 3;
+    User author = 4;
+    string channelId = 5;
+    string serverId = 6;
+    repeated User mentions = 7;
+    string content = 8;
+}
+
+message User {
+    string id = 1;
+    string name = 2;
+}
+
+message SendMessageRequestReply {
+    string id = 1;
+}
+
+message MessageReplyRequest {
+    string id = 1;
+}
+
+message Response {
+    repeated Message messages = 1;
 }
 
 message Message {
@@ -26,6 +46,19 @@ message Message {
     repeated File files = 4;
     bool isPrivateMessage = 5;
     bool isRedirect = 6;
+}
+
+message MessageReply {
+	string id = 1;
+    string commandId = 2;
+    string channelId = 3;
+    string userId = 4;
+    bool isPrivateMessage = 5;
+    bool isRedirect = 6;
+    string content = 7;
+    Embed embed = 8;
+    bool tts = 9;
+    repeated File files = 10;
 }
 
 message EmbedFooter {

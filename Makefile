@@ -10,7 +10,7 @@ PBFILES=$(patsubst %.proto,%.pb.go, $(PROTOFILES))
 
 all: deps test build 
 deps:
-	$(GO) get -d -v ./...
+	$(GO) mod download
 
 test:
 	$(GO) vet ./...

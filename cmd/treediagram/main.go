@@ -8,17 +8,16 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/jukeizu/treediagram/internal/logger"
 	"github.com/jukeizu/treediagram/internal/startup"
 	nats "github.com/nats-io/go-nats"
 	"github.com/oklog/run"
+	"github.com/rs/zerolog"
 )
 
 var Version = ""
 
 const (
 	DefaultGrpcPort                 = 50051
-	DefaultHttpPort                 = 10001
 	DefaultReceivingEndpoint        = "localhost:50051"
 	DiscordTokenEnvironmentVariable = "TREEDIAGRAM_DISCORD_TOKEN"
 )
@@ -28,13 +27,13 @@ var (
 	flagBot       = false
 	flagScheduler = false
 	flagVersion   = false
+	flagDebug     = false
 )
 
 func parseConfig() startup.Config {
 	c := startup.Config{}
 
 	flag.IntVar(&c.GrpcPort, "grpc.port", DefaultGrpcPort, "grpc port")
-	flag.IntVar(&c.HttpPort, "http.port", DefaultHttpPort, "http port")
 	flag.StringVar(&c.NatsServers, "nats", nats.DefaultURL, "NATS servers")
 	flag.StringVar(&c.DbUrl, "db", "localhost", "Database connection url")
 	flag.StringVar(&c.DiscordToken, "discord.token", "", "Discord token. This can also be specified via the "+DiscordTokenEnvironmentVariable+" environment variable.")
@@ -43,6 +42,7 @@ func parseConfig() startup.Config {
 	flag.BoolVar(&flagBot, "bot", false, "Start as bot")
 	flag.BoolVar(&flagScheduler, "scheduler", false, "Start as scheduler")
 	flag.BoolVar(&flagVersion, "v", false, "version")
+	flag.BoolVar(&flagDebug, "D", false, "enable debug logging")
 
 	flag.Parse()
 
@@ -54,14 +54,21 @@ func parseConfig() startup.Config {
 }
 
 func main() {
-	logger := logging.NewLogger("treediagram", Version)
-
 	config := parseConfig()
 
 	if flagVersion {
 		fmt.Println(Version)
 		os.Exit(0)
 	}
+
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if flagDebug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
+	logger := zerolog.New(os.Stdout).With().Timestamp().
+		Str("version", Version).
+		Logger()
 
 	if !flagServer && !flagBot && !flagScheduler {
 		flagServer = true
@@ -74,7 +81,7 @@ func main() {
 	if flagScheduler {
 		s, err := startup.NewSchedulerRunner(logger, config)
 		if err != nil {
-			logger.Log("error", err)
+			logger.Error().Err(err).Caller().Msg("")
 			os.Exit(1)
 		}
 
@@ -88,7 +95,7 @@ func main() {
 	if flagBot {
 		l, err := startup.NewBotRunner(logger, config)
 		if err != nil {
-			logger.Log("error", err)
+			logger.Error().Err(err).Caller().Msg("")
 			os.Exit(1)
 		}
 
@@ -102,7 +109,7 @@ func main() {
 	if flagServer {
 		s, err := startup.NewServerRunner(logger, config)
 		if err != nil {
-			logger.Log("error", err)
+			logger.Error().Err(err).Caller().Msg("")
 			os.Exit(1)
 		}
 
@@ -120,7 +127,7 @@ func main() {
 		close(cancel)
 	})
 
-	logger.Log("stopped", g.Run())
+	logger.Info().Err(g.Run()).Msg("stopped")
 }
 
 func interrupt(cancel <-chan struct{}) error {

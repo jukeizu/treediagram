@@ -1,11 +1,17 @@
 package processor
 
-import "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+import (
+	"errors"
+	"regexp"
+
+	"github.com/jukeizu/treediagram/api/protobuf-spec/intent"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+)
 
 type Command struct {
-	Id      string  `json:"id"`
-	Request Request `json:"request"`
-	Intent  Intent  `json:"intent"`
+	Id      string                    `json:"id"`
+	Request processing.MessageRequest `json:"request"`
+	Intent  intent.Intent             `json:"intent"`
 }
 
 type CommandEvent struct {
@@ -15,8 +21,17 @@ type CommandEvent struct {
 	Timestamp   int64  `json:"timestamp"`
 }
 
-func (c Command) Execute() (*processing.Reply, error) {
-	reply := &processing.Reply{}
+func (c Command) IsMatch() (bool, error) {
+	match, err := regexp.MatchString(c.Intent.Regex, c.Request.Content)
+	if err != nil {
+		return match, errors.New("regexp: " + err.Error())
+	}
+
+	return match, nil
+}
+
+func (c Command) Execute() (*processing.Response, error) {
+	reply := &processing.Response{}
 
 	if len(c.Intent.Endpoint) > 0 {
 		client := Client{}
@@ -30,7 +45,9 @@ func (c Command) Execute() (*processing.Reply, error) {
 	}
 
 	if len(c.Intent.Response) > 0 {
-		m := &processing.Message{Content: c.Intent.Response}
+		m := &processing.Message{
+			Content: c.Intent.Response,
+		}
 		reply.Messages = append(reply.Messages, m)
 	}
 

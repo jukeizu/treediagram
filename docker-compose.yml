@@ -3,6 +3,8 @@ services:
     treediagram:
         build: .
         command: -nats "nats:4222" -db "mongo"
+        ports:
+            - "50051:50051"
         environment:
             - TREEDIAGRAM_DISCORD_TOKEN
         depends_on:

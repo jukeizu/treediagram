@@ -1,16 +1,16 @@
-package registry
+package intent
 
 import (
 	"context"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/registration"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/intent"
 )
 
 type service struct {
 	IntentStorage IntentStorage
 }
 
-func NewService(commandStorage IntentStorage) pb.RegistrationServer {
+func NewService(commandStorage IntentStorage) pb.IntentRegistryServer {
 	return &service{IntentStorage: commandStorage}
 }
 
