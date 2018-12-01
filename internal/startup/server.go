@@ -72,7 +72,7 @@ func NewServerRunner(logger log.Logger, config Config) (*ServerRunner, error) {
 		return nil, err
 	}
 
-	processor := processor.New(logger, conn, intentClient, storage.ProcessorStorage)
+	processor := processor.New(zlogger, conn, intentClient, storage.ProcessorStorage)
 	err = processor.Start()
 	if err != nil {
 		return nil, err
