@@ -3,10 +3,10 @@ package scheduler
 import (
 	"time"
 
-	"github.com/go-kit/kit/log"
 	pb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
 	nats "github.com/nats-io/go-nats"
 	"github.com/robfig/cron"
+	"github.com/rs/zerolog"
 )
 
 type Scheduler interface {
@@ -15,12 +15,12 @@ type Scheduler interface {
 }
 
 type scheduler struct {
-	Logger log.Logger
+	Logger zerolog.Logger
 	Queue  *nats.EncodedConn
 	Cron   *cron.Cron
 }
 
-func NewScheduler(logger log.Logger, queue *nats.EncodedConn) Scheduler {
+func NewScheduler(logger zerolog.Logger, queue *nats.EncodedConn) Scheduler {
 	s := scheduler{
 		Logger: logger,
 		Queue:  queue,
@@ -35,13 +35,13 @@ func NewScheduler(logger log.Logger, queue *nats.EncodedConn) Scheduler {
 func (s *scheduler) Start() {
 	s.Cron.Start()
 
-	s.Logger.Log("msg", "started")
+	s.Logger.Info().Msg("started")
 }
 
 func (s *scheduler) Stop() {
 	s.Cron.Stop()
 
-	s.Logger.Log("msg", "stopped")
+	s.Logger.Info().Msg("stopped")
 }
 
 func (s *scheduler) run() {
@@ -51,6 +51,6 @@ func (s *scheduler) run() {
 
 	err := s.Queue.Publish(SchedulerTickSubject, request)
 	if err != nil {
-		s.Logger.Log("error", err.Error())
+		s.Logger.Error().Err(err).Caller().Msg("error publishing scheduler tick to queue")
 	}
 }

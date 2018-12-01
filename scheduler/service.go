@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-kit/kit/log"
 	pb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/xid"
+	"github.com/rs/zerolog"
 )
 
 var (
@@ -17,12 +17,12 @@ var (
 )
 
 type service struct {
-	logger     log.Logger
+	logger     zerolog.Logger
 	JobStorage JobStorage
 	Queue      *nats.EncodedConn
 }
 
-func NewService(logger log.Logger, storage JobStorage, queue *nats.EncodedConn) pb.SchedulingServer {
+func NewService(logger zerolog.Logger, storage JobStorage, queue *nats.EncodedConn) pb.SchedulingServer {
 	s := &service{logger, storage, queue}
 
 	s.Queue.Subscribe(SchedulerTickSubject, func(req *pb.RunJobsRequest) {
@@ -79,11 +79,9 @@ func (s service) Run(ctx context.Context, req *pb.RunJobsRequest) (*pb.RunJobsRe
 	for _, job := range reply.Jobs {
 		err := s.Queue.Publish(JobsSubject, job)
 		if err != nil {
-			s.logger.Log(
-				"method", "Run",
-				"job", *job,
-				"error", "Error publishing job: "+err.Error(),
-			)
+			s.logger.Error().Err(err).Caller().
+				Str("job.id", job.GetId()).
+				Msg("error publishing job")
 		}
 	}
 

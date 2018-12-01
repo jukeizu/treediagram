@@ -5,11 +5,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-kit/kit/log"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/intent"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/xid"
+	"github.com/rs/zerolog"
 )
 
 const (
@@ -18,16 +18,16 @@ const (
 )
 
 type Processor struct {
-	logger   log.Logger
+	logger   zerolog.Logger
 	queue    *nats.EncodedConn
 	registry intent.IntentRegistryClient
 	storage  Storage
 	wg       *sync.WaitGroup
 }
 
-func New(logger log.Logger, queue *nats.EncodedConn, registry intent.IntentRegistryClient, storage Storage) Processor {
+func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intent.IntentRegistryClient, storage Storage) Processor {
 	p := Processor{
-		logger:   log.With(logger, "component", "processor"),
+		logger:   logger.With().Str("component", "processor").Logger(),
 		queue:    queue,
 		registry: registry,
 		storage:  storage,
@@ -43,24 +43,24 @@ func (p Processor) Start() error {
 		return err
 	}
 
-	p.logger.Log("msg", "started")
+	p.logger.Info().Msg("started")
 
 	return nil
 }
 
 func (p Processor) Stop() {
-	p.logger.Log("msg", "stopping")
+	p.logger.Info().Msg("stopping")
 	p.wg.Wait()
 }
 
 func (p Processor) processRequest(request *processing.MessageRequest) {
-	p.logger.Log("request received", request)
+	p.logger.Debug().Msgf("request received %+v", request)
 
 	query := &intent.QueryIntentsRequest{Server: request.ServerId}
 
 	reply, err := p.registry.QueryIntents(context.Background(), query)
 	if err != nil {
-		p.logger.Log("error", "error querying for intents: "+err.Error())
+		p.logger.Error().Err(err).Caller().Msg("error querying for intents")
 		return
 	}
 
@@ -81,7 +81,7 @@ func (p Processor) processCommand(command Command) {
 
 		isMatch, err := command.IsMatch()
 		if err != nil {
-			p.logger.Log("error", err.Error())
+			p.logger.Error().Err(err).Caller().Msg("could not determine if command is match")
 		}
 
 		if !isMatch {
@@ -92,7 +92,7 @@ func (p Processor) processCommand(command Command) {
 
 		p.saveCommand(command)
 
-		p.logger.Log("executing command", command)
+		p.logger.Debug().Msg("executing command")
 		response, err := command.Execute()
 		if err != nil {
 			p.saveErrorEvent(command.Id, err)
@@ -139,7 +139,7 @@ func (p Processor) saveCommand(command Command) {
 
 		err := p.storage.SaveCommand(command)
 		if err != nil {
-			p.logger.Log("error", err.Error())
+			p.logger.Error().Err(err).Caller().Msg("error saving command")
 		}
 	}(command)
 }
@@ -152,11 +152,9 @@ func (p Processor) saveCommandEvent(commandId string, t string, d string) {
 		Timestamp:   time.Now().Unix(),
 	}
 
-	p.logger.Log("command.event", e)
-
 	err := p.storage.SaveCommandEvent(e)
 	if err != nil {
-		p.logger.Log("error", "error saving command event: "+err.Error())
+		p.logger.Error().Err(err).Caller().Msg("error saving command event")
 	}
 }
 

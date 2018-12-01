@@ -1,22 +1,22 @@
 package startup
 
 import (
-	"github.com/go-kit/kit/log"
 	"github.com/jukeizu/treediagram/scheduler"
 	nats "github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats/encoders/protobuf"
+	"github.com/rs/zerolog"
 )
 
 type SchedulerRunner struct {
-	Logger       log.Logger
+	Logger       zerolog.Logger
 	EncodedConn  *nats.EncodedConn
 	Subscription *nats.Subscription
 	Scheduler    scheduler.Scheduler
 	quit         chan struct{}
 }
 
-func NewSchedulerRunner(logger log.Logger, config Config) (*SchedulerRunner, error) {
-	logger = log.With(logger, "component", "scheduler")
+func NewSchedulerRunner(logger zerolog.Logger, config Config) (*SchedulerRunner, error) {
+	logger = logger.With().Str("component", "scheduler").Logger()
 
 	nc, err := nats.Connect(config.NatsServers)
 	if err != nil {
@@ -41,7 +41,7 @@ func NewSchedulerRunner(logger log.Logger, config Config) (*SchedulerRunner, err
 }
 
 func (r *SchedulerRunner) Start() error {
-	r.Logger.Log("msg", "starting")
+	r.Logger.Info().Msg("starting")
 
 	r.Scheduler.Start()
 
@@ -51,7 +51,7 @@ func (r *SchedulerRunner) Start() error {
 }
 
 func (r *SchedulerRunner) Stop() {
-	r.Logger.Log("msg", "stopping")
+	r.Logger.Info().Msg("stopping")
 
 	close(r.quit)
 	r.Scheduler.Stop()

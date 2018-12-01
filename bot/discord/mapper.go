@@ -5,6 +5,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	"github.com/rs/zerolog"
 )
 
 func mapToPbUser(discordUser *discordgo.User) *pb.User {
@@ -186,4 +187,19 @@ func mapFields(fields []*pb.EmbedField) []*discordgo.MessageEmbedField {
 	}
 
 	return discordFields
+}
+
+func mapToLevel(dgoLevel int) zerolog.Level {
+	switch dgoLevel {
+	case discordgo.LogError:
+		return zerolog.ErrorLevel
+	case discordgo.LogWarning:
+		return zerolog.WarnLevel
+	case discordgo.LogInformational:
+		return zerolog.InfoLevel
+	case discordgo.LogDebug:
+		return zerolog.DebugLevel
+	}
+
+	return zerolog.InfoLevel
 }
