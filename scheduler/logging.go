@@ -20,11 +20,17 @@ func NewLoggingService(logger zerolog.Logger, s pb.SchedulingServer) pb.Scheduli
 
 func (s loggingService) Create(ctx context.Context, req *pb.CreateJobRequest) (reply *pb.CreateJobReply, err error) {
 	defer func(begin time.Time) {
-		s.logger.Info().
+		l := s.logger.With().
 			Str("method", "create").
-			Err(err).
 			Str("took", time.Since(begin).String()).
-			Msg("")
+			Logger()
+
+		if err != nil {
+			l.Error().Err(err).Msg("")
+			return
+		}
+
+		l.Info().Msg("")
 	}(time.Now())
 
 	reply, err = s.Service.Create(ctx, req)
@@ -34,10 +40,17 @@ func (s loggingService) Create(ctx context.Context, req *pb.CreateJobRequest) (r
 
 func (s loggingService) Jobs(ctx context.Context, req *pb.JobsRequest) (reply *pb.JobsReply, err error) {
 	defer func(begin time.Time) {
-		s.logger.Debug().
+		l := s.logger.With().
 			Str("method", "jobs").
 			Str("took", time.Since(begin).String()).
-			Msg("")
+			Logger()
+
+		if err != nil {
+			l.Error().Err(err).Msg("")
+			return
+		}
+
+		l.Info().Msg("")
 	}(time.Now())
 
 	reply, err = s.Service.Jobs(ctx, req)
@@ -47,11 +60,17 @@ func (s loggingService) Jobs(ctx context.Context, req *pb.JobsRequest) (reply *p
 
 func (s loggingService) Run(ctx context.Context, req *pb.RunJobsRequest) (reply *pb.RunJobsReply, err error) {
 	defer func(begin time.Time) {
-		s.logger.Info().
+		l := s.logger.With().
 			Str("method", "run").
-			Err(err).
 			Str("took", time.Since(begin).String()).
-			Msg("")
+			Logger()
+
+		if err != nil {
+			l.Error().Err(err).Msg("")
+			return
+		}
+
+		l.Info().Msg("")
 	}(time.Now())
 
 	reply, err = s.Service.Run(ctx, req)
@@ -61,11 +80,17 @@ func (s loggingService) Run(ctx context.Context, req *pb.RunJobsRequest) (reply 
 
 func (s loggingService) Disable(ctx context.Context, req *pb.DisableJobRequest) (reply *pb.DisableJobReply, err error) {
 	defer func(begin time.Time) {
-		s.logger.Info().
+		l := s.logger.With().
 			Str("method", "disable").
-			Err(err).
 			Str("took", time.Since(begin).String()).
-			Msg("")
+			Logger()
+
+		if err != nil {
+			l.Error().Err(err).Msg("")
+			return
+		}
+
+		l.Info().Msg("")
 	}(time.Now())
 
 	reply, err = s.Service.Disable(ctx, req)
