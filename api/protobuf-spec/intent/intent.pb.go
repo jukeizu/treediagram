@@ -41,7 +41,7 @@ func (m *Intent) Reset()         { *m = Intent{} }
 func (m *Intent) String() string { return proto.CompactTextString(m) }
 func (*Intent) ProtoMessage()    {}
 func (*Intent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_intent_a15ab381449f733d, []int{0}
+	return fileDescriptor_intent_66c277817529cf74, []int{0}
 }
 func (m *Intent) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Intent.Unmarshal(m, b)
@@ -119,8 +119,6 @@ func (m *Intent) GetEnabled() bool {
 
 type QueryIntentsRequest struct {
 	Server               string   `protobuf:"bytes,1,opt,name=server,proto3" json:"server,omitempty"`
-	LastId               string   `protobuf:"bytes,2,opt,name=lastId,proto3" json:"lastId,omitempty"`
-	PageSize             int32    `protobuf:"varint,3,opt,name=pageSize,proto3" json:"pageSize,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -130,7 +128,7 @@ func (m *QueryIntentsRequest) Reset()         { *m = QueryIntentsRequest{} }
 func (m *QueryIntentsRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryIntentsRequest) ProtoMessage()    {}
 func (*QueryIntentsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_intent_a15ab381449f733d, []int{1}
+	return fileDescriptor_intent_66c277817529cf74, []int{1}
 }
 func (m *QueryIntentsRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_QueryIntentsRequest.Unmarshal(m, b)
@@ -157,74 +155,6 @@ func (m *QueryIntentsRequest) GetServer() string {
 	return ""
 }
 
-func (m *QueryIntentsRequest) GetLastId() string {
-	if m != nil {
-		return m.LastId
-	}
-	return ""
-}
-
-func (m *QueryIntentsRequest) GetPageSize() int32 {
-	if m != nil {
-		return m.PageSize
-	}
-	return 0
-}
-
-type QueryIntentsReply struct {
-	Intents              []*Intent `protobuf:"bytes,1,rep,name=intents,proto3" json:"intents,omitempty"`
-	HasMore              bool      `protobuf:"varint,2,opt,name=hasMore,proto3" json:"hasMore,omitempty"`
-	LastId               string    `protobuf:"bytes,3,opt,name=lastId,proto3" json:"lastId,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
-	XXX_unrecognized     []byte    `json:"-"`
-	XXX_sizecache        int32     `json:"-"`
-}
-
-func (m *QueryIntentsReply) Reset()         { *m = QueryIntentsReply{} }
-func (m *QueryIntentsReply) String() string { return proto.CompactTextString(m) }
-func (*QueryIntentsReply) ProtoMessage()    {}
-func (*QueryIntentsReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_intent_a15ab381449f733d, []int{2}
-}
-func (m *QueryIntentsReply) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_QueryIntentsReply.Unmarshal(m, b)
-}
-func (m *QueryIntentsReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_QueryIntentsReply.Marshal(b, m, deterministic)
-}
-func (dst *QueryIntentsReply) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryIntentsReply.Merge(dst, src)
-}
-func (m *QueryIntentsReply) XXX_Size() int {
-	return xxx_messageInfo_QueryIntentsReply.Size(m)
-}
-func (m *QueryIntentsReply) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryIntentsReply.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryIntentsReply proto.InternalMessageInfo
-
-func (m *QueryIntentsReply) GetIntents() []*Intent {
-	if m != nil {
-		return m.Intents
-	}
-	return nil
-}
-
-func (m *QueryIntentsReply) GetHasMore() bool {
-	if m != nil {
-		return m.HasMore
-	}
-	return false
-}
-
-func (m *QueryIntentsReply) GetLastId() string {
-	if m != nil {
-		return m.LastId
-	}
-	return ""
-}
-
 type AddIntentRequest struct {
 	Intent               *Intent  `protobuf:"bytes,1,opt,name=intent,proto3" json:"intent,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -236,7 +166,7 @@ func (m *AddIntentRequest) Reset()         { *m = AddIntentRequest{} }
 func (m *AddIntentRequest) String() string { return proto.CompactTextString(m) }
 func (*AddIntentRequest) ProtoMessage()    {}
 func (*AddIntentRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_intent_a15ab381449f733d, []int{3}
+	return fileDescriptor_intent_66c277817529cf74, []int{2}
 }
 func (m *AddIntentRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AddIntentRequest.Unmarshal(m, b)
@@ -274,7 +204,7 @@ func (m *AddIntentReply) Reset()         { *m = AddIntentReply{} }
 func (m *AddIntentReply) String() string { return proto.CompactTextString(m) }
 func (*AddIntentReply) ProtoMessage()    {}
 func (*AddIntentReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_intent_a15ab381449f733d, []int{4}
+	return fileDescriptor_intent_66c277817529cf74, []int{3}
 }
 func (m *AddIntentReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AddIntentReply.Unmarshal(m, b)
@@ -312,7 +242,7 @@ func (m *DisableIntentRequest) Reset()         { *m = DisableIntentRequest{} }
 func (m *DisableIntentRequest) String() string { return proto.CompactTextString(m) }
 func (*DisableIntentRequest) ProtoMessage()    {}
 func (*DisableIntentRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_intent_a15ab381449f733d, []int{5}
+	return fileDescriptor_intent_66c277817529cf74, []int{4}
 }
 func (m *DisableIntentRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DisableIntentRequest.Unmarshal(m, b)
@@ -350,7 +280,7 @@ func (m *DisableIntentReply) Reset()         { *m = DisableIntentReply{} }
 func (m *DisableIntentReply) String() string { return proto.CompactTextString(m) }
 func (*DisableIntentReply) ProtoMessage()    {}
 func (*DisableIntentReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_intent_a15ab381449f733d, []int{6}
+	return fileDescriptor_intent_66c277817529cf74, []int{5}
 }
 func (m *DisableIntentReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DisableIntentReply.Unmarshal(m, b)
@@ -380,7 +310,6 @@ func (m *DisableIntentReply) GetId() string {
 func init() {
 	proto.RegisterType((*Intent)(nil), "intent.Intent")
 	proto.RegisterType((*QueryIntentsRequest)(nil), "intent.QueryIntentsRequest")
-	proto.RegisterType((*QueryIntentsReply)(nil), "intent.QueryIntentsReply")
 	proto.RegisterType((*AddIntentRequest)(nil), "intent.AddIntentRequest")
 	proto.RegisterType((*AddIntentReply)(nil), "intent.AddIntentReply")
 	proto.RegisterType((*DisableIntentRequest)(nil), "intent.DisableIntentRequest")
@@ -401,7 +330,7 @@ const _ = grpc.SupportPackageIsVersion4
 type IntentRegistryClient interface {
 	AddIntent(ctx context.Context, in *AddIntentRequest, opts ...grpc.CallOption) (*AddIntentReply, error)
 	DisableIntent(ctx context.Context, in *DisableIntentRequest, opts ...grpc.CallOption) (*DisableIntentReply, error)
-	QueryIntents(ctx context.Context, in *QueryIntentsRequest, opts ...grpc.CallOption) (*QueryIntentsReply, error)
+	QueryIntents(ctx context.Context, in *QueryIntentsRequest, opts ...grpc.CallOption) (IntentRegistry_QueryIntentsClient, error)
 }
 
 type intentRegistryClient struct {
@@ -430,20 +359,43 @@ func (c *intentRegistryClient) DisableIntent(ctx context.Context, in *DisableInt
 	return out, nil
 }
 
-func (c *intentRegistryClient) QueryIntents(ctx context.Context, in *QueryIntentsRequest, opts ...grpc.CallOption) (*QueryIntentsReply, error) {
-	out := new(QueryIntentsReply)
-	err := c.cc.Invoke(ctx, "/intent.IntentRegistry/QueryIntents", in, out, opts...)
+func (c *intentRegistryClient) QueryIntents(ctx context.Context, in *QueryIntentsRequest, opts ...grpc.CallOption) (IntentRegistry_QueryIntentsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_IntentRegistry_serviceDesc.Streams[0], "/intent.IntentRegistry/QueryIntents", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &intentRegistryQueryIntentsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type IntentRegistry_QueryIntentsClient interface {
+	Recv() (*Intent, error)
+	grpc.ClientStream
+}
+
+type intentRegistryQueryIntentsClient struct {
+	grpc.ClientStream
+}
+
+func (x *intentRegistryQueryIntentsClient) Recv() (*Intent, error) {
+	m := new(Intent)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // IntentRegistryServer is the server API for IntentRegistry service.
 type IntentRegistryServer interface {
 	AddIntent(context.Context, *AddIntentRequest) (*AddIntentReply, error)
 	DisableIntent(context.Context, *DisableIntentRequest) (*DisableIntentReply, error)
-	QueryIntents(context.Context, *QueryIntentsRequest) (*QueryIntentsReply, error)
+	QueryIntents(*QueryIntentsRequest, IntentRegistry_QueryIntentsServer) error
 }
 
 func RegisterIntentRegistryServer(s *grpc.Server, srv IntentRegistryServer) {
@@ -486,22 +438,25 @@ func _IntentRegistry_DisableIntent_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IntentRegistry_QueryIntents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryIntentsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _IntentRegistry_QueryIntents_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(QueryIntentsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(IntentRegistryServer).QueryIntents(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/intent.IntentRegistry/QueryIntents",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IntentRegistryServer).QueryIntents(ctx, req.(*QueryIntentsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(IntentRegistryServer).QueryIntents(m, &intentRegistryQueryIntentsServer{stream})
+}
+
+type IntentRegistry_QueryIntentsServer interface {
+	Send(*Intent) error
+	grpc.ServerStream
+}
+
+type intentRegistryQueryIntentsServer struct {
+	grpc.ServerStream
+}
+
+func (x *intentRegistryQueryIntentsServer) Send(m *Intent) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 var _IntentRegistry_serviceDesc = grpc.ServiceDesc{
@@ -516,42 +471,40 @@ var _IntentRegistry_serviceDesc = grpc.ServiceDesc{
 			MethodName: "DisableIntent",
 			Handler:    _IntentRegistry_DisableIntent_Handler,
 		},
+	},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "QueryIntents",
-			Handler:    _IntentRegistry_QueryIntents_Handler,
+			StreamName:    "QueryIntents",
+			Handler:       _IntentRegistry_QueryIntents_Handler,
+			ServerStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "intent.proto",
 }
 
-func init() { proto.RegisterFile("intent.proto", fileDescriptor_intent_a15ab381449f733d) }
+func init() { proto.RegisterFile("intent.proto", fileDescriptor_intent_66c277817529cf74) }
 
-var fileDescriptor_intent_a15ab381449f733d = []byte{
-	// 391 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x53, 0x4d, 0x6f, 0x9b, 0x40,
-	0x10, 0x2d, 0xfe, 0xc0, 0x78, 0xea, 0xa2, 0x76, 0x6a, 0x59, 0x5b, 0xda, 0x83, 0x85, 0x2a, 0x8b,
-	0x93, 0x0f, 0xee, 0xa5, 0xca, 0x25, 0x8a, 0x94, 0x43, 0xac, 0x28, 0x87, 0x90, 0x5f, 0x80, 0xc5,
-	0xc8, 0x46, 0x22, 0x40, 0x76, 0x71, 0x14, 0xf2, 0xeb, 0xf2, 0x73, 0xf2, 0x33, 0xa2, 0xdd, 0x65,
-	0x2d, 0x20, 0x44, 0xca, 0x6d, 0xdf, 0xbe, 0x61, 0xde, 0x7b, 0x33, 0x0b, 0xcc, 0x92, 0xac, 0xa4,
-	0xac, 0x5c, 0x17, 0x3c, 0x2f, 0x73, 0xb4, 0x35, 0xf2, 0x5f, 0x2c, 0xb0, 0xb7, 0xea, 0x88, 0x2e,
-	0x0c, 0x92, 0x98, 0x59, 0x4b, 0x2b, 0x98, 0x86, 0x83, 0x24, 0xc6, 0x05, 0xd8, 0x82, 0xf8, 0x23,
-	0x71, 0x36, 0x50, 0x77, 0x35, 0x42, 0x84, 0x51, 0x16, 0xdd, 0x13, 0x1b, 0xaa, 0x5b, 0x75, 0xc6,
-	0x39, 0x8c, 0x39, 0xed, 0xe9, 0x89, 0x8d, 0xd4, 0xa5, 0x06, 0xe8, 0x81, 0xc3, 0x49, 0x14, 0x79,
-	0x26, 0x88, 0x8d, 0x15, 0x71, 0xc2, 0x92, 0xa3, 0x2c, 0x2e, 0xf2, 0x24, 0x2b, 0x99, 0xad, 0x39,
-	0x83, 0xa5, 0xc2, 0x81, 0xd2, 0x82, 0x4d, 0xb4, 0x82, 0x3c, 0x23, 0x83, 0x09, 0x65, 0xd1, 0x2e,
-	0xa5, 0x98, 0x39, 0x4b, 0x2b, 0x70, 0x42, 0x03, 0xfd, 0x08, 0x7e, 0xde, 0x1e, 0x89, 0x57, 0x3a,
-	0x86, 0x08, 0xe9, 0xe1, 0x48, 0xa2, 0x6c, 0xd8, 0xb7, 0x5a, 0xf6, 0x17, 0x60, 0xa7, 0x91, 0x28,
-	0xb7, 0xb1, 0x89, 0xa5, 0x91, 0x34, 0x54, 0x44, 0x7b, 0xba, 0x4b, 0x9e, 0x75, 0xb4, 0x71, 0x78,
-	0xc2, 0x7e, 0x0e, 0x3f, 0xda, 0x12, 0x45, 0x5a, 0x61, 0x00, 0x13, 0x3d, 0x44, 0xc1, 0xac, 0xe5,
-	0x30, 0xf8, 0xba, 0x71, 0xd7, 0xf5, 0x88, 0x75, 0x59, 0x68, 0x68, 0xe9, 0xfd, 0x10, 0x89, 0x9b,
-	0x9c, 0x93, 0xd2, 0x74, 0x42, 0x03, 0x1b, 0x66, 0x86, 0x4d, 0x33, 0xfe, 0x19, 0x7c, 0xbf, 0x88,
-	0xe3, 0xba, 0x4f, 0x1d, 0x68, 0x05, 0xf5, 0xd2, 0x54, 0xa0, 0xf7, 0x72, 0x66, 0xa5, 0xff, 0xc1,
-	0x6d, 0x7c, 0x2b, 0x9d, 0x7e, 0xf6, 0xcb, 0x15, 0xcc, 0x2f, 0x13, 0x21, 0xa7, 0xda, 0x56, 0xee,
-	0xbc, 0x0c, 0xff, 0x2f, 0x60, 0xa7, 0x4e, 0xaa, 0x74, 0xaa, 0x36, 0xaf, 0x16, 0xb8, 0x86, 0xdf,
-	0x27, 0xa2, 0xe4, 0x15, 0x9e, 0xc3, 0xf4, 0x64, 0x0d, 0x99, 0x71, 0xd1, 0x4d, 0xea, 0x2d, 0x7a,
-	0x98, 0x22, 0xad, 0xfc, 0x2f, 0x78, 0x0d, 0xdf, 0x5a, 0xca, 0xf8, 0xc7, 0x94, 0xf6, 0x19, 0xf7,
-	0xbc, 0x0f, 0x58, 0xdd, 0xec, 0x0a, 0x66, 0xcd, 0xad, 0xe2, 0x6f, 0x53, 0xdd, 0xf3, 0x9c, 0xbc,
-	0x5f, 0xfd, 0xa4, 0xea, 0xb4, 0xb3, 0xd5, 0x4f, 0xf5, 0xef, 0x2d, 0x00, 0x00, 0xff, 0xff, 0x0c,
-	0xed, 0x40, 0x35, 0x64, 0x03, 0x00, 0x00,
+var fileDescriptor_intent_66c277817529cf74 = []byte{
+	// 324 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x52, 0xd1, 0x4a, 0xc3, 0x30,
+	0x14, 0x5d, 0xe6, 0xd6, 0x6d, 0xd7, 0x59, 0xe4, 0x3a, 0x46, 0xa8, 0x3e, 0x8c, 0x22, 0x63, 0x2f,
+	0x0e, 0x99, 0x2f, 0xe2, 0xcb, 0x10, 0x7c, 0x11, 0x9f, 0xdc, 0x1f, 0x6c, 0xf4, 0x32, 0x0b, 0x35,
+	0x8d, 0x49, 0x26, 0xf6, 0xef, 0xfc, 0x13, 0x7f, 0x45, 0x9a, 0x34, 0xa3, 0x2b, 0x13, 0x7c, 0xbb,
+	0xe7, 0x9e, 0x93, 0x9e, 0x93, 0x93, 0xc2, 0x30, 0x15, 0x86, 0x84, 0x99, 0x4b, 0x95, 0x9b, 0x1c,
+	0x03, 0x87, 0xe2, 0x6f, 0x06, 0xc1, 0xb3, 0x1d, 0x31, 0x84, 0x76, 0x9a, 0x70, 0x36, 0x61, 0xb3,
+	0xc1, 0xaa, 0x9d, 0x26, 0x38, 0x86, 0x40, 0x93, 0xfa, 0x24, 0xc5, 0xdb, 0x76, 0x57, 0x21, 0x44,
+	0xe8, 0x88, 0xf5, 0x3b, 0xf1, 0x13, 0xbb, 0xb5, 0x33, 0x8e, 0xa0, 0xab, 0x68, 0x4b, 0x5f, 0xbc,
+	0x63, 0x97, 0x0e, 0x60, 0x04, 0x7d, 0x45, 0x5a, 0xe6, 0x42, 0x13, 0xef, 0x5a, 0x62, 0x8f, 0x4b,
+	0x8e, 0x44, 0x22, 0xf3, 0x54, 0x18, 0x1e, 0x38, 0xce, 0xe3, 0xd2, 0xe1, 0x8d, 0x32, 0xc9, 0x7b,
+	0xce, 0xa1, 0x9c, 0x91, 0x43, 0x8f, 0xc4, 0x7a, 0x93, 0x51, 0xc2, 0xfb, 0x13, 0x36, 0xeb, 0xaf,
+	0x3c, 0x8c, 0x6f, 0xe0, 0xe2, 0x75, 0x47, 0xaa, 0x70, 0xd7, 0xd0, 0x2b, 0xfa, 0xd8, 0x91, 0x36,
+	0xb5, 0xf8, 0xac, 0x1e, 0x3f, 0x7e, 0x80, 0xf3, 0xc7, 0x24, 0x71, 0x62, 0xaf, 0x9d, 0x42, 0xd5,
+	0x87, 0xd5, 0x9e, 0x2e, 0xc2, 0x79, 0x55, 0x56, 0x25, 0xf3, 0x6d, 0xdd, 0x43, 0x58, 0x3b, 0x2b,
+	0xb3, 0xe2, 0xdf, 0x27, 0xa7, 0x30, 0x7a, 0x4a, 0x75, 0x19, 0xf8, 0xd0, 0xb9, 0x51, 0x7a, 0x7c,
+	0x0d, 0xd8, 0xd0, 0x95, 0x2e, 0x0d, 0xd5, 0xe2, 0x87, 0x41, 0xe8, 0xf9, 0x6d, 0xaa, 0x8d, 0x2a,
+	0x70, 0x09, 0x83, 0x7d, 0x34, 0xe4, 0x3e, 0x45, 0xf3, 0xa6, 0xd1, 0xf8, 0x08, 0x23, 0xb3, 0x22,
+	0x6e, 0xe1, 0x0b, 0x9c, 0x1d, 0x38, 0xe3, 0x95, 0x97, 0x1e, 0x0b, 0x1e, 0x45, 0x7f, 0xb0, 0xee,
+	0x63, 0x4b, 0x18, 0xd6, 0xdf, 0x04, 0x2f, 0xbd, 0xfa, 0xc8, 0x4b, 0x45, 0x8d, 0xce, 0xe2, 0xd6,
+	0x2d, 0xdb, 0x04, 0xf6, 0x37, 0xbd, 0xfb, 0x0d, 0x00, 0x00, 0xff, 0xff, 0xd1, 0x66, 0xd7, 0xc4,
+	0xb6, 0x02, 0x00, 0x00,
 }

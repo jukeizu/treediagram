@@ -88,13 +88,10 @@ func (s *storage) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
 		bson.M{"server": bson.M{"$in": []string{query.Server, ""}}},
 		bson.M{"enabled": true},
 	}
-	if bson.IsObjectIdHex(query.LastId) {
-		bsonQuery = append(bsonQuery, bson.M{"_id": bson.M{"$gt": bson.ObjectIdHex(query.LastId)}})
-	}
 
 	pbIntents := []*pb.Intent{}
 
-	err := s.Collection.Find(bson.M{"$and": bsonQuery}).Limit(int(query.PageSize)).All(&intents)
+	err := s.Collection.Find(bson.M{"$and": bsonQuery}).All(&intents)
 	if err != nil {
 		return pbIntents, fmt.Errorf("db error: %s", err)
 	}

@@ -58,7 +58,7 @@ func (s loggingService) DisableIntent(ctx context.Context, req *pb.DisableIntent
 	return
 }
 
-func (s loggingService) QueryIntents(ctx context.Context, req *pb.QueryIntentsRequest) (reply *pb.QueryIntentsReply, err error) {
+func (s loggingService) QueryIntents(req *pb.QueryIntentsRequest, stream pb.IntentRegistry_QueryIntentsServer) (err error) {
 	defer func(begin time.Time) {
 		l := s.logger.With().
 			Str("method", "queryIntent").
@@ -73,7 +73,7 @@ func (s loggingService) QueryIntents(ctx context.Context, req *pb.QueryIntentsRe
 		l.Info().Msg("")
 	}(time.Now())
 
-	reply, err = s.Service.QueryIntents(ctx, req)
+	err = s.Service.QueryIntents(req, stream)
 
 	return
 }
