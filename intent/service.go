@@ -32,29 +32,18 @@ func (s *service) DisableIntent(ctx context.Context, req *pb.DisableIntentReques
 	return &pb.DisableIntentReply{Id: req.Id}, nil
 }
 
-func (s *service) QueryIntents(ctx context.Context, req *pb.QueryIntentsRequest) (*pb.QueryIntentsReply, error) {
-	if req.PageSize < 1 {
-		req.PageSize = 50
-	}
-
+func (s *service) QueryIntents(req *pb.QueryIntentsRequest, stream pb.IntentRegistry_QueryIntentsServer) error {
 	intents, err := s.IntentStorage.Query(*req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	reply := &pb.QueryIntentsReply{
-		Intents: intents,
+	for _, intent := range intents {
+		err := stream.Send(intent)
+		if err != nil {
+			return err
+		}
 	}
 
-	numIntents := len(reply.Intents)
-
-	if numIntents > 0 {
-		reply.LastId = reply.Intents[numIntents-1].Id
-	}
-
-	if numIntents == int(req.PageSize) {
-		reply.HasMore = true
-	}
-
-	return reply, nil
+	return nil
 }
