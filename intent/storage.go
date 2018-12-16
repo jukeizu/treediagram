@@ -18,6 +18,7 @@ type Intent struct {
 	Server   string        `json:"server"`
 	Name     string        `json:"name"`
 	Regex    string        `json:"regex"`
+	Mention  bool          `json:"mention"`
 	Response string        `json:"response"`
 	Endpoint string        `json:"endpoint"`
 	Help     string        `json:"help"`
@@ -60,6 +61,7 @@ func (s *storage) Save(pbIntent pb.Intent) error {
 		Server:   pbIntent.Server,
 		Name:     pbIntent.Name,
 		Regex:    pbIntent.Regex,
+		Mention:  pbIntent.Mention,
 		Response: pbIntent.Response,
 		Endpoint: pbIntent.Endpoint,
 		Help:     pbIntent.Help,
@@ -102,6 +104,7 @@ func (s *storage) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
 			Server:   i.Server,
 			Name:     i.Name,
 			Regex:    i.Regex,
+			Mention:  i.Mention,
 			Response: i.Response,
 			Endpoint: i.Endpoint,
 			Help:     i.Help,
