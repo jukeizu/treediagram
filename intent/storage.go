@@ -18,6 +18,7 @@ type Intent struct {
 	Server   string        `json:"server"`
 	Name     string        `json:"name"`
 	Regex    string        `json:"regex"`
+	Mention  bool          `json:"mention"`
 	Response string        `json:"response"`
 	Endpoint string        `json:"endpoint"`
 	Help     string        `json:"help"`
@@ -60,6 +61,7 @@ func (s *storage) Save(pbIntent pb.Intent) error {
 		Server:   pbIntent.Server,
 		Name:     pbIntent.Name,
 		Regex:    pbIntent.Regex,
+		Mention:  pbIntent.Mention,
 		Response: pbIntent.Response,
 		Endpoint: pbIntent.Endpoint,
 		Help:     pbIntent.Help,
@@ -88,13 +90,10 @@ func (s *storage) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
 		bson.M{"server": bson.M{"$in": []string{query.Server, ""}}},
 		bson.M{"enabled": true},
 	}
-	if bson.IsObjectIdHex(query.LastId) {
-		bsonQuery = append(bsonQuery, bson.M{"_id": bson.M{"$gt": bson.ObjectIdHex(query.LastId)}})
-	}
 
 	pbIntents := []*pb.Intent{}
 
-	err := s.Collection.Find(bson.M{"$and": bsonQuery}).Limit(int(query.PageSize)).All(&intents)
+	err := s.Collection.Find(bson.M{"$and": bsonQuery}).All(&intents)
 	if err != nil {
 		return pbIntents, fmt.Errorf("db error: %s", err)
 	}
@@ -105,6 +104,7 @@ func (s *storage) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
 			Server:   i.Server,
 			Name:     i.Name,
 			Regex:    i.Regex,
+			Mention:  i.Mention,
 			Response: i.Response,
 			Endpoint: i.Endpoint,
 			Help:     i.Help,

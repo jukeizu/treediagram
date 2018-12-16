@@ -2,6 +2,7 @@ package processor
 
 import (
 	"context"
+	"io"
 	"sync"
 	"time"
 
@@ -58,13 +59,22 @@ func (p Processor) processRequest(request *processing.MessageRequest) {
 
 	query := &intent.QueryIntentsRequest{Server: request.ServerId}
 
-	reply, err := p.registry.QueryIntents(context.Background(), query)
+	stream, err := p.registry.QueryIntents(context.Background(), query)
 	if err != nil {
-		p.logger.Error().Err(err).Caller().Msg("error querying for intents")
+		p.logger.Error().Err(err).Caller().Msg("error getting QueryIntents stream")
 		return
 	}
 
-	for _, intent := range reply.Intents {
+	for {
+		intent, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			p.logger.Error().Err(err).Caller().Msg("error receiving intent from stream")
+		}
+
 		command := Command{
 			Request: *request,
 			Intent:  *intent,

@@ -5,7 +5,7 @@ package intent;
 service IntentRegistry {
     rpc AddIntent(AddIntentRequest) returns (AddIntentReply) {}
     rpc DisableIntent(DisableIntentRequest) returns (DisableIntentReply) {}
-    rpc QueryIntents(QueryIntentsRequest) returns (QueryIntentsReply) {}
+    rpc QueryIntents(QueryIntentsRequest) returns (stream Intent) {}
 }
 
 message Intent {
@@ -13,23 +13,16 @@ message Intent {
     string server = 2;
     string name = 3;
     string regex = 4;
-    string response = 5;
-    string endpoint = 6;
-    string help = 7;
-    bool enabled = 8;
+    bool mention = 5;
+    string response = 6;
+    string endpoint = 7;
+    string help = 8;
+    bool enabled = 9;
 }
 
 
 message QueryIntentsRequest {
     string server = 1;
-    string lastId = 2;
-    int32 pageSize = 3;
-}
-
-message QueryIntentsReply {
-    repeated Intent intents = 1;
-    bool hasMore = 2;
-    string lastId = 3;
 }
 
 message AddIntentRequest {

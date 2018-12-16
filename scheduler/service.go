@@ -14,6 +14,7 @@ import (
 var (
 	JobsSubject          = "jobs"
 	SchedulerTickSubject = "scheduler.tick"
+	SchedulerQueueGroup  = "scheduler"
 )
 
 type service struct {
@@ -22,14 +23,18 @@ type service struct {
 	Queue      *nats.EncodedConn
 }
 
-func NewService(logger zerolog.Logger, storage JobStorage, queue *nats.EncodedConn) pb.SchedulingServer {
+func NewService(logger zerolog.Logger, storage JobStorage, queue *nats.EncodedConn) (pb.SchedulingServer, error) {
 	s := &service{logger, storage, queue}
 
-	s.Queue.Subscribe(SchedulerTickSubject, func(req *pb.RunJobsRequest) {
+	_, err := s.Queue.QueueSubscribe(SchedulerTickSubject, SchedulerQueueGroup, func(req *pb.RunJobsRequest) {
 		s.Run(context.Background(), req)
 	})
 
-	return s
+	if err != nil {
+		return nil, err
+	}
+
+	return s, nil
 }
 
 func (s service) Create(ctx context.Context, req *pb.CreateJobRequest) (*pb.CreateJobReply, error) {
