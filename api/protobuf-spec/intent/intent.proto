@@ -13,10 +13,11 @@ message Intent {
     string server = 2;
     string name = 3;
     string regex = 4;
-    string response = 5;
-    string endpoint = 6;
-    string help = 7;
-    bool enabled = 8;
+    bool mention = 5;
+    string response = 6;
+    string endpoint = 7;
+    string help = 8;
+    bool enabled = 9;
 }
 
 

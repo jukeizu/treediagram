@@ -22,6 +22,10 @@ type CommandEvent struct {
 }
 
 func (c Command) IsMatch() (bool, error) {
+	if c.Intent.Mention && !c.isBotMentioned() {
+		return false, nil
+	}
+
 	match, err := regexp.MatchString(c.Intent.Regex, c.Request.Content)
 	if err != nil {
 		return match, errors.New("regexp: " + err.Error())
@@ -52,4 +56,14 @@ func (c Command) Execute() (*processing.Response, error) {
 	}
 
 	return reply, nil
+}
+
+func (c Command) isBotMentioned() bool {
+	for _, mention := range c.Request.Mentions {
+		if mention.Id == c.Request.Bot.Id {
+			return true
+		}
+	}
+
+	return false
 }
