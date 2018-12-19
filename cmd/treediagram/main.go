@@ -11,6 +11,7 @@ import (
 	"github.com/jukeizu/treediagram/internal/startup"
 	nats "github.com/nats-io/go-nats"
 	"github.com/oklog/run"
+	"github.com/rs/xid"
 	"github.com/rs/zerolog"
 )
 
@@ -67,6 +68,7 @@ func main() {
 	}
 
 	logger := zerolog.New(os.Stdout).With().Timestamp().
+		Str("instance", xid.New().String()).
 		Str("version", Version).
 		Logger()
 
