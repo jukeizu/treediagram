@@ -13,10 +13,11 @@ func init() {
 func Up20190113020925(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS preferences (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-			userId STRING NOT NULL DEFAULT '',
+			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+			userId STRING UNIQUE NOT NULL DEFAULT '',
 			serverId STRING NOT NULL DEFAULT '',
-			created TIMESTAMPTZ NOT NULL DEFAULT NOW())`)
+			created TIMESTAMPTZ NOT NULL DEFAULT NOW()
+		)`)
 	return err
 }
 
