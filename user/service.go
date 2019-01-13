@@ -7,21 +7,21 @@ import (
 )
 
 type service struct {
-	UserStorage UserStorage
+	UserDb UserDb
 }
 
-func NewService(userStorage UserStorage) pb.UserServer {
-	return &service{userStorage}
+func NewService(userDb UserDb) pb.UserServer {
+	return &service{userDb}
 }
 
 func (s service) Preference(ctx context.Context, req *pb.PreferenceRequest) (*pb.PreferenceReply, error) {
-	preference, err := s.UserStorage.Preference(req)
+	preference, err := s.UserDb.Preference(req)
 
 	return &pb.PreferenceReply{Preference: preference}, err
 }
 
 func (s service) SetServer(ctx context.Context, req *pb.SetServerRequest) (*pb.PreferenceReply, error) {
-	preference, err := s.UserStorage.SetServer(req)
+	preference, err := s.UserDb.SetServer(req)
 
 	return &pb.PreferenceReply{Preference: preference}, err
 }
