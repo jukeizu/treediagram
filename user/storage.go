@@ -1,60 +1,66 @@
 package user
 
 import (
+	"database/sql"
+	"fmt"
+
 	pb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
-	mdb "github.com/shawntoffel/GoMongoDb"
-	"gopkg.in/mgo.v2/bson"
+	_ "github.com/jukeizu/treediagram/user/migrations"
+	_ "github.com/lib/pq"
+	"github.com/pressly/goose"
 )
 
 const (
-	DatabaseName   = "user"
-	CollectionName = "preferences"
+	DatabaseName = "treediagram_user"
+	TableName    = "preferences"
 )
 
 type UserStorage interface {
-	mdb.Storage
-
 	Preference(*pb.PreferenceRequest) (*pb.Preference, error)
 	SetServer(*pb.SetServerRequest) (*pb.Preference, error)
+	Migrate() error
 }
 
 type storage struct {
-	mdb.Store
+	Db *sql.DB
 }
 
 func NewUserStorage(url string) (UserStorage, error) {
-	c := mdb.DbConfig{
-		Url:            url,
-		DatabaseName:   DatabaseName,
-		CollectionName: CollectionName,
-	}
+	conn := fmt.Sprintf("postgresql://%s/%s?sslmode=disable", url, DatabaseName)
 
-	store, err := mdb.NewStorage(c)
+	db, err := sql.Open("postgres", conn)
 	if err != nil {
 		return nil, err
 	}
 
-	j := storage{}
-	j.Session = store.Session
-	j.Collection = store.Collection
+	r := storage{
+		Db: db,
+	}
 
-	return &j, err
+	return &r, err
+}
+
+func (s *storage) Migrate() error {
+	return goose.Up(s.Db, "user/migrations")
 }
 
 func (s *storage) Preference(req *pb.PreferenceRequest) (*pb.Preference, error) {
 	preference := &pb.Preference{}
 
-	err := s.Collection.Find(bson.M{"userid": req.UserId}).One(&preference)
+	q := `SELECT userId, serverId FROM $1 WHERE userId = $2`
+
+	err := s.Db.QueryRow(q, TableName, req.UserId).Scan(&preference.UserId, &preference.ServerId)
 
 	return preference, err
 }
 
 func (s *storage) SetServer(req *pb.SetServerRequest) (*pb.Preference, error) {
-	_, err := s.Collection.Upsert(bson.M{"userid": req.UserId}, bson.M{"$set": bson.M{"serverid": req.ServerId}})
+	preference := &pb.Preference{}
 
-	if err != nil {
-		return nil, err
-	}
+	q := `INSERT INTO $1 (userId, serverId) VALUES($2, $3) RETURNING userId, serverId`
 
-	return s.Preference(&pb.PreferenceRequest{UserId: req.UserId})
+	err := s.Db.QueryRow(q, TableName, req.UserId, req.ServerId).
+		Scan(&preference.UserId, &preference.ServerId)
+
+	return preference, err
 }

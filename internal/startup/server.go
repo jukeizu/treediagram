@@ -34,7 +34,7 @@ type ServerRunner struct {
 func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error) {
 	logger = logger.With().Str("component", "server").Logger()
 
-	storage, err := NewStorage(config.DbUrl)
+	storage, err := NewStorage(logger, config.MdbUrl, config.DbUrl)
 	if err != nil {
 		return nil, errors.New("db: " + err.Error())
 	}

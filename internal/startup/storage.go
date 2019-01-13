@@ -2,9 +2,12 @@ package startup
 
 import (
 	"github.com/jukeizu/treediagram/intent"
+	"github.com/jukeizu/treediagram/pkg/goosezerolog"
 	"github.com/jukeizu/treediagram/processor"
 	"github.com/jukeizu/treediagram/scheduler"
 	"github.com/jukeizu/treediagram/user"
+	"github.com/pressly/goose"
+	"github.com/rs/zerolog"
 )
 
 type Storage struct {
@@ -14,23 +17,32 @@ type Storage struct {
 	UserStorage      user.UserStorage
 }
 
-func NewStorage(dbUrl string) (*Storage, error) {
-	processorStorage, err := processor.NewStorage(dbUrl)
+func NewStorage(logger zerolog.Logger, mdbUrl string, dbUrl string) (*Storage, error) {
+	gooseLogger := goosezerolog.New(logger)
+	goose.SetLogger(gooseLogger)
+	goose.SetDialect("postgres")
+
+	processorStorage, err := processor.NewStorage(mdbUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	commandStorage, err := intent.NewIntentStorage(dbUrl)
+	commandStorage, err := intent.NewIntentStorage(mdbUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	jobStorage, err := scheduler.NewJobStorage(dbUrl)
+	jobStorage, err := scheduler.NewJobStorage(mdbUrl)
 	if err != nil {
 		return nil, err
 	}
 
 	userStorage, err := user.NewUserStorage(dbUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	err = userStorage.Migrate()
 	if err != nil {
 		return nil, err
 	}
@@ -49,5 +61,4 @@ func (s *Storage) Close() {
 	s.ProcessorStorage.Close()
 	s.IntentStorage.Close()
 	s.JobStorage.Close()
-	s.UserStorage.Close()
 }
