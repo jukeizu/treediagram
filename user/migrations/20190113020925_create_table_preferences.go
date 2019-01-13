@@ -16,7 +16,8 @@ func Up20190113020925(tx *sql.Tx) error {
 			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
 			userId STRING UNIQUE NOT NULL DEFAULT '',
 			serverId STRING NOT NULL DEFAULT '',
-			created TIMESTAMPTZ NOT NULL DEFAULT NOW()
+			created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+			updated TIMESTAMPTZ
 		)`)
 	return err
 }

@@ -58,7 +58,7 @@ func (u *userDb) SetServer(req *pb.SetServerRequest) (*pb.Preference, error) {
 
 	q := `INSERT INTO preferences (userId, serverId) 
 			VALUES($1, $2) 
-			ON CONFLICT (userId) DO UPDATE SET serverId = excluded.serverId 
+			ON CONFLICT (userId) DO UPDATE SET serverId = excluded.serverId, updated = NOW()
 			RETURNING userId, serverId`
 
 	err := u.Db.QueryRow(q, req.UserId, req.ServerId).
