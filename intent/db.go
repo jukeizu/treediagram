@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	pb "github.com/jukeizu/treediagram/api/protobuf-spec/intent"
-	_ "github.com/jukeizu/treediagram/intent/migrations"
+	"github.com/jukeizu/treediagram/intent/migrations"
 	_ "github.com/lib/pq"
-	"github.com/pressly/goose"
+	"github.com/shawntoffel/gossage"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -54,8 +54,17 @@ func NewIntentDb(url string) (IntentDb, error) {
 }
 
 func (i *intentDb) Migrate() error {
-	//goose.AddMigration(migration.Up20190113072028, migration.Down20190113072028)
-	return goose.Up(i.Db, "intent/migrations")
+	g, err := gossage.New(i.Db)
+	if err != nil {
+		return err
+	}
+
+	err = g.RegisterMigrations(migration.CreateTableIntents20190113072028{})
+	if err != nil {
+		return err
+	}
+
+	return g.Up()
 }
 
 func (i *intentDb) Save(pbIntent pb.Intent) error {

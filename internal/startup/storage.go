@@ -2,11 +2,9 @@ package startup
 
 import (
 	"github.com/jukeizu/treediagram/intent"
-	"github.com/jukeizu/treediagram/pkg/goosezerolog"
 	"github.com/jukeizu/treediagram/processor"
 	"github.com/jukeizu/treediagram/scheduler"
 	"github.com/jukeizu/treediagram/user"
-	"github.com/pressly/goose"
 	"github.com/rs/zerolog"
 )
 
@@ -18,10 +16,6 @@ type Storage struct {
 }
 
 func NewStorage(logger zerolog.Logger, mdbUrl string, dbUrl string) (*Storage, error) {
-	gooseLogger := goosezerolog.New(logger)
-	goose.SetLogger(gooseLogger)
-	goose.SetDialect("postgres")
-
 	processorStorage, err := processor.NewStorage(mdbUrl)
 	if err != nil {
 		return nil, err
@@ -37,7 +31,7 @@ func NewStorage(logger zerolog.Logger, mdbUrl string, dbUrl string) (*Storage, e
 		return nil, err
 	}
 
-	userDb, err := user.NewUserDb(dbUrl)
+	userDb, err := user.NewUserDb(logger, dbUrl)
 	if err != nil {
 		return nil, err
 	}

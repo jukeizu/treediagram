@@ -5,9 +5,10 @@ import (
 	"fmt"
 
 	pb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
-	_ "github.com/jukeizu/treediagram/user/migrations"
+	"github.com/jukeizu/treediagram/user/migrations"
 	_ "github.com/lib/pq"
-	"github.com/pressly/goose"
+	"github.com/rs/zerolog"
+	"github.com/shawntoffel/gossage"
 )
 
 const (
@@ -21,10 +22,11 @@ type UserDb interface {
 }
 
 type userDb struct {
-	Db *sql.DB
+	Db     *sql.DB
+	Logger zerolog.Logger
 }
 
-func NewUserDb(url string) (UserDb, error) {
+func NewUserDb(logger zerolog.Logger, url string) (UserDb, error) {
 	conn := fmt.Sprintf("postgresql://%s/%s?sslmode=disable", url, DatabaseName)
 
 	db, err := sql.Open("postgres", conn)
@@ -33,14 +35,25 @@ func NewUserDb(url string) (UserDb, error) {
 	}
 
 	u := userDb{
-		Db: db,
+		Db:     db,
+		Logger: logger,
 	}
 
 	return &u, err
 }
 
 func (u *userDb) Migrate() error {
-	return goose.Up(u.Db, "user/migrations")
+	g, err := gossage.New(u.Db)
+	if err != nil {
+		return err
+	}
+
+	err = g.RegisterMigrations(migration.CreateTablePreferences20190113020925{})
+	if err != nil {
+		return err
+	}
+
+	return g.Up()
 }
 
 func (u *userDb) Preference(req *pb.PreferenceRequest) (*pb.Preference, error) {

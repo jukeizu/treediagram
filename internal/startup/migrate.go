@@ -2,8 +2,10 @@ package startup
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/rs/zerolog"
+	"github.com/shawntoffel/gossage"
 )
 
 type MigrationRunner struct {
@@ -13,6 +15,11 @@ type MigrationRunner struct {
 
 func NewMigrationRunner(logger zerolog.Logger, mdbUrl string, dbUrl string) (*MigrationRunner, error) {
 	logger = logger.With().Str("component", "migrator").Logger()
+
+	gossage.Logger = func(format string, a ...interface{}) {
+		msg := fmt.Sprintf(format, a...)
+		logger.Info().Msg(msg)
+	}
 
 	storage, err := NewStorage(logger, mdbUrl, dbUrl)
 	if err != nil {

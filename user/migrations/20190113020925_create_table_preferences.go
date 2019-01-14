@@ -2,15 +2,15 @@ package migration
 
 import (
 	"database/sql"
-
-	"github.com/pressly/goose"
 )
 
-func init() {
-	goose.AddMigration(Up20190113020925, Down20190113020925)
+type CreateTablePreferences20190113020925 struct{}
+
+func (m CreateTablePreferences20190113020925) Version() string {
+	return "20190113020925_CreateTablePreferences"
 }
 
-func Up20190113020925(tx *sql.Tx) error {
+func (m CreateTablePreferences20190113020925) Up(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS preferences (
 			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
@@ -22,7 +22,7 @@ func Up20190113020925(tx *sql.Tx) error {
 	return err
 }
 
-func Down20190113020925(tx *sql.Tx) error {
+func (m CreateTablePreferences20190113020925) Down(tx *sql.Tx) error {
 	_, err := tx.Exec(`DROP TABLE preferences`)
 	return err
 }

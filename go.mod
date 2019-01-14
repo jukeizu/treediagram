@@ -10,12 +10,11 @@ require (
 	github.com/nats-io/go-nats v1.6.0
 	github.com/nats-io/nuid v1.0.0 // indirect
 	github.com/oklog/run v1.0.0
-	github.com/pressly/goose v2.4.5+incompatible
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
 	github.com/rs/xid v1.2.1
 	github.com/rs/zerolog v1.11.0
 	github.com/shawntoffel/GoMongoDb v0.1.0
-	github.com/shawntoffel/goose v2.4.5+incompatible
+	github.com/shawntoffel/gossage v0.0.1
 	golang.org/x/net v0.0.0-20180911220305-26e67e76b6c3
 	golang.org/x/sys v0.0.0-20180909124046-d0be0721c37e // indirect
 	google.golang.org/genproto v0.0.0-20180914223249-4b56f30a1fd9 // indirect
