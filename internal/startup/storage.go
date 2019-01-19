@@ -11,7 +11,7 @@ import (
 type Storage struct {
 	ProcessorStorage processor.Storage
 	IntentDb         intent.IntentDb
-	JobStorage       scheduler.JobStorage
+	JobDb            scheduler.JobDb
 	UserDb           user.UserDb
 }
 
@@ -26,7 +26,7 @@ func NewStorage(logger zerolog.Logger, mdbUrl string, dbUrl string) (*Storage, e
 		return nil, err
 	}
 
-	jobStorage, err := scheduler.NewJobStorage(mdbUrl)
+	jobDb, err := scheduler.NewJobDb(dbUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func NewStorage(logger zerolog.Logger, mdbUrl string, dbUrl string) (*Storage, e
 	s := &Storage{
 		ProcessorStorage: processorStorage,
 		IntentDb:         intentDb,
-		JobStorage:       jobStorage,
+		JobDb:            jobDb,
 		UserDb:           userDb,
 	}
 
@@ -57,10 +57,14 @@ func (s *Storage) Migrate() error {
 		return err
 	}
 
+	err = s.JobDb.Migrate()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (s *Storage) Close() {
 	s.ProcessorStorage.Close()
-	s.JobStorage.Close()
 }
