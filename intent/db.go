@@ -8,24 +8,11 @@ import (
 	"github.com/jukeizu/treediagram/intent/migrations"
 	_ "github.com/lib/pq"
 	"github.com/shawntoffel/gossage"
-	"gopkg.in/mgo.v2/bson"
 )
 
 const (
 	DatabaseName = "treediagram_intents"
 )
-
-type Intent struct {
-	Id       bson.ObjectId `json:"id,omitempty" bson:"_id,omitempty"`
-	Server   string        `json:"server"`
-	Name     string        `json:"name"`
-	Regex    string        `json:"regex"`
-	Mention  bool          `json:"mention"`
-	Response string        `json:"response"`
-	Endpoint string        `json:"endpoint"`
-	Help     string        `json:"help"`
-	Enabled  bool          `json:"enabled"`
-}
 
 type IntentDb interface {
 	Save(pb.Intent) error
@@ -68,15 +55,83 @@ func (i *intentDb) Migrate() error {
 }
 
 func (i *intentDb) Save(pbIntent pb.Intent) error {
-	return nil
+	q := `INSERT INTO intents (
+		serverId,
+		name,
+		regex,
+		mention,
+		response,
+		endpoint,
+		help,
+		enabled
+	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`
+
+	_, err := i.Db.Exec(q,
+		pbIntent.ServerId,
+		pbIntent.Name,
+		pbIntent.Regex,
+		pbIntent.Mention,
+		pbIntent.Response,
+		pbIntent.Endpoint,
+		pbIntent.Help,
+		pbIntent.Enabled,
+	)
+
+	return err
 }
 
 func (i *intentDb) Disable(id string) error {
-	return nil
+	q := `UPDATE intents SET enabled = false WHERE id = $1`
+
+	_, err := i.Db.Exec(q, id)
+
+	return err
 }
 
 func (i *intentDb) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
 	pbIntents := []*pb.Intent{}
+
+	q := `SELECT id,
+			serverId,
+			name,
+			regex,
+			mention,
+			response,
+			endpoint,
+			help,
+			enabled
+		FROM intents 
+		WHERE serverId = $1 OR serverId = '' 
+		AND enabled = true`
+
+	rows, err := i.Db.Query(q, query.ServerId)
+	if err == sql.ErrNoRows {
+		return pbIntents, nil
+	}
+	if err != nil {
+		return pbIntents, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		pbIntent := pb.Intent{}
+		err := rows.Scan(
+			&pbIntent.Id,
+			&pbIntent.ServerId,
+			&pbIntent.Name,
+			&pbIntent.Regex,
+			&pbIntent.Mention,
+			&pbIntent.Response,
+			&pbIntent.Endpoint,
+			&pbIntent.Help,
+			&pbIntent.Enabled,
+		)
+		if err != nil {
+			return pbIntents, err
+		}
+
+		pbIntents = append(pbIntents, &pbIntent)
+	}
 
 	return pbIntents, nil
 }

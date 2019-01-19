@@ -57,7 +57,7 @@ func (p Processor) Stop() {
 func (p Processor) processRequest(request *processing.MessageRequest) {
 	p.logger.Debug().Msgf("request received %+v", request)
 
-	query := &intent.QueryIntentsRequest{Server: request.ServerId}
+	query := &intent.QueryIntentsRequest{ServerId: request.ServerId}
 
 	stream, err := p.registry.QueryIntents(context.Background(), query)
 	if err != nil {
@@ -73,6 +73,7 @@ func (p Processor) processRequest(request *processing.MessageRequest) {
 
 		if err != nil {
 			p.logger.Error().Err(err).Caller().Msg("error receiving intent from stream")
+			break
 		}
 
 		command := Command{
