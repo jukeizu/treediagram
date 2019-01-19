@@ -7,7 +7,6 @@ import (
 
 	pb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
 	nats "github.com/nats-io/go-nats"
-	"github.com/rs/xid"
 	"github.com/rs/zerolog"
 )
 
@@ -39,7 +38,6 @@ func NewService(logger zerolog.Logger, storage JobDb, queue *nats.EncodedConn) (
 
 func (s service) Create(ctx context.Context, req *pb.CreateJobRequest) (*pb.CreateJobReply, error) {
 	job := &pb.Job{
-		Id:          xid.New().String(),
 		Type:        req.Type,
 		Content:     req.Content,
 		UserId:      req.UserId,
@@ -48,9 +46,9 @@ func (s service) Create(ctx context.Context, req *pb.CreateJobRequest) (*pb.Crea
 		Enabled:     true,
 	}
 
-	err := s.JobDb.Create(job)
+	returnJob, err := s.JobDb.Create(job)
 
-	return &pb.CreateJobReply{Job: job}, err
+	return &pb.CreateJobReply{Job: returnJob}, err
 }
 
 func (s service) Jobs(ctx context.Context, req *pb.JobsRequest) (*pb.JobsReply, error) {

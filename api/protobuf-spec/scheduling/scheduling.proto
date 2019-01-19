@@ -26,6 +26,7 @@ message Job {
     string destination = 5;
     Schedule schedule = 6;
     bool enabled = 7;
+    int32 created = 8;
 }
 
 message CreateJobRequest {
