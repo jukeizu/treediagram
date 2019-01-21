@@ -83,7 +83,7 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 	}
 	schedulerService = scheduler.NewLoggingService(logger, schedulerService)
 
-	userService := user.NewService(storage.UserDb)
+	userService := user.NewService(storage.UserRepository)
 	userService = user.NewLoggingService(logger, userService)
 
 	grpcServer := grpc.NewServer()

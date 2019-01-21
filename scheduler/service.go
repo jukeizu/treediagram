@@ -22,8 +22,8 @@ type service struct {
 	Queue      *nats.EncodedConn
 }
 
-func NewService(logger zerolog.Logger, r Repository, queue *nats.EncodedConn) (pb.SchedulingServer, error) {
-	s := &service{logger, r, queue}
+func NewService(logger zerolog.Logger, repository Repository, queue *nats.EncodedConn) (pb.SchedulingServer, error) {
+	s := &service{logger, repository, queue}
 
 	_, err := s.Queue.QueueSubscribe(SchedulerTickSubject, SchedulerQueueGroup, func(req *pb.RunJobsRequest) {
 		s.Run(context.Background(), req)

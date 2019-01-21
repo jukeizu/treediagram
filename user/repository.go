@@ -7,7 +7,6 @@ import (
 	pb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
 	"github.com/jukeizu/treediagram/user/migrations"
 	_ "github.com/lib/pq"
-	"github.com/rs/zerolog"
 	"github.com/shawntoffel/gossage"
 )
 
@@ -15,18 +14,17 @@ const (
 	DatabaseName = "treediagram_user"
 )
 
-type UserDb interface {
+type Repository interface {
 	Preference(*pb.PreferenceRequest) (*pb.Preference, error)
 	SetServer(*pb.SetServerRequest) (*pb.Preference, error)
 	Migrate() error
 }
 
-type userDb struct {
-	Db     *sql.DB
-	Logger zerolog.Logger
+type repository struct {
+	Db *sql.DB
 }
 
-func NewUserDb(logger zerolog.Logger, url string) (UserDb, error) {
+func NewRepository(url string) (Repository, error) {
 	conn := fmt.Sprintf("postgresql://%s/%s?sslmode=disable", url, DatabaseName)
 
 	db, err := sql.Open("postgres", conn)
@@ -34,16 +32,15 @@ func NewUserDb(logger zerolog.Logger, url string) (UserDb, error) {
 		return nil, err
 	}
 
-	u := userDb{
-		Db:     db,
-		Logger: logger,
+	r := repository{
+		Db: db,
 	}
 
-	return &u, err
+	return &r, err
 }
 
-func (u *userDb) Migrate() error {
-	g, err := gossage.New(u.Db)
+func (r *repository) Migrate() error {
+	g, err := gossage.New(r.Db)
 	if err != nil {
 		return err
 	}
@@ -56,17 +53,17 @@ func (u *userDb) Migrate() error {
 	return g.Up()
 }
 
-func (u *userDb) Preference(req *pb.PreferenceRequest) (*pb.Preference, error) {
+func (r *repository) Preference(req *pb.PreferenceRequest) (*pb.Preference, error) {
 	preference := &pb.Preference{}
 
 	q := `SELECT userId, serverId FROM preferences WHERE userId = $1`
 
-	err := u.Db.QueryRow(q, req.UserId).Scan(&preference.UserId, &preference.ServerId)
+	err := r.Db.QueryRow(q, req.UserId).Scan(&preference.UserId, &preference.ServerId)
 
 	return preference, err
 }
 
-func (u *userDb) SetServer(req *pb.SetServerRequest) (*pb.Preference, error) {
+func (r *repository) SetServer(req *pb.SetServerRequest) (*pb.Preference, error) {
 	preference := &pb.Preference{}
 
 	q := `INSERT INTO preferences (userId, serverId) 
@@ -74,7 +71,7 @@ func (u *userDb) SetServer(req *pb.SetServerRequest) (*pb.Preference, error) {
 			ON CONFLICT (userId) DO UPDATE SET serverId = excluded.serverId, updated = NOW()
 			RETURNING userId, serverId`
 
-	err := u.Db.QueryRow(q, req.UserId, req.ServerId).
+	err := r.Db.QueryRow(q, req.UserId, req.ServerId).
 		Scan(&preference.UserId, &preference.ServerId)
 
 	return preference, err
