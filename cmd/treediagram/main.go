@@ -37,7 +37,6 @@ func parseConfig() startup.Config {
 
 	flag.IntVar(&c.GrpcPort, "grpc.port", DefaultGrpcPort, "grpc port")
 	flag.StringVar(&c.NatsServers, "nats", nats.DefaultURL, "NATS servers")
-	flag.StringVar(&c.MdbUrl, "mdb", "localhost", "mdb connection url")
 	flag.StringVar(&c.DbUrl, "db", "treediagram@localhost:26257", "Database connection url")
 	flag.StringVar(&c.DiscordToken, "discord.token", "", "Discord token. This can also be specified via the "+DiscordTokenEnvironmentVariable+" environment variable.")
 	flag.StringVar(&c.ReceivingEndpoint, "endpoint", DefaultReceivingEndpoint, "Url of the Receiving service")
@@ -76,7 +75,7 @@ func main() {
 		Logger()
 
 	if flagMigrate {
-		migrationRunner, err := startup.NewMigrationRunner(logger, config.MdbUrl, config.DbUrl)
+		migrationRunner, err := startup.NewMigrationRunner(logger, config.DbUrl)
 		if err != nil {
 			logger.Error().Err(err).Caller().Msg("")
 			os.Exit(1)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"io"
 	"sync"
-	"time"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/intent"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
@@ -19,20 +18,20 @@ const (
 )
 
 type Processor struct {
-	logger   zerolog.Logger
-	queue    *nats.EncodedConn
-	registry intent.IntentRegistryClient
-	storage  Storage
-	wg       *sync.WaitGroup
+	logger     zerolog.Logger
+	queue      *nats.EncodedConn
+	registry   intent.IntentRegistryClient
+	repository Repository
+	wg         *sync.WaitGroup
 }
 
-func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intent.IntentRegistryClient, storage Storage) Processor {
+func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intent.IntentRegistryClient, repository Repository) Processor {
 	p := Processor{
-		logger:   logger.With().Str("component", "processor").Logger(),
-		queue:    queue,
-		registry: registry,
-		storage:  storage,
-		wg:       &sync.WaitGroup{},
+		logger:     logger.With().Str("component", "processor").Logger(),
+		queue:      queue,
+		registry:   registry,
+		repository: repository,
+		wg:         &sync.WaitGroup{},
 	}
 
 	return p
@@ -101,12 +100,12 @@ func (p Processor) processCommand(command Command) {
 
 		command.Id = xid.New().String()
 
-		p.saveCommand(command)
+		// p.saveCommand(command)
 
 		p.logger.Debug().Msg("executing command")
 		response, err := command.Execute()
 		if err != nil {
-			p.saveErrorEvent(command.Id, err)
+			// p.saveErrorEvent(command.Id, err)
 			return
 		}
 
@@ -117,38 +116,41 @@ func (p Processor) processCommand(command Command) {
 }
 
 func (p Processor) saveResponseMessage(command Command, message processing.Message) {
-	messageReply := processing.MessageReply{
-		Id:               xid.New().String(),
-		CommandId:        command.Id,
-		ChannelId:        command.Request.ChannelId,
-		UserId:           command.Request.Author.Id,
-		IsPrivateMessage: message.IsPrivateMessage,
-		IsRedirect:       message.IsRedirect,
-		Content:          message.Content,
-		Embed:            message.Embed,
-		Tts:              message.Tts,
-		Files:            message.Files,
-	}
+	/*
+		messageReply := processing.MessageReply{
+			Id:               xid.New().String(),
+			CommandId:        command.Id,
+			ChannelId:        command.Request.ChannelId,
+			UserId:           command.Request.Author.Id,
+			IsPrivateMessage: message.IsPrivateMessage,
+			IsRedirect:       message.IsRedirect,
+			Content:          message.Content,
+			Embed:            message.Embed,
+			Tts:              message.Tts,
+			Files:            message.Files,
+		}
 
-	err := p.storage.SaveMessageReply(messageReply)
-	if err != nil {
-		p.saveErrorEvent(command.Id, err)
-	}
+		err := p.repository.SaveMessageReply(messageReply)
+		if err != nil {
+			p.saveErrorEvent(command.Id, err)
+		}
 
-	messageReplyReceived := processing.MessageReplyReceived{Id: messageReply.Id}
+		messageReplyReceived := processing.MessageReplyReceived{Id: messageReply.Id}
 
-	err = p.queue.Publish(ReplyReceivedSubject+"."+command.Request.Source, messageReplyReceived)
-	if err != nil {
-		p.saveErrorEvent(command.Id, err)
-	}
+		err = p.queue.Publish(ReplyReceivedSubject+"."+command.Request.Source, messageReplyReceived)
+		if err != nil {
+			p.saveErrorEvent(command.Id, err)
+		}
+	*/
 }
 
+/*
 func (p Processor) saveCommand(command Command) {
 	p.wg.Add(1)
 	go func(command Command) {
 		p.wg.Done()
 
-		err := p.storage.SaveCommand(command)
+		err := p.repository.SaveCommand(command)
 		if err != nil {
 			p.logger.Error().Err(err).Caller().Msg("error saving command")
 		}
@@ -163,7 +165,7 @@ func (p Processor) saveCommandEvent(commandId string, t string, d string) {
 		Timestamp:   time.Now().Unix(),
 	}
 
-	err := p.storage.SaveCommandEvent(e)
+	err := p.repository.SaveCommandEvent(e)
 	if err != nil {
 		p.logger.Error().Err(err).Caller().Msg("error saving command event")
 	}
@@ -172,3 +174,4 @@ func (p Processor) saveCommandEvent(commandId string, t string, d string) {
 func (p Processor) saveErrorEvent(commandId string, commandError error) {
 	p.saveCommandEvent(commandId, "error", commandError.Error())
 }
+*/

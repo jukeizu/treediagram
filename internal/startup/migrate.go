@@ -13,7 +13,7 @@ type MigrationRunner struct {
 	Storage *Storage
 }
 
-func NewMigrationRunner(logger zerolog.Logger, mdbUrl string, dbUrl string) (*MigrationRunner, error) {
+func NewMigrationRunner(logger zerolog.Logger, dbUrl string) (*MigrationRunner, error) {
 	logger = logger.With().Str("component", "migrator").Logger()
 
 	gossage.Logger = func(format string, a ...interface{}) {
@@ -21,7 +21,7 @@ func NewMigrationRunner(logger zerolog.Logger, mdbUrl string, dbUrl string) (*Mi
 		logger.Info().Msg(msg)
 	}
 
-	storage, err := NewStorage(logger, mdbUrl, dbUrl)
+	storage, err := NewStorage(logger, dbUrl)
 	if err != nil {
 		return nil, errors.New("db: " + err.Error())
 	}

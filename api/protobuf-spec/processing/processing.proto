@@ -41,24 +41,18 @@ message Response {
 
 message Message {
     string content = 1;
-    Embed embed = 2;
-    bool tts = 3;
-    repeated File files = 4;
-    bool isPrivateMessage = 5;
-    bool isRedirect = 6;
+    bool isPrivateMessage = 2;
+    bool isRedirect = 3;
 }
 
 message MessageReply {
 	string id = 1;
-    string commandId = 2;
+    string processingRequestId = 2;
     string channelId = 3;
     string userId = 4;
     bool isPrivateMessage = 5;
     bool isRedirect = 6;
     string content = 7;
-    Embed embed = 8;
-    bool tts = 9;
-    repeated File files = 10;
 }
 
 message EmbedFooter {

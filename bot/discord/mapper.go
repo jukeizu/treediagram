@@ -56,19 +56,21 @@ func mapToMessageSend(message *pb.MessageReply) *discordgo.MessageSend {
 		return nil
 	}
 
-	mappedEmbed := mapToEmbed(message.Embed)
+	//mappedEmbed := mapToEmbed(message.Embed)
 
 	messageSend := discordgo.MessageSend{
 		Content: message.Content,
-		Embed:   mappedEmbed,
+		//Embed:   mappedEmbed,
 	}
 
-	if message.Files != nil {
-		for _, file := range message.Files {
-			discordFile := mapToFile(file)
-			messageSend.Files = append(messageSend.Files, discordFile)
+	/*
+		if message.Files != nil {
+			for _, file := range message.Files {
+				discordFile := mapToFile(file)
+				messageSend.Files = append(messageSend.Files, discordFile)
+			}
 		}
-	}
+	*/
 
 	return &messageSend
 }
