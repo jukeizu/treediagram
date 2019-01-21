@@ -74,7 +74,7 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 		return nil, err
 	}
 
-	intentService := intent.NewService(storage.IntentDb)
+	intentService := intent.NewService(storage.IntentRepository)
 	intentService = intent.NewLoggingService(logger, intentService)
 
 	schedulerService, err := scheduler.NewService(logger, storage.SchedulerRepository, conn)

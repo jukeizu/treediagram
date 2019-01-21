@@ -7,15 +7,15 @@ import (
 )
 
 type service struct {
-	IntentDb IntentDb
+	Repository Repository
 }
 
-func NewService(intentDb IntentDb) pb.IntentRegistryServer {
-	return &service{IntentDb: intentDb}
+func NewService(repository Repository) pb.IntentRegistryServer {
+	return &service{Repository: repository}
 }
 
 func (s *service) AddIntent(ctx context.Context, req *pb.AddIntentRequest) (*pb.AddIntentReply, error) {
-	err := s.IntentDb.Save(*req.Intent)
+	err := s.Repository.Save(*req.Intent)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func (s *service) AddIntent(ctx context.Context, req *pb.AddIntentRequest) (*pb.
 }
 
 func (s *service) DisableIntent(ctx context.Context, req *pb.DisableIntentRequest) (*pb.DisableIntentReply, error) {
-	err := s.IntentDb.Disable(req.Id)
+	err := s.Repository.Disable(req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (s *service) DisableIntent(ctx context.Context, req *pb.DisableIntentReques
 }
 
 func (s *service) QueryIntents(req *pb.QueryIntentsRequest, stream pb.IntentRegistry_QueryIntentsServer) error {
-	intents, err := s.IntentDb.Query(*req)
+	intents, err := s.Repository.Query(*req)
 	if err != nil {
 		return err
 	}

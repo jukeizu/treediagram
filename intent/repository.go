@@ -14,18 +14,18 @@ const (
 	DatabaseName = "treediagram_intents"
 )
 
-type IntentDb interface {
+type Repository interface {
 	Save(pb.Intent) error
 	Disable(string) error
 	Query(pb.QueryIntentsRequest) ([]*pb.Intent, error)
 	Migrate() error
 }
 
-type intentDb struct {
+type repository struct {
 	Db *sql.DB
 }
 
-func NewIntentDb(url string) (IntentDb, error) {
+func NewRepository(url string) (Repository, error) {
 	conn := fmt.Sprintf("postgresql://%s/%s?sslmode=disable", url, DatabaseName)
 
 	db, err := sql.Open("postgres", conn)
@@ -33,15 +33,15 @@ func NewIntentDb(url string) (IntentDb, error) {
 		return nil, err
 	}
 
-	i := intentDb{
+	i := repository{
 		Db: db,
 	}
 
 	return &i, err
 }
 
-func (i *intentDb) Migrate() error {
-	g, err := gossage.New(i.Db)
+func (r *repository) Migrate() error {
+	g, err := gossage.New(r.Db)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (i *intentDb) Migrate() error {
 	return g.Up()
 }
 
-func (i *intentDb) Save(pbIntent pb.Intent) error {
+func (r *repository) Save(pbIntent pb.Intent) error {
 	q := `INSERT INTO intents (
 		serverId,
 		name,
@@ -66,7 +66,7 @@ func (i *intentDb) Save(pbIntent pb.Intent) error {
 		enabled
 	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`
 
-	_, err := i.Db.Exec(q,
+	_, err := r.Db.Exec(q,
 		pbIntent.ServerId,
 		pbIntent.Name,
 		pbIntent.Regex,
@@ -80,15 +80,15 @@ func (i *intentDb) Save(pbIntent pb.Intent) error {
 	return err
 }
 
-func (i *intentDb) Disable(id string) error {
+func (r *repository) Disable(id string) error {
 	q := `UPDATE intents SET enabled = false WHERE id = $1`
 
-	_, err := i.Db.Exec(q, id)
+	_, err := r.Db.Exec(q, id)
 
 	return err
 }
 
-func (i *intentDb) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
+func (r *repository) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
 	pbIntents := []*pb.Intent{}
 
 	q := `SELECT id,
@@ -104,7 +104,7 @@ func (i *intentDb) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
 		WHERE serverId = $1 OR serverId = '' 
 		AND enabled = true`
 
-	rows, err := i.Db.Query(q, query.ServerId)
+	rows, err := r.Db.Query(q, query.ServerId)
 	if err == sql.ErrNoRows {
 		return pbIntents, nil
 	}
