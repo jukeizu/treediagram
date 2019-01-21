@@ -13,18 +13,18 @@ const (
 	DatabaseName = "treediagram_scheduler"
 )
 
-type JobDb interface {
+type Repository interface {
 	Create(*pb.Job) (*pb.Job, error)
 	Jobs(*pb.Schedule) ([]*pb.Job, error)
 	Disable(id string) error
 	Migrate() error
 }
 
-type jobDb struct {
+type repository struct {
 	Db *sql.DB
 }
 
-func NewJobDb(url string) (JobDb, error) {
+func NewRepository(url string) (Repository, error) {
 	conn := fmt.Sprintf("postgresql://%s/%s?sslmode=disable", url, DatabaseName)
 
 	db, err := sql.Open("postgres", conn)
@@ -32,15 +32,15 @@ func NewJobDb(url string) (JobDb, error) {
 		return nil, err
 	}
 
-	j := jobDb{
+	r := repository{
 		Db: db,
 	}
 
-	return &j, nil
+	return &r, nil
 }
 
-func (j *jobDb) Migrate() error {
-	g, err := gossage.New(j.Db)
+func (r *repository) Migrate() error {
+	g, err := gossage.New(r.Db)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (j *jobDb) Migrate() error {
 	return g.Up()
 }
 
-func (j *jobDb) Create(job *pb.Job) (*pb.Job, error) {
+func (r *repository) Create(job *pb.Job) (*pb.Job, error) {
 	q := `INSERT INTO job (
 			type,
 			content,
@@ -82,7 +82,7 @@ func (j *jobDb) Create(job *pb.Job) (*pb.Job, error) {
 			enabled,
 			created::INT`
 
-	job, err := j.queryJob(q,
+	job, err := r.queryJob(q,
 		job.Type,
 		job.Content,
 		job.UserId,
@@ -102,9 +102,9 @@ func (j *jobDb) Create(job *pb.Job) (*pb.Job, error) {
 	return job, nil
 }
 
-func (j *jobDb) Jobs(schedule *pb.Schedule) ([]*pb.Job, error) {
+func (r *repository) Jobs(schedule *pb.Schedule) ([]*pb.Job, error) {
 	if schedule == nil {
-		return j.allJobs()
+		return r.allJobs()
 	}
 
 	q := `SELECT id,
@@ -121,15 +121,15 @@ func (j *jobDb) Jobs(schedule *pb.Schedule) ([]*pb.Job, error) {
 		enabled,
 		created::INT
 	FROM job
-	WHERE minute IN($1, '')
+	WHERE enabled = true
+	AND minute IN($1, '')
 	AND hour IN($2, '')
 	AND dayOfMonth IN($3, '')
 	AND month IN($4, '')
 	AND dayOfWeek IN ($5, '')
-	AND year IN ($6, '')
-	AND enabled = true`
+	AND year IN ($6, '')`
 
-	jobs, err := j.queryJobs(q,
+	jobs, err := r.queryJobs(q,
 		schedule.Minute,
 		schedule.Hour,
 		schedule.DayOfMonth,
@@ -141,7 +141,7 @@ func (j *jobDb) Jobs(schedule *pb.Schedule) ([]*pb.Job, error) {
 	return jobs, err
 }
 
-func (j *jobDb) allJobs() ([]*pb.Job, error) {
+func (r *repository) allJobs() ([]*pb.Job, error) {
 	q := `SELECT id,
 		type,
 		content,
@@ -158,24 +158,23 @@ func (j *jobDb) allJobs() ([]*pb.Job, error) {
 	FROM job
 	WHERE enabled = true`
 
-	jobs, err := j.queryJobs(q)
+	jobs, err := r.queryJobs(q)
 
 	return jobs, err
-
 }
 
-func (j *jobDb) Disable(id string) error {
+func (r *repository) Disable(id string) error {
 	q := `UPDATE job SET enabled = false WHERE id = $1`
 
-	_, err := j.Db.Exec(q, id)
+	_, err := r.Db.Exec(q, id)
 
 	return err
 }
 
-func (j *jobDb) queryJobs(q string, dest ...interface{}) ([]*pb.Job, error) {
+func (r *repository) queryJobs(q string, dest ...interface{}) ([]*pb.Job, error) {
 	jobs := []*pb.Job{}
 
-	rows, err := j.Db.Query(q, dest...)
+	rows, err := r.Db.Query(q, dest...)
 	if err != nil {
 		return jobs, err
 	}
@@ -208,8 +207,8 @@ func (j *jobDb) queryJobs(q string, dest ...interface{}) ([]*pb.Job, error) {
 	return jobs, nil
 }
 
-func (j *jobDb) queryJob(q string, dest ...interface{}) (*pb.Job, error) {
-	jobs, err := j.queryJobs(q, dest...)
+func (r *repository) queryJob(q string, dest ...interface{}) (*pb.Job, error) {
+	jobs, err := r.queryJobs(q, dest...)
 	if err != nil {
 		return nil, err
 	}

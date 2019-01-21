@@ -17,13 +17,13 @@ var (
 )
 
 type service struct {
-	logger zerolog.Logger
-	JobDb  JobDb
-	Queue  *nats.EncodedConn
+	logger     zerolog.Logger
+	Repository Repository
+	Queue      *nats.EncodedConn
 }
 
-func NewService(logger zerolog.Logger, storage JobDb, queue *nats.EncodedConn) (pb.SchedulingServer, error) {
-	s := &service{logger, storage, queue}
+func NewService(logger zerolog.Logger, r Repository, queue *nats.EncodedConn) (pb.SchedulingServer, error) {
+	s := &service{logger, r, queue}
 
 	_, err := s.Queue.QueueSubscribe(SchedulerTickSubject, SchedulerQueueGroup, func(req *pb.RunJobsRequest) {
 		s.Run(context.Background(), req)
@@ -46,14 +46,14 @@ func (s service) Create(ctx context.Context, req *pb.CreateJobRequest) (*pb.Crea
 		Enabled:     true,
 	}
 
-	returnJob, err := s.JobDb.Create(job)
+	returnJob, err := s.Repository.Create(job)
 
 	return &pb.CreateJobReply{Job: returnJob}, err
 }
 
 func (s service) Jobs(ctx context.Context, req *pb.JobsRequest) (*pb.JobsReply, error) {
 	if req.Time == 0 {
-		jobs, err := s.JobDb.Jobs(nil)
+		jobs, err := s.Repository.Jobs(nil)
 
 		return &pb.JobsReply{Jobs: jobs}, err
 	}
@@ -68,7 +68,7 @@ func (s service) Jobs(ctx context.Context, req *pb.JobsRequest) (*pb.JobsReply, 
 		DayOfWeek:  t.Weekday().String(),
 	}
 
-	jobs, err := s.JobDb.Jobs(schedule)
+	jobs, err := s.Repository.Jobs(schedule)
 
 	return &pb.JobsReply{Jobs: jobs}, err
 }
@@ -92,7 +92,7 @@ func (s service) Run(ctx context.Context, req *pb.RunJobsRequest) (*pb.RunJobsRe
 }
 
 func (s service) Disable(ctx context.Context, req *pb.DisableJobRequest) (*pb.DisableJobReply, error) {
-	err := s.JobDb.Disable(req.Id)
+	err := s.Repository.Disable(req.Id)
 
 	return &pb.DisableJobReply{Id: req.Id, Enabled: false}, err
 }
