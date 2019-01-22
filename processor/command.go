@@ -9,7 +9,6 @@ import (
 )
 
 type Command struct {
-	Id      string                    `json:"id"`
 	Request processing.MessageRequest `json:"request"`
 	Intent  intent.Intent             `json:"intent"`
 }

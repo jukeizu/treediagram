@@ -16,7 +16,7 @@ const (
 type Repository interface {
 	SaveProcessingRequest(processing.ProcessingRequest) (*processing.ProcessingRequest, error)
 	ProcessingRequest(string) (*processing.ProcessingRequest, error)
-	SaveProcessingEvent(*processing.ProcessingEvent) error
+	SaveProcessingEvent(processing.ProcessingEvent) error
 	ProcessingEvents(string) ([]*processing.ProcessingEvent, error)
 	SaveMessageReply(processing.MessageReply) (*processing.MessageReply, error)
 	MessageReply(string) (*processing.MessageReply, error)
@@ -125,7 +125,7 @@ func (r *repository) ProcessingRequest(id string) (*processing.ProcessingRequest
 	return &p, nil
 }
 
-func (r *repository) SaveProcessingEvent(e *processing.ProcessingEvent) error {
+func (r *repository) SaveProcessingEvent(e processing.ProcessingEvent) error {
 	q := `INSERT INTO processing_event (
 		processingRequestId,
 		description,
