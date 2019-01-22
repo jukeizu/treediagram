@@ -95,15 +95,15 @@ func (r *repository) SaveProcessingRequest(p processing.ProcessingRequest) (*pro
 
 func (r *repository) ProcessingRequest(id string) (*processing.ProcessingRequest, error) {
 	q := `SELECT id,
-			intentId,
-			source,
-			channelId,
-			serverId,
-			botId,
-			userId,
-			created::INT
-		FROM processing_request
-		WHERE id = $1`
+		intentId,
+		source,
+		channelId,
+		serverId,
+		botId,
+		userId,
+		created::INT
+	FROM processing_request
+	WHERE id = $1`
 
 	p := processing.ProcessingRequest{}
 
@@ -127,10 +127,10 @@ func (r *repository) ProcessingRequest(id string) (*processing.ProcessingRequest
 
 func (r *repository) SaveProcessingEvent(e *processing.ProcessingEvent) error {
 	q := `INSERT INTO processing_event (
-			processingRequestId,
-			description,
-			type
-		) VALUES ($1,$2,$3)`
+		processingRequestId,
+		description,
+		type
+	) VALUES ($1,$2,$3)`
 
 	_, err := r.Db.Exec(q,
 		e.ProcessingRequestId,
@@ -143,12 +143,12 @@ func (r *repository) SaveProcessingEvent(e *processing.ProcessingEvent) error {
 
 func (r *repository) ProcessingEvents(processingRequestId string) ([]*processing.ProcessingEvent, error) {
 	q := `SELECT id,
-			processingRequestId,
-			description,
-			type,
-			timestamp::INT
-		FROM processing_event
-		WHERE processingRequestId = $1`
+		processingRequestId,
+		description,
+		type,
+		timestamp::INT
+	FROM processing_event
+	WHERE processingRequestId = $1`
 
 	processingEvents := []*processing.ProcessingEvent{}
 
@@ -180,14 +180,14 @@ func (r *repository) ProcessingEvents(processingRequestId string) ([]*processing
 
 func (r *repository) SaveMessageReply(mr processing.MessageReply) (*processing.MessageReply, error) {
 	q := `INSERT INTO message_reply (
-			processingRequestId,
-			channelId,
-			userId,
-			isPrivateMessage,
-			isRedirect,
-			content
-		) VALUES ($1,$2,$3,$4,$5,$6)
-		RETURNING id, created::INT`
+		processingRequestId,
+		channelId,
+		userId,
+		isPrivateMessage,
+		isRedirect,
+		content
+	) VALUES ($1,$2,$3,$4,$5,$6)
+	RETURNING id, created::INT`
 
 	err := r.Db.QueryRow(q,
 		mr.ProcessingRequestId,
@@ -207,15 +207,15 @@ func (r *repository) SaveMessageReply(mr processing.MessageReply) (*processing.M
 
 func (r *repository) MessageReply(id string) (*processing.MessageReply, error) {
 	q := `SELECT id,
-			processingRequestId,
-			channelId,
-			userId,
-			isPrivateMessage,
-			isRedirect,
-			content,
-			created::INT
-		FROM message_reply
-		WHERE id = $1`
+		processingRequestId,
+		channelId,
+		userId,
+		isPrivateMessage,
+		isRedirect,
+		content,
+		created::INT
+	FROM message_reply
+	WHERE id = $1`
 
 	mr := processing.MessageReply{}
 
