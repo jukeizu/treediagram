@@ -14,11 +14,11 @@ const (
 )
 
 type Repository interface {
-	SaveProcessingRequest(*processing.ProcessingRequest) error
+	SaveProcessingRequest(processing.ProcessingRequest) (*processing.ProcessingRequest, error)
 	ProcessingRequest(string) (*processing.ProcessingRequest, error)
 	SaveProcessingEvent(*processing.ProcessingEvent) error
 	ProcessingEvents(string) ([]*processing.ProcessingEvent, error)
-	SaveMessageReply(*processing.MessageReply) error
+	SaveMessageReply(processing.MessageReply) (*processing.MessageReply, error)
 	MessageReply(string) (*processing.MessageReply, error)
 
 	Migrate() error
@@ -66,26 +66,173 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) SaveProcessingRequest(p *processing.ProcessingRequest) error {
-	return nil
+func (r *repository) SaveProcessingRequest(p processing.ProcessingRequest) (*processing.ProcessingRequest, error) {
+	q := `INSERT INTO processing_request (
+		intentId,
+		source,
+		channelId,
+		serverId,
+		botId,
+		userId
+	) VALUES ($1,$2,$3,$4,$5,$6)
+	RETURNING id, created::INT`
+
+	err := r.Db.QueryRow(q,
+		p.IntentId,
+		p.Source,
+		p.ChannelId,
+		p.ServerId,
+		p.BotId,
+		p.UserId,
+	).Scan(&p.Id, &p.Created)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &p, err
 }
 
 func (r *repository) ProcessingRequest(id string) (*processing.ProcessingRequest, error) {
-	return &processing.ProcessingRequest{}, nil
+	q := `SELECT id,
+			intentId,
+			source,
+			channelId,
+			serverId,
+			botId,
+			userId,
+			created::INT
+		FROM processing_request
+		WHERE id = $1`
+
+	p := processing.ProcessingRequest{}
+
+	err := r.Db.QueryRow(q, id).Scan(
+		&p.Id,
+		&p.IntentId,
+		&p.Source,
+		&p.ChannelId,
+		&p.ServerId,
+		&p.BotId,
+		&p.UserId,
+		&p.Created,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &p, nil
 }
 
 func (r *repository) SaveProcessingEvent(e *processing.ProcessingEvent) error {
-	return nil
+	q := `INSERT INTO processing_event (
+			processingRequestId,
+			description,
+			type
+		) VALUES ($1,$2,$3)`
+
+	_, err := r.Db.Exec(q,
+		e.ProcessingRequestId,
+		e.Description,
+		e.Type,
+	)
+
+	return err
 }
 
-func (r *repository) ProcessingEvents(requestId string) ([]*processing.ProcessingEvent, error) {
-	return []*processing.ProcessingEvent{}, nil
+func (r *repository) ProcessingEvents(processingRequestId string) ([]*processing.ProcessingEvent, error) {
+	q := `SELECT id,
+			processingRequestId,
+			description,
+			type,
+			timestamp::INT
+		FROM processing_event
+		WHERE processingRequestId = $1`
+
+	processingEvents := []*processing.ProcessingEvent{}
+
+	rows, err := r.Db.Query(q, processingRequestId)
+	if err != nil {
+		return processingEvents, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		e := processing.ProcessingEvent{}
+
+		err := rows.Scan(
+			&e.Id,
+			&e.ProcessingRequestId,
+			&e.Description,
+			&e.Type,
+			&e.Timestamp,
+		)
+		if err != nil {
+			return processingEvents, err
+		}
+
+		processingEvents = append(processingEvents, &e)
+	}
+
+	return processingEvents, nil
 }
 
-func (r *repository) SaveMessageReply(mr *processing.MessageReply) error {
-	return nil
+func (r *repository) SaveMessageReply(mr processing.MessageReply) (*processing.MessageReply, error) {
+	q := `INSERT INTO message_reply (
+			processingRequestId,
+			channelId,
+			userId,
+			isPrivateMessage,
+			isRedirect,
+			content
+		) VALUES ($1,$2,$3,$4,$5,$6)
+		RETURNING id, created::INT`
+
+	err := r.Db.QueryRow(q,
+		mr.ProcessingRequestId,
+		mr.ChannelId,
+		mr.UserId,
+		mr.IsPrivateMessage,
+		mr.IsRedirect,
+		mr.Content,
+	).Scan(&mr.Id, &mr.Created)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &mr, err
 }
 
 func (r *repository) MessageReply(id string) (*processing.MessageReply, error) {
-	return nil, nil
+	q := `SELECT id,
+			processingRequestId,
+			channelId,
+			userId,
+			isPrivateMessage,
+			isRedirect,
+			content,
+			created::INT
+		FROM message_reply
+		WHERE id = $1`
+
+	mr := processing.MessageReply{}
+
+	err := r.Db.QueryRow(q, id).Scan(
+		&mr.Id,
+		&mr.ProcessingRequestId,
+		&mr.ChannelId,
+		&mr.UserId,
+		&mr.IsPrivateMessage,
+		&mr.IsRedirect,
+		&mr.Content,
+		&mr.Created,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &mr, nil
 }
