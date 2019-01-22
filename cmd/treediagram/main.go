@@ -37,7 +37,7 @@ func parseConfig() startup.Config {
 
 	flag.IntVar(&c.GrpcPort, "grpc.port", DefaultGrpcPort, "grpc port")
 	flag.StringVar(&c.NatsServers, "nats", nats.DefaultURL, "NATS servers")
-	flag.StringVar(&c.DbUrl, "db", "treediagram@localhost:26257", "Database connection url")
+	flag.StringVar(&c.DbUrl, "db", "root@localhost:26257", "Database connection url")
 	flag.StringVar(&c.DiscordToken, "discord.token", "", "Discord token. This can also be specified via the "+DiscordTokenEnvironmentVariable+" environment variable.")
 	flag.StringVar(&c.ReceivingEndpoint, "endpoint", DefaultReceivingEndpoint, "Url of the Receiving service")
 	flag.BoolVar(&flagServer, "server", false, "Start as server")

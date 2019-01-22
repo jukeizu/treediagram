@@ -47,7 +47,12 @@ func NewStorage(logger zerolog.Logger, dbUrl string) (*Storage, error) {
 }
 
 func (s *Storage) Migrate() error {
-	err := s.UserRepository.Migrate()
+	err := s.ProcessorRepository.Migrate()
+	if err != nil {
+		return err
+	}
+
+	err = s.UserRepository.Migrate()
 	if err != nil {
 		return err
 	}
@@ -58,11 +63,6 @@ func (s *Storage) Migrate() error {
 	}
 
 	err = s.SchedulerRepository.Migrate()
-	if err != nil {
-		return err
-	}
-
-	err = s.ProcessorRepository.Migrate()
 	if err != nil {
 		return err
 	}

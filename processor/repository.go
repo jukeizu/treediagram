@@ -5,10 +5,12 @@ import (
 	"fmt"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	migration "github.com/jukeizu/treediagram/processor/migrations"
+	"github.com/shawntoffel/gossage"
 )
 
 const (
-	DatabaseName = "processor"
+	DatabaseName = "treediagram_processor"
 )
 
 type Repository interface {
@@ -42,7 +44,26 @@ func NewRepository(url string) (Repository, error) {
 }
 
 func (r *repository) Migrate() error {
-	return nil
+	_, err := r.Db.Exec(`CREATE DATABASE IF NOT EXISTS ` + DatabaseName)
+	if err != nil {
+		return err
+	}
+
+	g, err := gossage.New(r.Db)
+	if err != nil {
+		return err
+	}
+
+	err = g.RegisterMigrations(
+		migration.CreateTableProcessingRequest20190121234940{},
+		migration.CreateTableProcessingEvent20190122002825{},
+		migration.CreateTableMessageReply20190122003737{},
+	)
+	if err != nil {
+		return err
+	}
+
+	return g.Up()
 }
 
 func (r *repository) SaveProcessingRequest(p ProcessingRequest) error {
