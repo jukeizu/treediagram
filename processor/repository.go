@@ -14,11 +14,11 @@ const (
 )
 
 type Repository interface {
-	SaveProcessingRequest(ProcessingRequest) error
-	ProcessingRequest(string) (*ProcessingRequest, error)
-	SaveProcessingEvent(ProcessingEvent) error
-	ProcessingEvents(string) ([]*ProcessingEvent, error)
-	SaveMessageReply(processing.MessageReply) error
+	SaveProcessingRequest(*processing.ProcessingRequest) error
+	ProcessingRequest(string) (*processing.ProcessingRequest, error)
+	SaveProcessingEvent(*processing.ProcessingEvent) error
+	ProcessingEvents(string) ([]*processing.ProcessingEvent, error)
+	SaveMessageReply(*processing.MessageReply) error
 	MessageReply(string) (*processing.MessageReply, error)
 
 	Migrate() error
@@ -66,23 +66,23 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) SaveProcessingRequest(p ProcessingRequest) error {
+func (r *repository) SaveProcessingRequest(p *processing.ProcessingRequest) error {
 	return nil
 }
 
-func (r *repository) ProcessingRequest(id string) (*ProcessingRequest, error) {
-	return &ProcessingRequest{}, nil
+func (r *repository) ProcessingRequest(id string) (*processing.ProcessingRequest, error) {
+	return &processing.ProcessingRequest{}, nil
 }
 
-func (r *repository) SaveProcessingEvent(e ProcessingEvent) error {
+func (r *repository) SaveProcessingEvent(e *processing.ProcessingEvent) error {
 	return nil
 }
 
-func (r *repository) ProcessingEvents(requestId string) ([]*ProcessingEvent, error) {
-	return []*ProcessingEvent{}, nil
+func (r *repository) ProcessingEvents(requestId string) ([]*processing.ProcessingEvent, error) {
+	return []*processing.ProcessingEvent{}, nil
 }
 
-func (r *repository) SaveMessageReply(mr processing.MessageReply) error {
+func (r *repository) SaveMessageReply(mr *processing.MessageReply) error {
 	return nil
 }
 

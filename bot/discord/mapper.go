@@ -1,8 +1,6 @@
 package discord
 
 import (
-	"bytes"
-
 	"github.com/bwmarrin/discordgo"
 	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 	"github.com/rs/zerolog"
@@ -27,6 +25,7 @@ func mapToPbUsers(discordUsers []*discordgo.User) []*pb.User {
 	return users
 }
 
+/*
 func mapToEmbed(embed *pb.Embed) *discordgo.MessageEmbed {
 	if embed == nil {
 		return nil
@@ -50,7 +49,7 @@ func mapToEmbed(embed *pb.Embed) *discordgo.MessageEmbed {
 
 	return &discordEmbed
 }
-
+*/
 func mapToMessageSend(message *pb.MessageReply) *discordgo.MessageSend {
 	if message == nil {
 		return nil
@@ -75,6 +74,7 @@ func mapToMessageSend(message *pb.MessageReply) *discordgo.MessageSend {
 	return &messageSend
 }
 
+/*
 func mapToFile(file *pb.File) *discordgo.File {
 	if file == nil {
 		return nil
@@ -190,6 +190,7 @@ func mapFields(fields []*pb.EmbedField) []*discordgo.MessageEmbedField {
 
 	return discordFields
 }
+*/
 
 func mapToLevel(dgoLevel int) zerolog.Level {
 	switch dgoLevel {

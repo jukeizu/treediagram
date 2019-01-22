@@ -55,69 +55,21 @@ message MessageReply {
     string content = 7;
 }
 
-message EmbedFooter {
-    string text = 1;
-    string iconUrl = 2;
-    string proxyIconUrl = 3;
+message ProcessingRequest {
+	string id = 1;
+    string intentId = 2;
+    string source = 3;
+    string channelId = 4;
+    string serverId = 5;
+    string botId = 6;
+    string userId = 7;
+    int32 created = 8;
 }
 
-message EmbedImage {
-    string url = 1;
-    string proxyUrl = 2;
-    int32 width = 3;
-    int32 height = 4;
-}
-
-message EmbedThumbnail {
-    string url = 1;
-    string proxyUrl = 2;
-    int32 width = 3;
-    int32 height = 4;
-}
-
-message EmbedVideo {
-    string url = 1;
-    string proxyUrl = 2;
-    int32 width = 3;
-    int32 height = 4;
-}
-
-message EmbedProvider {
-    string url = 1;
-    string name = 2;
-}
-
-message EmbedAuthor {
-    string url = 1;
-    string name = 2;
-    string iconUrl = 3;
-    string proxyIconUrl = 4;
-}
-
-message EmbedField {
-    string name = 1;
-    string value = 2;
-    bool inline = 3;
-}
-
-message Embed {
-    string url = 1;
-    string type = 2;
-    string title = 3;
-    string description = 4;
-    string timestamp = 5;
-    int32 color = 6;
-    EmbedFooter footer = 7;
-    EmbedImage image = 8;
-    EmbedThumbnail thumbnail = 9;
-    EmbedVideo video = 10;
-    EmbedProvider provider = 11;
-    EmbedAuthor author = 12;
-    repeated EmbedField fields = 13;
-}
-
-message File {
-    string name = 1;
-    string contentType = 2;
-    bytes bytes = 3;
+message ProcessingEvent {
+	string id = 1;
+    string processingRequestId = 2;
+    string description = 3;
+    string type = 4;
+    int32 timestamp = 5;
 }

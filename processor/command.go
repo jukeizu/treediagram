@@ -14,31 +14,6 @@ type Command struct {
 	Intent  intent.Intent             `json:"intent"`
 }
 
-type ProcessingRequest struct {
-	Id        string
-	IntentId  string
-	Source    string
-	ChannelId string
-	ServerId  string
-	BotId     string
-	UserId    string
-}
-
-type ProcessingEvent struct {
-	Id          string
-	RequestId   string
-	Description string `json:"description"`
-	Type        string `json:"type"`
-	Timestamp   int64  `json:"timestamp"`
-}
-
-type CommandEvent struct {
-	CommandId   string `json:"commandId"`
-	Description string `json:"description"`
-	Type        string `json:"type"`
-	Timestamp   int64  `json:"timestamp"`
-}
-
 func (c Command) IsMatch() (bool, error) {
 	if c.Intent.Mention && !c.isBotMentioned() {
 		return false, nil
