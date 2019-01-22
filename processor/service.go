@@ -12,12 +12,12 @@ const (
 )
 
 type service struct {
-	storage Storage
-	queue   *nats.EncodedConn
+	repository Repository
+	queue      *nats.EncodedConn
 }
 
-func NewService(queue *nats.EncodedConn, storage Storage) (processing.ProcessingServer, error) {
-	return &service{queue: queue, storage: storage}, nil
+func NewService(queue *nats.EncodedConn, repository Repository) (processing.ProcessingServer, error) {
+	return &service{queue: queue, repository: repository}, nil
 }
 
 func (s service) SendMessageRequest(ctx context.Context, req *processing.MessageRequest) (*processing.SendMessageRequestReply, error) {
@@ -27,5 +27,5 @@ func (s service) SendMessageRequest(ctx context.Context, req *processing.Message
 }
 
 func (s service) GetMessageReply(ctx context.Context, req *processing.MessageReplyRequest) (*processing.MessageReply, error) {
-	return s.storage.MessageReply(req.Id)
+	return s.repository.MessageReply(req.Id)
 }

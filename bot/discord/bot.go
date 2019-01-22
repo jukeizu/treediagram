@@ -138,9 +138,12 @@ func (d *bot) publishMessage(message *pb.MessageReply) error {
 		channelId = id
 	}
 
-	messageSend := mapToMessageSend(message)
+	messageSend, err := mapToMessageSend(message)
+	if err != nil {
+		return err
+	}
 
-	_, err := d.Session.ChannelMessageSendComplex(channelId, messageSend)
+	_, err = d.Session.ChannelMessageSendComplex(channelId, messageSend)
 
 	return err
 }

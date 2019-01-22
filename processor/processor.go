@@ -4,12 +4,10 @@ import (
 	"context"
 	"io"
 	"sync"
-	"time"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/intent"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
 	nats "github.com/nats-io/go-nats"
-	"github.com/rs/xid"
 	"github.com/rs/zerolog"
 )
 
@@ -19,20 +17,20 @@ const (
 )
 
 type Processor struct {
-	logger   zerolog.Logger
-	queue    *nats.EncodedConn
-	registry intent.IntentRegistryClient
-	storage  Storage
-	wg       *sync.WaitGroup
+	logger     zerolog.Logger
+	queue      *nats.EncodedConn
+	registry   intent.IntentRegistryClient
+	repository Repository
+	wg         *sync.WaitGroup
 }
 
-func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intent.IntentRegistryClient, storage Storage) Processor {
+func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intent.IntentRegistryClient, repository Repository) Processor {
 	p := Processor{
-		logger:   logger.With().Str("component", "processor").Logger(),
-		queue:    queue,
-		registry: registry,
-		storage:  storage,
-		wg:       &sync.WaitGroup{},
+		logger:     logger.With().Str("component", "processor").Logger(),
+		queue:      queue,
+		registry:   registry,
+		repository: repository,
+		wg:         &sync.WaitGroup{},
 	}
 
 	return p
@@ -99,76 +97,91 @@ func (p Processor) processCommand(command Command) {
 			return
 		}
 
-		command.Id = xid.New().String()
+		processingRequest, err := p.createProcessingRequest(command)
+		if err != nil {
+			return
+		}
 
-		p.saveCommand(command)
+		p.logger.Debug().
+			Str("processingRequest", processingRequest.Id).
+			Msg("executing command")
 
-		p.logger.Debug().Msg("executing command")
 		response, err := command.Execute()
 		if err != nil {
-			p.saveErrorEvent(command.Id, err)
+			p.createErrorEvent(processingRequest.Id, err)
 			return
 		}
 
 		for _, message := range response.Messages {
-			p.saveResponseMessage(command, *message)
+			p.saveResponseMessage(processingRequest, *message)
 		}
 	}(command)
 }
 
-func (p Processor) saveResponseMessage(command Command, message processing.Message) {
+func (p Processor) saveResponseMessage(processingRequest *processing.ProcessingRequest, message processing.Message) {
 	messageReply := processing.MessageReply{
-		Id:               xid.New().String(),
-		CommandId:        command.Id,
-		ChannelId:        command.Request.ChannelId,
-		UserId:           command.Request.Author.Id,
-		IsPrivateMessage: message.IsPrivateMessage,
-		IsRedirect:       message.IsRedirect,
-		Content:          message.Content,
-		Embed:            message.Embed,
-		Tts:              message.Tts,
-		Files:            message.Files,
+		ProcessingRequestId: processingRequest.Id,
+		ChannelId:           processingRequest.ChannelId,
+		UserId:              processingRequest.UserId,
+		IsPrivateMessage:    message.IsPrivateMessage,
+		IsRedirect:          message.IsRedirect,
+		Content:             message.Content,
 	}
 
-	err := p.storage.SaveMessageReply(messageReply)
+	returned, err := p.repository.SaveMessageReply(messageReply)
 	if err != nil {
-		p.saveErrorEvent(command.Id, err)
+		p.createErrorEvent(processingRequest.Id, err)
+		return
 	}
 
-	messageReplyReceived := processing.MessageReplyReceived{Id: messageReply.Id}
+	messageReplyReceived := processing.MessageReplyReceived{Id: returned.Id}
 
-	err = p.queue.Publish(ReplyReceivedSubject+"."+command.Request.Source, messageReplyReceived)
+	err = p.queue.Publish(ReplyReceivedSubject+"."+processingRequest.Source, messageReplyReceived)
 	if err != nil {
-		p.saveErrorEvent(command.Id, err)
+		p.createErrorEvent(processingRequest.Id, err)
 	}
 }
 
-func (p Processor) saveCommand(command Command) {
-	p.wg.Add(1)
-	go func(command Command) {
-		p.wg.Done()
-
-		err := p.storage.SaveCommand(command)
-		if err != nil {
-			p.logger.Error().Err(err).Caller().Msg("error saving command")
-		}
-	}(command)
-}
-
-func (p Processor) saveCommandEvent(commandId string, t string, d string) {
-	e := CommandEvent{
-		CommandId:   commandId,
-		Type:        t,
-		Description: d,
-		Timestamp:   time.Now().Unix(),
+func (p Processor) createProcessingRequest(command Command) (*processing.ProcessingRequest, error) {
+	processingRequest := processing.ProcessingRequest{
+		IntentId:  command.Intent.Id,
+		Source:    command.Request.Source,
+		ChannelId: command.Request.ChannelId,
+		ServerId:  command.Request.ServerId,
+		BotId:     command.Request.Bot.Id,
+		UserId:    command.Request.Author.Id,
 	}
 
-	err := p.storage.SaveCommandEvent(e)
+	returned, err := p.repository.SaveProcessingRequest(processingRequest)
 	if err != nil {
-		p.logger.Error().Err(err).Caller().Msg("error saving command event")
+		p.logger.Error().Err(err).Caller().Msg("error creating ProcessingRequest")
 	}
+
+	return returned, nil
 }
 
-func (p Processor) saveErrorEvent(commandId string, commandError error) {
-	p.saveCommandEvent(commandId, "error", commandError.Error())
+func (p Processor) createProcessingEvent(processingRequestId string, t string, d string) {
+	e := processing.ProcessingEvent{
+		ProcessingRequestId: processingRequestId,
+		Type:                t,
+		Description:         d,
+	}
+
+	err := p.repository.SaveProcessingEvent(e)
+	if err != nil {
+		p.logger.Error().Err(err).Caller().Msg("error saving processing event")
+	}
+
+	p.logger.Debug().
+		Str("processingRequestId", processingRequestId).
+		Str("type", t).
+		Str("description", d).
+		Msg("saved processing event")
+}
+
+func (p Processor) createErrorEvent(processingRequestId string, processingError error) {
+	p.createProcessingEvent(processingRequestId, "error", processingError.Error())
+	p.logger.Error().Err(processingError).Caller().
+		Str("processingRequestId", processingRequestId).
+		Msg("")
 }

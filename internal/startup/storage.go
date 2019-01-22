@@ -9,14 +9,14 @@ import (
 )
 
 type Storage struct {
-	ProcessorStorage    processor.Storage
+	ProcessorRepository processor.Repository
 	IntentRepository    intent.Repository
 	SchedulerRepository scheduler.Repository
 	UserRepository      user.Repository
 }
 
-func NewStorage(logger zerolog.Logger, mdbUrl string, dbUrl string) (*Storage, error) {
-	processorStorage, err := processor.NewStorage(mdbUrl)
+func NewStorage(logger zerolog.Logger, dbUrl string) (*Storage, error) {
+	processorRepository, err := processor.NewRepository(dbUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func NewStorage(logger zerolog.Logger, mdbUrl string, dbUrl string) (*Storage, e
 	}
 
 	s := &Storage{
-		ProcessorStorage:    processorStorage,
+		ProcessorRepository: processorRepository,
 		IntentRepository:    intentRepository,
 		SchedulerRepository: schedulerRepository,
 		UserRepository:      userRepository,
@@ -47,7 +47,12 @@ func NewStorage(logger zerolog.Logger, mdbUrl string, dbUrl string) (*Storage, e
 }
 
 func (s *Storage) Migrate() error {
-	err := s.UserRepository.Migrate()
+	err := s.ProcessorRepository.Migrate()
+	if err != nil {
+		return err
+	}
+
+	err = s.UserRepository.Migrate()
 	if err != nil {
 		return err
 	}
@@ -63,8 +68,4 @@ func (s *Storage) Migrate() error {
 	}
 
 	return nil
-}
-
-func (s *Storage) Close() {
-	s.ProcessorStorage.Close()
 }
