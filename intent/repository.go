@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	DatabaseName = "treediagram_intents"
+	DatabaseName = "treediagram_intent"
 )
 
 type Repository interface {
@@ -41,12 +41,17 @@ func NewRepository(url string) (Repository, error) {
 }
 
 func (r *repository) Migrate() error {
+	_, err := r.Db.Exec(`CREATE DATABASE IF NOT EXISTS ` + DatabaseName)
+	if err != nil {
+		return err
+	}
+
 	g, err := gossage.New(r.Db)
 	if err != nil {
 		return err
 	}
 
-	err = g.RegisterMigrations(migration.CreateTableIntents20190113072028{})
+	err = g.RegisterMigrations(migration.CreateTableIntent20190113072028{})
 	if err != nil {
 		return err
 	}
@@ -55,7 +60,7 @@ func (r *repository) Migrate() error {
 }
 
 func (r *repository) Save(pbIntent pb.Intent) error {
-	q := `INSERT INTO intents (
+	q := `INSERT INTO intent (
 		serverId,
 		name,
 		regex,
@@ -81,7 +86,7 @@ func (r *repository) Save(pbIntent pb.Intent) error {
 }
 
 func (r *repository) Disable(id string) error {
-	q := `UPDATE intents SET enabled = false WHERE id = $1`
+	q := `UPDATE intent SET enabled = false WHERE id = $1`
 
 	_, err := r.Db.Exec(q, id)
 
@@ -100,7 +105,7 @@ func (r *repository) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
 			endpoint,
 			help,
 			enabled
-		FROM intents 
+		FROM intent 
 		WHERE serverId = $1 OR serverId = '' 
 		AND enabled = true`
 

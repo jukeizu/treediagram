@@ -4,15 +4,15 @@ import (
 	"database/sql"
 )
 
-type CreateTablePreferences20190113020925 struct{}
+type CreateTablePreference20190113020925 struct{}
 
-func (m CreateTablePreferences20190113020925) Version() string {
-	return "20190113020925_CreateTablePreferences"
+func (m CreateTablePreference20190113020925) Version() string {
+	return "20190113020925_CreateTablePreference"
 }
 
-func (m CreateTablePreferences20190113020925) Up(tx *sql.Tx) error {
+func (m CreateTablePreference20190113020925) Up(tx *sql.Tx) error {
 	_, err := tx.Exec(`
-		CREATE TABLE IF NOT EXISTS preferences (
+		CREATE TABLE IF NOT EXISTS preference (
 			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
 			userId STRING UNIQUE NOT NULL DEFAULT '',
 			serverId STRING NOT NULL DEFAULT '',
@@ -22,7 +22,7 @@ func (m CreateTablePreferences20190113020925) Up(tx *sql.Tx) error {
 	return err
 }
 
-func (m CreateTablePreferences20190113020925) Down(tx *sql.Tx) error {
-	_, err := tx.Exec(`DROP TABLE preferences`)
+func (m CreateTablePreference20190113020925) Down(tx *sql.Tx) error {
+	_, err := tx.Exec(`DROP TABLE preference`)
 	return err
 }

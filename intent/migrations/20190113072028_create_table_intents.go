@@ -4,15 +4,15 @@ import (
 	"database/sql"
 )
 
-type CreateTableIntents20190113072028 struct{}
+type CreateTableIntent20190113072028 struct{}
 
-func (m CreateTableIntents20190113072028) Version() string {
-	return "20190113072028_CreateTableIntents"
+func (m CreateTableIntent20190113072028) Version() string {
+	return "20190113072028_CreateTableIntent"
 }
 
-func (m CreateTableIntents20190113072028) Up(tx *sql.Tx) error {
+func (m CreateTableIntent20190113072028) Up(tx *sql.Tx) error {
 	_, err := tx.Exec(`
-		CREATE TABLE IF NOT EXISTS intents(
+		CREATE TABLE IF NOT EXISTS intent(
 			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
 			serverId STRING NOT NULL DEFAULT '',
 			name STRING NOT NULL DEFAULT '',
@@ -28,7 +28,7 @@ func (m CreateTableIntents20190113072028) Up(tx *sql.Tx) error {
 	return err
 }
 
-func (m CreateTableIntents20190113072028) Down(tx *sql.Tx) error {
-	_, err := tx.Exec(`DROP TABLE intents`)
+func (m CreateTableIntent20190113072028) Down(tx *sql.Tx) error {
+	_, err := tx.Exec(`DROP TABLE intent`)
 	return err
 }

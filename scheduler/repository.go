@@ -40,6 +40,11 @@ func NewRepository(url string) (Repository, error) {
 }
 
 func (r *repository) Migrate() error {
+	_, err := r.Db.Exec(`CREATE DATABASE IF NOT EXISTS ` + DatabaseName)
+	if err != nil {
+		return err
+	}
+
 	g, err := gossage.New(r.Db)
 	if err != nil {
 		return err

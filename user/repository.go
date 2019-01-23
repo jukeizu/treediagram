@@ -40,12 +40,17 @@ func NewRepository(url string) (Repository, error) {
 }
 
 func (r *repository) Migrate() error {
+	_, err := r.Db.Exec(`CREATE DATABASE IF NOT EXISTS ` + DatabaseName)
+	if err != nil {
+		return err
+	}
+
 	g, err := gossage.New(r.Db)
 	if err != nil {
 		return err
 	}
 
-	err = g.RegisterMigrations(migration.CreateTablePreferences20190113020925{})
+	err = g.RegisterMigrations(migration.CreateTablePreference20190113020925{})
 	if err != nil {
 		return err
 	}
@@ -56,7 +61,7 @@ func (r *repository) Migrate() error {
 func (r *repository) Preference(req *pb.PreferenceRequest) (*pb.Preference, error) {
 	preference := &pb.Preference{}
 
-	q := `SELECT userId, serverId FROM preferences WHERE userId = $1`
+	q := `SELECT userId, serverId FROM preference WHERE userId = $1`
 
 	err := r.Db.QueryRow(q, req.UserId).Scan(&preference.UserId, &preference.ServerId)
 
@@ -66,7 +71,7 @@ func (r *repository) Preference(req *pb.PreferenceRequest) (*pb.Preference, erro
 func (r *repository) SetServer(req *pb.SetServerRequest) (*pb.Preference, error) {
 	preference := &pb.Preference{}
 
-	q := `INSERT INTO preferences (userId, serverId) 
+	q := `INSERT INTO preference (userId, serverId) 
 			VALUES($1, $2) 
 			ON CONFLICT (userId) DO UPDATE SET serverId = excluded.serverId, updated = NOW()
 			RETURNING userId, serverId`
