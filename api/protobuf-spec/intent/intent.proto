@@ -18,6 +18,7 @@ message Intent {
     string endpoint = 7;
     string help = 8;
     bool enabled = 9;
+    int32 created = 10;
 }
 
 

@@ -15,7 +15,7 @@ func NewService(repository Repository) pb.IntentRegistryServer {
 }
 
 func (s *service) AddIntent(ctx context.Context, req *pb.AddIntentRequest) (*pb.AddIntentReply, error) {
-	err := s.Repository.Save(*req.Intent)
+	err := s.Repository.Save(req.Intent)
 	if err != nil {
 		return nil, err
 	}

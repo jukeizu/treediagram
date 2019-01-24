@@ -15,7 +15,7 @@ const (
 )
 
 type Repository interface {
-	Save(pb.Intent) error
+	Save(*pb.Intent) error
 	Disable(string) error
 	Query(pb.QueryIntentsRequest) ([]*pb.Intent, error)
 	Migrate() error
@@ -59,7 +59,11 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) Save(pbIntent pb.Intent) error {
+func (r *repository) Save(pbIntent *pb.Intent) error {
+	if pbIntent == nil {
+		return nil
+	}
+
 	q := `INSERT INTO intent (
 		serverId,
 		name,
@@ -69,9 +73,10 @@ func (r *repository) Save(pbIntent pb.Intent) error {
 		endpoint,
 		help,
 		enabled
-	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`
+	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+	RETURNING id, created::INT`
 
-	_, err := r.Db.Exec(q,
+	err := r.Db.QueryRow(q,
 		pbIntent.ServerId,
 		pbIntent.Name,
 		pbIntent.Regex,
@@ -80,6 +85,9 @@ func (r *repository) Save(pbIntent pb.Intent) error {
 		pbIntent.Endpoint,
 		pbIntent.Help,
 		pbIntent.Enabled,
+	).Scan(
+		&pbIntent.Id,
+		&pbIntent.Created,
 	)
 
 	return err
@@ -104,15 +112,13 @@ func (r *repository) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
 			response,
 			endpoint,
 			help,
-			enabled
+			enabled,
+			created::INT
 		FROM intent 
-		WHERE serverId = $1 OR serverId = '' 
+		WHERE (serverId = $1 OR serverId = '') 
 		AND enabled = true`
 
 	rows, err := r.Db.Query(q, query.ServerId)
-	if err == sql.ErrNoRows {
-		return pbIntents, nil
-	}
 	if err != nil {
 		return pbIntents, err
 	}
@@ -130,6 +136,7 @@ func (r *repository) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
 			&pbIntent.Endpoint,
 			&pbIntent.Help,
 			&pbIntent.Enabled,
+			&pbIntent.Created,
 		)
 		if err != nil {
 			return pbIntents, err
