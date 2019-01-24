@@ -86,8 +86,6 @@ func main() {
 			logger.Error().Err(err).Caller().Msg("migrations did not complete")
 			os.Exit(1)
 		}
-
-		os.Exit(0)
 	}
 
 	if !flagServer && !flagBot && !flagScheduler {

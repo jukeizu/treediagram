@@ -1,13 +1,8 @@
 version: '3'
 services:
-    migrate:
-      build: .
-      command: -migrate -db "root@cockroachdb:26257"
-      depends_on:
-        - cockroachdb
     treediagram:
       build: .
-      command: -nats "nats:4222" -db "root@cockroachdb:26257"
+      command: -migrate -nats "nats:4222" -db "root@cockroachdb:26257"
       ports:
         - "50051:50051"
       environment:
@@ -15,9 +10,10 @@ services:
       depends_on:
         - nats
         - cockroachdb
-        - migrate
+
     nats:
       image: "nats"
+
     cockroachdb:
       image: cockroachdb/cockroach
       command: start --insecure
