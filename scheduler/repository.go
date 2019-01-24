@@ -14,7 +14,7 @@ const (
 )
 
 type Repository interface {
-	Create(*pb.Job) (*pb.Job, error)
+	Create(*pb.Job) error
 	Jobs(*pb.Schedule) ([]*pb.Job, error)
 	Disable(id string) error
 	Migrate() error
@@ -58,7 +58,7 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) Create(job *pb.Job) (*pb.Job, error) {
+func (r *repository) Create(job *pb.Job) error {
 	q := `INSERT INTO job (
 			type,
 			content,
@@ -73,21 +73,9 @@ func (r *repository) Create(job *pb.Job) (*pb.Job, error) {
 			enabled
 		) 
 		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-		RETURNING id,
-			type,
-			content,
-			userId,
-			destination,
-			minute,
-			hour,
-			dayOfMonth,
-			month,
-			dayOfWeek,	
-			year,
-			enabled,
-			created::INT`
+		RETURNING id, created::INT`
 
-	job, err := r.queryJob(q,
+	err := r.Db.QueryRow(q,
 		job.Type,
 		job.Content,
 		job.UserId,
@@ -99,12 +87,12 @@ func (r *repository) Create(job *pb.Job) (*pb.Job, error) {
 		job.Schedule.DayOfWeek,
 		job.Schedule.Year,
 		job.Enabled,
+	).Scan(
+		&job.Id,
+		&job.Created,
 	)
-	if err != nil {
-		return nil, err
-	}
 
-	return job, nil
+	return err
 }
 
 func (r *repository) Jobs(schedule *pb.Schedule) ([]*pb.Job, error) {
@@ -210,17 +198,4 @@ func (r *repository) queryJobs(q string, dest ...interface{}) ([]*pb.Job, error)
 	}
 
 	return jobs, nil
-}
-
-func (r *repository) queryJob(q string, dest ...interface{}) (*pb.Job, error) {
-	jobs, err := r.queryJobs(q, dest...)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(jobs) < 1 {
-		return nil, nil
-	}
-
-	return jobs[0], nil
 }

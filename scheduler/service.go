@@ -46,9 +46,12 @@ func (s service) Create(ctx context.Context, req *pb.CreateJobRequest) (*pb.Crea
 		Enabled:     true,
 	}
 
-	returnJob, err := s.Repository.Create(job)
+	err := s.Repository.Create(job)
+	if err != nil {
+		return nil, err
+	}
 
-	return &pb.CreateJobReply{Job: returnJob}, err
+	return &pb.CreateJobReply{Job: job}, nil
 }
 
 func (s service) Jobs(ctx context.Context, req *pb.JobsRequest) (*pb.JobsReply, error) {
