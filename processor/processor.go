@@ -141,6 +141,7 @@ func (p Processor) saveResponseMessage(processingRequest *processing.ProcessingR
 	err = p.queue.Publish(ReplyReceivedSubject+"."+processingRequest.Source, messageReplyReceived)
 	if err != nil {
 		p.createErrorEvent(processingRequest.Id, err)
+		return
 	}
 }
 
@@ -172,6 +173,7 @@ func (p Processor) createProcessingEvent(processingRequestId string, eventType s
 	err := p.repository.SaveProcessingEvent(&e)
 	if err != nil {
 		p.logger.Error().Err(err).Caller().Msg("error saving processing event")
+		return
 	}
 
 	p.logger.Debug().
