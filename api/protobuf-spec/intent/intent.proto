@@ -10,7 +10,7 @@ service IntentRegistry {
 
 message Intent {
     string id = 1;
-    string server = 2;
+    string serverId = 2;
     string name = 3;
     string regex = 4;
     bool mention = 5;
@@ -18,11 +18,12 @@ message Intent {
     string endpoint = 7;
     string help = 8;
     bool enabled = 9;
+    int32 created = 10;
 }
 
 
 message QueryIntentsRequest {
-    string server = 1;
+    string serverId = 1;
 }
 
 message AddIntentRequest {

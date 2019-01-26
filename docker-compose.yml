@@ -1,17 +1,22 @@
 version: '3'
 services:
     treediagram:
-        build: .
-        command: -nats "nats:4222" -db "mongo"
-        ports:
-            - "50051:50051"
-        environment:
-            - TREEDIAGRAM_DISCORD_TOKEN
-        depends_on:
-            - nats
-            - mongo
-    nats:
-        image: "nats"
-    mongo:
-        image: "mongo"
+      build: .
+      command: -migrate -nats "nats:4222" -db "root@cockroachdb:26257"
+      ports:
+        - "50051:50051"
+      environment:
+        - TREEDIAGRAM_DISCORD_TOKEN
+      depends_on:
+        - nats
+        - cockroachdb
 
+    nats:
+      image: "nats"
+
+    cockroachdb:
+      image: cockroachdb/cockroach
+      command: start --insecure
+      ports:
+        - "26257:26257"
+        - "8080:8080"

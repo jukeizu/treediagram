@@ -34,7 +34,7 @@ type ServerRunner struct {
 func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error) {
 	logger = logger.With().Str("component", "server").Logger()
 
-	storage, err := NewStorage(config.DbUrl)
+	storage, err := NewStorage(logger, config.DbUrl)
 	if err != nil {
 		return nil, errors.New("db: " + err.Error())
 	}
@@ -63,27 +63,27 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 
 	intentClient := intentpb.NewIntentRegistryClient(intentConn)
 
-	processorService, err := processor.NewService(conn, storage.ProcessorStorage)
+	processorService, err := processor.NewService(conn, storage.ProcessorRepository)
 	if err != nil {
 		return nil, err
 	}
 
-	processor := processor.New(logger, conn, intentClient, storage.ProcessorStorage)
+	processor := processor.New(logger, conn, intentClient, storage.ProcessorRepository)
 	err = processor.Start()
 	if err != nil {
 		return nil, err
 	}
 
-	intentService := intent.NewService(storage.IntentStorage)
+	intentService := intent.NewService(storage.IntentRepository)
 	intentService = intent.NewLoggingService(logger, intentService)
 
-	schedulerService, err := scheduler.NewService(logger, storage.JobStorage, conn)
+	schedulerService, err := scheduler.NewService(logger, storage.SchedulerRepository, conn)
 	if err != nil {
 		return nil, err
 	}
 	schedulerService = scheduler.NewLoggingService(logger, schedulerService)
 
-	userService := user.NewService(storage.UserStorage)
+	userService := user.NewService(storage.UserRepository)
 	userService = user.NewLoggingService(logger, userService)
 
 	grpcServer := grpc.NewServer()
@@ -139,7 +139,6 @@ func (r *ServerRunner) Stop() {
 	r.Processor.Stop()
 
 	r.GrpcServer.GracefulStop()
-	r.Storage.Close()
 
 	r.WaitGroup.Wait()
 }

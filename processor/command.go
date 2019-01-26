@@ -9,16 +9,8 @@ import (
 )
 
 type Command struct {
-	Id      string                    `json:"id"`
 	Request processing.MessageRequest `json:"request"`
 	Intent  intent.Intent             `json:"intent"`
-}
-
-type CommandEvent struct {
-	CommandId   string `json:"commandId"`
-	Description string `json:"description"`
-	Type        string `json:"type"`
-	Timestamp   int64  `json:"timestamp"`
 }
 
 func (c Command) IsMatch() (bool, error) {

@@ -21,7 +21,7 @@ func NewLoggingService(logger zerolog.Logger, s pb.UserServer) pb.UserServer {
 func (s *loggingService) Preference(ctx context.Context, req *pb.PreferenceRequest) (reply *pb.PreferenceReply, err error) {
 	defer func(begin time.Time) {
 		l := s.logger.With().
-			Str("method", "preference").
+			Str("method", "Preference").
 			Str("took", time.Since(begin).String()).
 			Str("userId", req.GetUserId()).
 			Logger()
@@ -42,7 +42,7 @@ func (s *loggingService) Preference(ctx context.Context, req *pb.PreferenceReque
 func (s *loggingService) SetServer(ctx context.Context, req *pb.SetServerRequest) (reply *pb.PreferenceReply, err error) {
 	defer func(begin time.Time) {
 		l := s.logger.With().
-			Str("method", "setServer").
+			Str("method", "SetServer").
 			Str("took", time.Since(begin).String()).
 			Str("userId", req.GetUserId()).
 			Str("serverId", req.GetServerId()).

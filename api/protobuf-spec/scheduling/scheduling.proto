@@ -15,22 +15,24 @@ message Schedule {
     string dayOfMonth = 3;
     string month = 4;
     string dayOfWeek = 5;
+    string year = 6;
 }
 
 message Job {
     string id = 1;
     string type = 2;
     string content = 3;
-    string user = 4;
+    string userId = 4;
     string destination = 5;
     Schedule schedule = 6;
     bool enabled = 7;
+    int32 created = 8;
 }
 
 message CreateJobRequest {
     string type = 1;
     string content = 2;
-    string user = 3;
+    string userId = 3;
     string destination = 4;
     Schedule schedule = 5;
 }
