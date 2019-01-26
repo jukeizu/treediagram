@@ -27,6 +27,7 @@ var (
 	flagServer    = false
 	flagBot       = false
 	flagScheduler = false
+	flagMigrate   = false
 	flagVersion   = false
 	flagDebug     = false
 )
@@ -36,12 +37,13 @@ func parseConfig() startup.Config {
 
 	flag.IntVar(&c.GrpcPort, "grpc.port", DefaultGrpcPort, "grpc port")
 	flag.StringVar(&c.NatsServers, "nats", nats.DefaultURL, "NATS servers")
-	flag.StringVar(&c.DbUrl, "db", "localhost", "Database connection url")
+	flag.StringVar(&c.DbUrl, "db", "root@localhost:26257", "Database connection url")
 	flag.StringVar(&c.DiscordToken, "discord.token", "", "Discord token. This can also be specified via the "+DiscordTokenEnvironmentVariable+" environment variable.")
 	flag.StringVar(&c.ReceivingEndpoint, "endpoint", DefaultReceivingEndpoint, "Url of the Receiving service")
 	flag.BoolVar(&flagServer, "server", false, "Start as server")
 	flag.BoolVar(&flagBot, "bot", false, "Start as bot")
 	flag.BoolVar(&flagScheduler, "scheduler", false, "Start as scheduler")
+	flag.BoolVar(&flagMigrate, "migrate", false, "Run db migrations")
 	flag.BoolVar(&flagVersion, "v", false, "version")
 	flag.BoolVar(&flagDebug, "D", false, "enable debug logging")
 
@@ -71,6 +73,20 @@ func main() {
 		Str("instance", xid.New().String()).
 		Str("version", Version).
 		Logger()
+
+	if flagMigrate {
+		migrationRunner, err := startup.NewMigrationRunner(logger, config.DbUrl)
+		if err != nil {
+			logger.Error().Err(err).Caller().Msg("")
+			os.Exit(1)
+		}
+
+		err = migrationRunner.Migrate()
+		if err != nil {
+			logger.Error().Err(err).Caller().Msg("migrations did not complete")
+			os.Exit(1)
+		}
+	}
 
 	if !flagServer && !flagBot && !flagScheduler {
 		flagServer = true

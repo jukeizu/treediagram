@@ -5,49 +5,67 @@ import (
 	"github.com/jukeizu/treediagram/processor"
 	"github.com/jukeizu/treediagram/scheduler"
 	"github.com/jukeizu/treediagram/user"
+	"github.com/rs/zerolog"
 )
 
 type Storage struct {
-	ProcessorStorage processor.Storage
-	IntentStorage    intent.IntentStorage
-	JobStorage       scheduler.JobStorage
-	UserStorage      user.UserStorage
+	ProcessorRepository processor.Repository
+	IntentRepository    intent.Repository
+	SchedulerRepository scheduler.Repository
+	UserRepository      user.Repository
 }
 
-func NewStorage(dbUrl string) (*Storage, error) {
-	processorStorage, err := processor.NewStorage(dbUrl)
+func NewStorage(logger zerolog.Logger, dbUrl string) (*Storage, error) {
+	processorRepository, err := processor.NewRepository(dbUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	commandStorage, err := intent.NewIntentStorage(dbUrl)
+	intentRepository, err := intent.NewRepository(dbUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	jobStorage, err := scheduler.NewJobStorage(dbUrl)
+	schedulerRepository, err := scheduler.NewRepository(dbUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	userStorage, err := user.NewUserStorage(dbUrl)
+	userRepository, err := user.NewRepository(dbUrl)
 	if err != nil {
 		return nil, err
 	}
 
 	s := &Storage{
-		ProcessorStorage: processorStorage,
-		IntentStorage:    commandStorage,
-		JobStorage:       jobStorage,
-		UserStorage:      userStorage,
+		ProcessorRepository: processorRepository,
+		IntentRepository:    intentRepository,
+		SchedulerRepository: schedulerRepository,
+		UserRepository:      userRepository,
 	}
 
 	return s, nil
 }
 
-func (s *Storage) Close() {
-	s.ProcessorStorage.Close()
-	s.IntentStorage.Close()
-	s.JobStorage.Close()
-	s.UserStorage.Close()
+func (s *Storage) Migrate() error {
+	err := s.ProcessorRepository.Migrate()
+	if err != nil {
+		return err
+	}
+
+	err = s.UserRepository.Migrate()
+	if err != nil {
+		return err
+	}
+
+	err = s.IntentRepository.Migrate()
+	if err != nil {
+		return err
+	}
+
+	err = s.SchedulerRepository.Migrate()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
