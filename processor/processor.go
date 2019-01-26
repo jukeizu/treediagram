@@ -21,7 +21,7 @@ type Processor struct {
 	queue      *nats.EncodedConn
 	registry   intent.IntentRegistryClient
 	repository Repository
-	wg         *sync.WaitGroup
+	waitGroup  *sync.WaitGroup
 }
 
 func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intent.IntentRegistryClient, repository Repository) Processor {
@@ -30,7 +30,7 @@ func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intent.IntentR
 		queue:      queue,
 		registry:   registry,
 		repository: repository,
-		wg:         &sync.WaitGroup{},
+		waitGroup:  &sync.WaitGroup{},
 	}
 
 	return p
@@ -49,7 +49,7 @@ func (p Processor) Start() error {
 
 func (p Processor) Stop() {
 	p.logger.Info().Msg("stopping")
-	p.wg.Wait()
+	p.waitGroup.Wait()
 }
 
 func (p Processor) processRequest(request *processing.MessageRequest) {
@@ -84,13 +84,14 @@ func (p Processor) processRequest(request *processing.MessageRequest) {
 }
 
 func (p Processor) processCommand(command Command) {
-	p.wg.Add(1)
+	p.waitGroup.Add(1)
 	go func(command Command) {
-		defer p.wg.Done()
+		defer p.waitGroup.Done()
 
 		isMatch, err := command.IsMatch()
 		if err != nil {
 			p.logger.Error().Err(err).Caller().Msg("could not determine if command is match")
+			return
 		}
 
 		if !isMatch {
@@ -99,6 +100,7 @@ func (p Processor) processCommand(command Command) {
 
 		processingRequest, err := p.createProcessingRequest(command)
 		if err != nil {
+			p.logger.Error().Err(err).Caller().Msg("error creating ProcessingRequest")
 			return
 		}
 
@@ -128,13 +130,13 @@ func (p Processor) saveResponseMessage(processingRequest *processing.ProcessingR
 		Content:             message.Content,
 	}
 
-	returned, err := p.repository.SaveMessageReply(messageReply)
+	err := p.repository.SaveMessageReply(&messageReply)
 	if err != nil {
 		p.createErrorEvent(processingRequest.Id, err)
 		return
 	}
 
-	messageReplyReceived := processing.MessageReplyReceived{Id: returned.Id}
+	messageReplyReceived := processing.MessageReplyReceived{Id: messageReply.Id}
 
 	err = p.queue.Publish(ReplyReceivedSubject+"."+processingRequest.Source, messageReplyReceived)
 	if err != nil {
@@ -143,7 +145,7 @@ func (p Processor) saveResponseMessage(processingRequest *processing.ProcessingR
 }
 
 func (p Processor) createProcessingRequest(command Command) (*processing.ProcessingRequest, error) {
-	processingRequest := processing.ProcessingRequest{
+	processingRequest := &processing.ProcessingRequest{
 		IntentId:  command.Intent.Id,
 		Source:    command.Request.Source,
 		ChannelId: command.Request.ChannelId,
@@ -152,30 +154,30 @@ func (p Processor) createProcessingRequest(command Command) (*processing.Process
 		UserId:    command.Request.Author.Id,
 	}
 
-	returned, err := p.repository.SaveProcessingRequest(processingRequest)
+	err := p.repository.SaveProcessingRequest(processingRequest)
 	if err != nil {
-		p.logger.Error().Err(err).Caller().Msg("error creating ProcessingRequest")
+		return nil, err
 	}
 
-	return returned, nil
+	return processingRequest, nil
 }
 
-func (p Processor) createProcessingEvent(processingRequestId string, t string, d string) {
+func (p Processor) createProcessingEvent(processingRequestId string, eventType string, eventDescription string) {
 	e := processing.ProcessingEvent{
 		ProcessingRequestId: processingRequestId,
-		Type:                t,
-		Description:         d,
+		Type:                eventType,
+		Description:         eventDescription,
 	}
 
-	err := p.repository.SaveProcessingEvent(e)
+	err := p.repository.SaveProcessingEvent(&e)
 	if err != nil {
 		p.logger.Error().Err(err).Caller().Msg("error saving processing event")
 	}
 
 	p.logger.Debug().
 		Str("processingRequestId", processingRequestId).
-		Str("type", t).
-		Str("description", d).
+		Str("type", eventType).
+		Str("description", eventDescription).
 		Msg("saved processing event")
 }
 

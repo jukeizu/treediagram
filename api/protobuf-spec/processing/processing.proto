@@ -72,5 +72,5 @@ message ProcessingEvent {
     string processingRequestId = 2;
     string description = 3;
     string type = 4;
-    int32 timestamp = 5;
+    int32 created = 5;
 }

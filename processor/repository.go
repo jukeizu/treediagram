@@ -14,11 +14,11 @@ const (
 )
 
 type Repository interface {
-	SaveProcessingRequest(processing.ProcessingRequest) (*processing.ProcessingRequest, error)
+	SaveProcessingRequest(*processing.ProcessingRequest) error
 	ProcessingRequest(string) (*processing.ProcessingRequest, error)
-	SaveProcessingEvent(processing.ProcessingEvent) error
+	SaveProcessingEvent(*processing.ProcessingEvent) error
 	ProcessingEvents(string) ([]*processing.ProcessingEvent, error)
-	SaveMessageReply(processing.MessageReply) (*processing.MessageReply, error)
+	SaveMessageReply(*processing.MessageReply) error
 	MessageReply(string) (*processing.MessageReply, error)
 
 	Migrate() error
@@ -66,7 +66,7 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) SaveProcessingRequest(p processing.ProcessingRequest) (*processing.ProcessingRequest, error) {
+func (r *repository) SaveProcessingRequest(p *processing.ProcessingRequest) error {
 	q := `INSERT INTO processing_request (
 		intentId,
 		source,
@@ -86,11 +86,7 @@ func (r *repository) SaveProcessingRequest(p processing.ProcessingRequest) (*pro
 		p.UserId,
 	).Scan(&p.Id, &p.Created)
 
-	if err != nil {
-		return nil, err
-	}
-
-	return &p, err
+	return err
 }
 
 func (r *repository) ProcessingRequest(id string) (*processing.ProcessingRequest, error) {
@@ -125,18 +121,19 @@ func (r *repository) ProcessingRequest(id string) (*processing.ProcessingRequest
 	return &p, nil
 }
 
-func (r *repository) SaveProcessingEvent(e processing.ProcessingEvent) error {
+func (r *repository) SaveProcessingEvent(e *processing.ProcessingEvent) error {
 	q := `INSERT INTO processing_event (
 		processingRequestId,
 		description,
 		type
-	) VALUES ($1,$2,$3)`
+	) VALUES ($1,$2,$3)
+	RETURNING id, created:INT`
 
-	_, err := r.Db.Exec(q,
+	err := r.Db.QueryRow(q,
 		e.ProcessingRequestId,
 		e.Description,
 		e.Type,
-	)
+	).Scan(&e.Id, &e.Created)
 
 	return err
 }
@@ -146,7 +143,7 @@ func (r *repository) ProcessingEvents(processingRequestId string) ([]*processing
 		processingRequestId,
 		description,
 		type,
-		timestamp::INT
+		created::INT
 	FROM processing_event
 	WHERE processingRequestId = $1`
 
@@ -166,7 +163,7 @@ func (r *repository) ProcessingEvents(processingRequestId string) ([]*processing
 			&e.ProcessingRequestId,
 			&e.Description,
 			&e.Type,
-			&e.Timestamp,
+			&e.Created,
 		)
 		if err != nil {
 			return processingEvents, err
@@ -178,7 +175,7 @@ func (r *repository) ProcessingEvents(processingRequestId string) ([]*processing
 	return processingEvents, nil
 }
 
-func (r *repository) SaveMessageReply(mr processing.MessageReply) (*processing.MessageReply, error) {
+func (r *repository) SaveMessageReply(mr *processing.MessageReply) error {
 	q := `INSERT INTO message_reply (
 		processingRequestId,
 		channelId,
@@ -198,11 +195,7 @@ func (r *repository) SaveMessageReply(mr processing.MessageReply) (*processing.M
 		mr.Content,
 	).Scan(&mr.Id, &mr.Created)
 
-	if err != nil {
-		return nil, err
-	}
-
-	return &mr, err
+	return err
 }
 
 func (r *repository) MessageReply(id string) (*processing.MessageReply, error) {
