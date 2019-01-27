@@ -18,11 +18,17 @@ message MessageRequest {
     User author = 4;
     string channelId = 5;
     string serverId = 6;
-    repeated User mentions = 7;
-    string content = 8;
+    repeated Server servers = 7;
+    repeated User mentions = 8;
+    string content = 9;
 }
 
 message User {
+    string id = 1;
+    string name = 2;
+}
+
+message Server {
     string id = 1;
     string name = 2;
 }

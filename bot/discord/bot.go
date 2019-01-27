@@ -79,6 +79,7 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		Author:    mapToPbUser(m.Author),
 		ChannelId: m.ChannelID,
 		ServerId:  m.GuildID,
+		Servers:   mapToPbServers(m.Author.ID, d.Session.State.Guilds),
 		Content:   m.Content,
 		Mentions:  mapToPbUsers(m.Mentions),
 	}

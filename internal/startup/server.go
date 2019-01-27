@@ -56,19 +56,20 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 		return nil, err
 	}
 
-	intentConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure())
+	grpcConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
 
-	intentClient := intentpb.NewIntentRegistryClient(intentConn)
+	intentClient := intentpb.NewIntentRegistryClient(grpcConn)
+	userClient := userpb.NewUserClient(grpcConn)
 
 	processorService, err := processor.NewService(conn, storage.ProcessorRepository)
 	if err != nil {
 		return nil, err
 	}
 
-	processor := processor.New(logger, conn, intentClient, storage.ProcessorRepository)
+	processor := processor.New(logger, conn, intentClient, userClient, storage.ProcessorRepository)
 	err = processor.Start()
 	if err != nil {
 		return nil, err
