@@ -14,9 +14,10 @@ func (m CreateTableJob20190119052738) Up(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS job(
 			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
-			type STRING NOT NULL DEFAULT '',
-			content STRING NOT NULL DEFAULT '',
 			userId STRING NOT NULL DEFAULT '',
+			source STRING NOT NULL DEFAULT '',
+			content STRING NOT NULL DEFAULT '',
+			endpoint STRING NOT NULL DEFAULT '',
 			destination STRING NOT NULL DEFAULT '',
 			minute STRING NOT NULL DEFAULT '',
 			hour STRING NOT NULL DEFAULT '',

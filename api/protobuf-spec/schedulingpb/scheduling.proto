@@ -20,21 +20,23 @@ message Schedule {
 
 message Job {
     string id = 1;
-    string type = 2;
-    string content = 3;
-    string userId = 4;
-    string destination = 5;
-    Schedule schedule = 6;
-    bool enabled = 7;
-    int32 created = 8;
+    string userId = 2;
+    string source = 3;
+    string content = 4;
+    string endpoint = 5;
+    string destination = 6;
+    Schedule schedule = 7;
+    bool enabled = 8;
+    int32 created = 9;
 }
 
 message CreateJobRequest {
-    string type = 1;
-    string content = 2;
-    string userId = 3;
-    string destination = 4;
-    Schedule schedule = 5;
+    string userId = 1;
+    string source = 2;
+    string content = 3;
+    string endpoint = 4;
+    string destination = 5;
+    Schedule schedule = 6;
 }
 
 message CreateJobReply {

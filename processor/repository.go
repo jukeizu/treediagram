@@ -68,16 +68,18 @@ func (r *repository) Migrate() error {
 
 func (r *repository) SaveProcessingRequest(p *processingpb.ProcessingRequest) error {
 	q := `INSERT INTO processing_request (
+		type,
 		intentId,
 		source,
 		channelId,
 		serverId,
 		botId,
 		userId
-	) VALUES ($1,$2,$3,$4,$5,$6)
+	) VALUES ($1,$2,$3,$4,$5,$6,$7)
 	RETURNING id, created::INT`
 
 	err := r.Db.QueryRow(q,
+		p.Type,
 		p.IntentId,
 		p.Source,
 		p.ChannelId,
@@ -91,6 +93,7 @@ func (r *repository) SaveProcessingRequest(p *processingpb.ProcessingRequest) er
 
 func (r *repository) ProcessingRequest(id string) (*processingpb.ProcessingRequest, error) {
 	q := `SELECT id,
+		type,
 		intentId,
 		source,
 		channelId,
@@ -105,6 +108,7 @@ func (r *repository) ProcessingRequest(id string) (*processingpb.ProcessingReque
 
 	err := r.Db.QueryRow(q, id).Scan(
 		&p.Id,
+		&p.Type,
 		&p.IntentId,
 		&p.Source,
 		&p.ChannelId,

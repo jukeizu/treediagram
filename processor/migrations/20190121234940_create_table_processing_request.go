@@ -14,6 +14,7 @@ func (m CreateTableProcessingRequest20190121234940) Up(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS processing_request (
 			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+			type STRING NOT NULL DEFAULT '',
 			intentId STRING NOT NULL DEFAULT '',
 			source STRING NOT NULL DEFAULT '',
 			channelId STRING NOT NULL DEFAULT '',

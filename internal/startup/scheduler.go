@@ -3,7 +3,6 @@ package startup
 import (
 	"github.com/jukeizu/treediagram/scheduler"
 	nats "github.com/nats-io/go-nats"
-	"github.com/nats-io/go-nats/encoders/protobuf"
 	"github.com/rs/zerolog"
 )
 
@@ -23,7 +22,7 @@ func NewSchedulerRunner(logger zerolog.Logger, config Config) (*SchedulerRunner,
 		return nil, err
 	}
 
-	conn, err := nats.NewEncodedConn(nc, protobuf.PROTOBUF_ENCODER)
+	conn, err := nats.NewEncodedConn(nc, nats.JSON_ENCODER)
 	if err != nil {
 		return nil, err
 	}

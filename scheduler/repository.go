@@ -59,10 +59,19 @@ func (r *repository) Migrate() error {
 }
 
 func (r *repository) Create(job *schedulingpb.Job) error {
+	if job == nil {
+		return nil
+	}
+
+	if job.Schedule == nil {
+		job.Schedule = &schedulingpb.Schedule{}
+	}
+
 	q := `INSERT INTO job (
-			type,
-			content,
 			userId,
+			source,
+			content,
+			endpoint,
 			destination,
 			minute,
 			hour,
@@ -72,13 +81,14 @@ func (r *repository) Create(job *schedulingpb.Job) error {
 			year,
 			enabled
 		) 
-		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
 		RETURNING id, created::INT`
 
 	err := r.Db.QueryRow(q,
-		job.Type,
-		job.Content,
 		job.UserId,
+		job.Source,
+		job.Content,
+		job.Endpoint,
 		job.Destination,
 		job.Schedule.Minute,
 		job.Schedule.Hour,
@@ -101,9 +111,10 @@ func (r *repository) Jobs(schedule *schedulingpb.Schedule) ([]*schedulingpb.Job,
 	}
 
 	q := `SELECT id,
-		type,
-		content,
 		userId,
+		source,
+		content,
+		endpoint,
 		destination,
 		minute,
 		hour,
@@ -136,9 +147,10 @@ func (r *repository) Jobs(schedule *schedulingpb.Schedule) ([]*schedulingpb.Job,
 
 func (r *repository) allJobs() ([]*schedulingpb.Job, error) {
 	q := `SELECT id,
-		type,
-		content,
 		userId,
+		source,
+		content,
+		endpoint,
 		destination,
 		minute,
 		hour,
@@ -177,9 +189,10 @@ func (r *repository) queryJobs(q string, dest ...interface{}) ([]*schedulingpb.J
 		job := schedulingpb.Job{Schedule: &schedulingpb.Schedule{}}
 		err := rows.Scan(
 			&job.Id,
-			&job.Type,
-			&job.Content,
 			&job.UserId,
+			&job.Source,
+			&job.Content,
+			&job.Endpoint,
 			&job.Destination,
 			&job.Schedule.Minute,
 			&job.Schedule.Hour,
