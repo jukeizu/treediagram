@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package scheduling;
+package schedulingpb;
 
 service Scheduling {
     rpc Create (CreateJobRequest) returns (CreateJobReply) {}

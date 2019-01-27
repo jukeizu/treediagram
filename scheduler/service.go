@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
+	pb "github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/zerolog"
 )

@@ -3,7 +3,7 @@ package startup
 import (
 	"sync"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	"github.com/jukeizu/treediagram/bot/discord"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/zerolog"
@@ -44,7 +44,7 @@ func NewBotRunner(logger zerolog.Logger, config Config) (*BotRunner, error) {
 		return nil, err
 	}
 
-	client := pb.NewProcessingClient(clientConn)
+	client := processingpb.NewProcessingClient(clientConn)
 
 	handler, err := discord.NewBot(config.DiscordToken, client, queue, logger)
 	if err != nil {

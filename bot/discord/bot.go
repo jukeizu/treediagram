@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/zerolog"
 )
@@ -22,12 +22,12 @@ type Bot interface {
 
 type bot struct {
 	Session *discordgo.Session
-	Client  pb.ProcessingClient
+	Client  processingpb.ProcessingClient
 	Queue   *nats.EncodedConn
 	Logger  zerolog.Logger
 }
 
-func NewBot(token string, client pb.ProcessingClient, queue *nats.EncodedConn, logger zerolog.Logger) (Bot, error) {
+func NewBot(token string, client processingpb.ProcessingClient, queue *nats.EncodedConn, logger zerolog.Logger) (Bot, error) {
 	dh := bot{
 		Client: client,
 		Logger: logger,
@@ -72,7 +72,7 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	request := &pb.MessageRequest{
+	request := &processingpb.MessageRequest{
 		Id:        m.ID,
 		Source:    "discord",
 		Bot:       mapToPbUser(s.State.User),
@@ -95,9 +95,9 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	d.Logger.Debug().Str("reply.id", reply.Id).Msg("request sent")
 }
 
-func (d *bot) messageReplyReceived(r *pb.MessageReplyReceived) {
+func (d *bot) messageReplyReceived(r *processingpb.MessageReplyReceived) {
 	d.Logger.Debug().Str("reply", r.Id).Msg("reply received")
-	message, err := d.Client.GetMessageReply(context.Background(), &pb.MessageReplyRequest{Id: r.Id})
+	message, err := d.Client.GetMessageReply(context.Background(), &processingpb.MessageReplyRequest{Id: r.Id})
 	if err != nil {
 		d.Logger.Error().Caller().Err(err).
 			Str("id", r.Id).
@@ -114,7 +114,7 @@ func (d *bot) messageReplyReceived(r *pb.MessageReplyReceived) {
 	}
 }
 
-func (d *bot) publishMessage(message *pb.MessageReply) error {
+func (d *bot) publishMessage(message *processingpb.MessageReply) error {
 	d.Logger.Debug().Str("message.id", message.Id).Msg("received publish request")
 
 	channelId := message.ChannelId

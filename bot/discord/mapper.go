@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 
 	"github.com/bwmarrin/discordgo"
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	"github.com/rs/zerolog"
 )
 
-func mapToPbUser(discordUser *discordgo.User) *pb.User {
-	user := &pb.User{
+func mapToPbUser(discordUser *discordgo.User) *processingpb.User {
+	user := &processingpb.User{
 		Id:   discordUser.ID,
 		Name: discordUser.Username,
 	}
@@ -17,8 +17,8 @@ func mapToPbUser(discordUser *discordgo.User) *pb.User {
 	return user
 }
 
-func mapToPbUsers(discordUsers []*discordgo.User) []*pb.User {
-	users := []*pb.User{}
+func mapToPbUsers(discordUsers []*discordgo.User) []*processingpb.User {
+	users := []*processingpb.User{}
 
 	for _, discordUser := range discordUsers {
 		users = append(users, mapToPbUser(discordUser))
@@ -27,13 +27,13 @@ func mapToPbUsers(discordUsers []*discordgo.User) []*pb.User {
 	return users
 }
 
-func mapToPbServers(userId string, guilds []*discordgo.Guild) []*pb.Server {
-	servers := []*pb.Server{}
+func mapToPbServers(userId string, guilds []*discordgo.Guild) []*processingpb.Server {
+	servers := []*processingpb.Server{}
 
 	for _, guild := range guilds {
 		for _, member := range guild.Members {
 			if member.User.ID == userId {
-				server := pb.Server{
+				server := processingpb.Server{
 					Id:   guild.ID,
 					Name: guild.Name,
 				}
@@ -47,7 +47,7 @@ func mapToPbServers(userId string, guilds []*discordgo.Guild) []*pb.Server {
 	return servers
 }
 
-func mapToMessageSend(message *pb.MessageReply) (*discordgo.MessageSend, error) {
+func mapToMessageSend(message *processingpb.MessageReply) (*discordgo.MessageSend, error) {
 	if message == nil {
 		return nil, nil
 	}

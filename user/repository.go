@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
 	"github.com/jukeizu/treediagram/user/migrations"
 	_ "github.com/lib/pq"
 	"github.com/shawntoffel/gossage"
@@ -15,8 +15,8 @@ const (
 )
 
 type Repository interface {
-	Preference(*pb.PreferenceRequest) (*pb.Preference, error)
-	SetServer(*pb.SetServerRequest) (*pb.Preference, error)
+	Preference(*userpb.PreferenceRequest) (*userpb.Preference, error)
+	SetServer(*userpb.SetServerRequest) (*userpb.Preference, error)
 	Migrate() error
 }
 
@@ -58,8 +58,8 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) Preference(req *pb.PreferenceRequest) (*pb.Preference, error) {
-	preference := &pb.Preference{}
+func (r *repository) Preference(req *userpb.PreferenceRequest) (*userpb.Preference, error) {
+	preference := &userpb.Preference{}
 
 	q := `SELECT userId, serverId FROM preference WHERE userId = $1`
 
@@ -72,8 +72,8 @@ func (r *repository) Preference(req *pb.PreferenceRequest) (*pb.Preference, erro
 	return preference, err
 }
 
-func (r *repository) SetServer(req *pb.SetServerRequest) (*pb.Preference, error) {
-	preference := &pb.Preference{}
+func (r *repository) SetServer(req *userpb.SetServerRequest) (*userpb.Preference, error) {
+	preference := &userpb.Preference{}
 
 	q := `INSERT INTO preference (userId, serverId) 
 			VALUES($1, $2) 

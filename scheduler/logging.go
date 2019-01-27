@@ -4,21 +4,21 @@ import (
 	"context"
 	"time"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
 	"github.com/rs/zerolog"
 )
 
 type loggingService struct {
 	logger  zerolog.Logger
-	Service pb.SchedulingServer
+	Service schedulingpb.SchedulingServer
 }
 
-func NewLoggingService(logger zerolog.Logger, s pb.SchedulingServer) pb.SchedulingServer {
+func NewLoggingService(logger zerolog.Logger, s schedulingpb.SchedulingServer) schedulingpb.SchedulingServer {
 	logger = logger.With().Str("service", "scheduling").Logger()
 	return &loggingService{logger, s}
 }
 
-func (s loggingService) Create(ctx context.Context, req *pb.CreateJobRequest) (reply *pb.CreateJobReply, err error) {
+func (s loggingService) Create(ctx context.Context, req *schedulingpb.CreateJobRequest) (reply *schedulingpb.CreateJobReply, err error) {
 	defer func(begin time.Time) {
 		l := s.logger.With().
 			Str("method", "create").
@@ -38,7 +38,7 @@ func (s loggingService) Create(ctx context.Context, req *pb.CreateJobRequest) (r
 	return
 }
 
-func (s loggingService) Jobs(ctx context.Context, req *pb.JobsRequest) (reply *pb.JobsReply, err error) {
+func (s loggingService) Jobs(ctx context.Context, req *schedulingpb.JobsRequest) (reply *schedulingpb.JobsReply, err error) {
 	defer func(begin time.Time) {
 		l := s.logger.With().
 			Str("method", "jobs").
@@ -58,7 +58,7 @@ func (s loggingService) Jobs(ctx context.Context, req *pb.JobsRequest) (reply *p
 	return
 }
 
-func (s loggingService) Run(ctx context.Context, req *pb.RunJobsRequest) (reply *pb.RunJobsReply, err error) {
+func (s loggingService) Run(ctx context.Context, req *schedulingpb.RunJobsRequest) (reply *schedulingpb.RunJobsReply, err error) {
 	defer func(begin time.Time) {
 		l := s.logger.With().
 			Str("method", "run").
@@ -78,7 +78,7 @@ func (s loggingService) Run(ctx context.Context, req *pb.RunJobsRequest) (reply 
 	return
 }
 
-func (s loggingService) Disable(ctx context.Context, req *pb.DisableJobRequest) (reply *pb.DisableJobReply, err error) {
+func (s loggingService) Disable(ctx context.Context, req *schedulingpb.DisableJobRequest) (reply *schedulingpb.DisableJobReply, err error) {
 	defer func(begin time.Time) {
 		l := s.logger.With().
 			Str("method", "disable").

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package intent;
+package intentpb;
 
 service IntentRegistry {
     rpc AddIntent(AddIntentRequest) returns (AddIntentReply) {}

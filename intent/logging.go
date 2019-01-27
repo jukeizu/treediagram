@@ -4,21 +4,21 @@ import (
 	"context"
 	"time"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/intent"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
 	"github.com/rs/zerolog"
 )
 
 type loggingService struct {
 	logger  zerolog.Logger
-	Service pb.IntentRegistryServer
+	Service intentpb.IntentRegistryServer
 }
 
-func NewLoggingService(logger zerolog.Logger, s pb.IntentRegistryServer) pb.IntentRegistryServer {
+func NewLoggingService(logger zerolog.Logger, s intentpb.IntentRegistryServer) intentpb.IntentRegistryServer {
 	logger = logger.With().Str("service", "intent").Logger()
 	return &loggingService{logger, s}
 }
 
-func (s loggingService) AddIntent(ctx context.Context, req *pb.AddIntentRequest) (reply *pb.AddIntentReply, err error) {
+func (s loggingService) AddIntent(ctx context.Context, req *intentpb.AddIntentRequest) (reply *intentpb.AddIntentReply, err error) {
 	defer func(begin time.Time) {
 		l := s.logger.With().
 			Str("method", "addIntent").
@@ -38,7 +38,7 @@ func (s loggingService) AddIntent(ctx context.Context, req *pb.AddIntentRequest)
 	return
 }
 
-func (s loggingService) DisableIntent(ctx context.Context, req *pb.DisableIntentRequest) (reply *pb.DisableIntentReply, err error) {
+func (s loggingService) DisableIntent(ctx context.Context, req *intentpb.DisableIntentRequest) (reply *intentpb.DisableIntentReply, err error) {
 	defer func(begin time.Time) {
 		l := s.logger.With().
 			Str("method", "disableIntent").
@@ -58,7 +58,7 @@ func (s loggingService) DisableIntent(ctx context.Context, req *pb.DisableIntent
 	return
 }
 
-func (s loggingService) QueryIntents(req *pb.QueryIntentsRequest, stream pb.IntentRegistry_QueryIntentsServer) (err error) {
+func (s loggingService) QueryIntents(req *intentpb.QueryIntentsRequest, stream intentpb.IntentRegistry_QueryIntentsServer) (err error) {
 	defer func(begin time.Time) {
 		l := s.logger.With().
 			Str("method", "queryIntent").

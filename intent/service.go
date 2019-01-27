@@ -3,36 +3,36 @@ package intent
 import (
 	"context"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/intent"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
 )
 
 type service struct {
 	Repository Repository
 }
 
-func NewService(repository Repository) pb.IntentRegistryServer {
+func NewService(repository Repository) intentpb.IntentRegistryServer {
 	return &service{Repository: repository}
 }
 
-func (s *service) AddIntent(ctx context.Context, req *pb.AddIntentRequest) (*pb.AddIntentReply, error) {
+func (s *service) AddIntent(ctx context.Context, req *intentpb.AddIntentRequest) (*intentpb.AddIntentReply, error) {
 	err := s.Repository.Save(req.Intent)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.AddIntentReply{Intent: req.Intent}, nil
+	return &intentpb.AddIntentReply{Intent: req.Intent}, nil
 }
 
-func (s *service) DisableIntent(ctx context.Context, req *pb.DisableIntentRequest) (*pb.DisableIntentReply, error) {
+func (s *service) DisableIntent(ctx context.Context, req *intentpb.DisableIntentRequest) (*intentpb.DisableIntentReply, error) {
 	err := s.Repository.Disable(req.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.DisableIntentReply{Id: req.Id}, nil
+	return &intentpb.DisableIntentReply{Id: req.Id}, nil
 }
 
-func (s *service) QueryIntents(req *pb.QueryIntentsRequest, stream pb.IntentRegistry_QueryIntentsServer) error {
+func (s *service) QueryIntents(req *intentpb.QueryIntentsRequest, stream intentpb.IntentRegistry_QueryIntentsServer) error {
 	intents, err := s.Repository.Query(*req)
 	if err != nil {
 		return err
