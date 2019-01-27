@@ -7,10 +7,6 @@ import (
 	nats "github.com/nats-io/go-nats"
 )
 
-const (
-	RequestReceivedSubject = "request.received"
-)
-
 type service struct {
 	repository Repository
 	queue      *nats.EncodedConn
@@ -21,7 +17,7 @@ func NewService(queue *nats.EncodedConn, repository Repository) (processingpb.Pr
 }
 
 func (s service) SendMessageRequest(ctx context.Context, req *processingpb.MessageRequest) (*processingpb.SendMessageRequestReply, error) {
-	err := s.queue.Publish(RequestReceivedSubject, req)
+	err := s.queue.Publish(MessageRequestReceivedSubject, req)
 
 	return &processingpb.SendMessageRequestReply{Id: req.Id}, err
 }

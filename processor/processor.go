@@ -15,10 +15,17 @@ import (
 )
 
 const (
-	ProcessorQueueGroup  = "processor"
-	ReplyReceivedSubject = "processor.reply.received"
-	JobsSubject          = "jobs"
+	ProcessorQueueGroup           = "processor"
+	MessageRequestReceivedSubject = "messagerequest.received"
+	JobReceivedSubject            = "jobs"
+	ReplyReceivedSubject          = "processor.reply.received"
 )
+
+type Executable interface {
+	ShouldExecute() (bool, error)
+	Execute() (*processingpb.Response, error)
+	ProcessingRequest() *processingpb.ProcessingRequest
+}
 
 type Processor struct {
 	logger     zerolog.Logger
@@ -43,12 +50,12 @@ func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intentpb.Inten
 }
 
 func (p Processor) Start() error {
-	_, err := p.queue.QueueSubscribe(RequestReceivedSubject, ProcessorQueueGroup, p.processRequest)
+	_, err := p.queue.QueueSubscribe(MessageRequestReceivedSubject, ProcessorQueueGroup, p.processMessageRequest)
 	if err != nil {
 		return err
 	}
 
-	_, err = p.queue.QueueSubscribe(JobsSubject, ProcessorQueueGroup, p.processJob)
+	_, err = p.queue.QueueSubscribe(JobReceivedSubject, ProcessorQueueGroup, p.processJob)
 	if err != nil {
 		return err
 	}
@@ -63,7 +70,7 @@ func (p Processor) Stop() {
 	p.waitGroup.Wait()
 }
 
-func (p Processor) processRequest(request *processingpb.MessageRequest) {
+func (p Processor) processMessageRequest(request *processingpb.MessageRequest) {
 	p.logger.Debug().Msgf("request received %+v", request)
 
 	serverId, err := p.findServerId(request)
@@ -110,45 +117,8 @@ func (p Processor) processRequest(request *processingpb.MessageRequest) {
 			Intent:  *intent,
 		}
 
-		p.processCommand(command)
+		p.process(command)
 	}
-}
-
-func (p Processor) processCommand(command Command) {
-	p.waitGroup.Add(1)
-	go func(command Command) {
-		defer p.waitGroup.Done()
-
-		isMatch, err := command.IsMatch()
-		if err != nil {
-			p.logger.Error().Err(err).Caller().Msg("could not determine if command is match")
-			return
-		}
-
-		if !isMatch {
-			return
-		}
-
-		processingRequest, err := p.createCommandProcessingRequest(command)
-		if err != nil {
-			p.logger.Error().Err(err).Caller().Msg("error creating ProcessingRequest")
-			return
-		}
-
-		p.logger.Debug().
-			Str("processingRequest", processingRequest.Id).
-			Msg("executing command")
-
-		response, err := command.Execute()
-		if err != nil {
-			p.createErrorEvent(processingRequest.Id, err)
-			return
-		}
-
-		for _, message := range response.Messages {
-			p.saveResponseMessage(processingRequest, *message)
-		}
-	}(command)
 }
 
 func (p Processor) processJob(schedulingJob *schedulingpb.Job) {
@@ -158,25 +128,59 @@ func (p Processor) processJob(schedulingJob *schedulingpb.Job) {
 		SchedulingJob: *schedulingJob,
 	}
 
-	processingRequest, err := p.createJobProcessingRequest(job)
-	if err != nil {
-		p.logger.Error().Err(err).Caller().Msg("error creating ProcessingRequest")
-		return
-	}
+	p.process(job)
+}
 
-	p.logger.Debug().
-		Str("processingRequest", processingRequest.Id).
-		Msg("executing job")
+func (p Processor) process(executable Executable) {
+	p.waitGroup.Add(1)
+	go func(executable Executable) {
+		defer p.waitGroup.Done()
+		p.logger.Debug().Msg("starting processing for executable")
 
-	response, err := job.Execute()
-	if err != nil {
-		p.createErrorEvent(processingRequest.Id, err)
-		return
-	}
+		shouldExecute, err := executable.ShouldExecute()
+		if err != nil {
+			p.logger.Error().Err(err).Caller().Msg("could not determine if should execute")
+			return
+		}
 
-	for _, message := range response.Messages {
-		p.saveResponseMessage(processingRequest, *message)
-	}
+		if !shouldExecute {
+			p.logger.Debug().Msg("executable should not execute")
+			return
+		}
+
+		processingRequest := executable.ProcessingRequest()
+
+		err = p.repository.SaveProcessingRequest(processingRequest)
+		if err != nil {
+			p.logger.Error().Err(err).Caller().Msg("error saving ProcessingRequest")
+			return
+		}
+
+		p.logger.Debug().
+			Str("processingRequestId", processingRequest.Id).
+			Str("processingRequestType", processingRequest.Type).
+			Msg("executing")
+
+		response, err := executable.Execute()
+		if err != nil {
+			p.createErrorEvent(processingRequest.Id, err)
+			return
+		}
+
+		p.logger.Debug().
+			Str("processingRequestId", processingRequest.Id).
+			Str("processingRequestType", processingRequest.Type).
+			Msg("saving responses from execute")
+
+		for _, message := range response.Messages {
+			p.saveResponseMessage(processingRequest, *message)
+		}
+
+		p.logger.Debug().
+			Str("processingRequestId", processingRequest.Id).
+			Str("processingRequestType", processingRequest.Type).
+			Msg("finished processing executable")
+	}(executable)
 }
 
 func (p Processor) findServerId(request *processingpb.MessageRequest) (string, error) {
@@ -261,41 +265,6 @@ func (p Processor) saveResponseMessage(processingRequest *processingpb.Processin
 		p.createErrorEvent(processingRequest.Id, err)
 		return
 	}
-}
-
-func (p Processor) createCommandProcessingRequest(command Command) (*processingpb.ProcessingRequest, error) {
-	processingRequest := &processingpb.ProcessingRequest{
-		Type:      "command",
-		IntentId:  command.Intent.Id,
-		Source:    command.Request.Source,
-		ChannelId: command.Request.ChannelId,
-		ServerId:  command.Request.ServerId,
-		BotId:     command.Request.Bot.Id,
-		UserId:    command.Request.Author.Id,
-	}
-
-	err := p.repository.SaveProcessingRequest(processingRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	return processingRequest, nil
-}
-
-func (p Processor) createJobProcessingRequest(job Job) (*processingpb.ProcessingRequest, error) {
-	processingRequest := &processingpb.ProcessingRequest{
-		Type:      "job",
-		Source:    job.SchedulingJob.Source,
-		ChannelId: job.SchedulingJob.Destination,
-		UserId:    job.SchedulingJob.UserId,
-	}
-
-	err := p.repository.SaveProcessingRequest(processingRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	return processingRequest, nil
 }
 
 func (p Processor) createProcessingEvent(processingRequestId string, eventType string, eventDescription string) {
