@@ -13,7 +13,7 @@ type Command struct {
 	Intent  intentpb.Intent             `json:"intent"`
 }
 
-func (c Command) IsMatch() (bool, error) {
+func (c Command) ShouldExecute() (bool, error) {
 	if c.Intent.Mention && !c.isBotMentioned() {
 		return false, nil
 	}
@@ -29,7 +29,7 @@ func (c Command) IsMatch() (bool, error) {
 func (c Command) Execute() (*processingpb.Response, error) {
 	reply := &processingpb.Response{}
 
-	if len(c.Intent.Endpoint) > 0 {
+	if c.Intent.Endpoint != "" {
 		client := Client{}
 
 		r, err := client.Do(c.Request, c.Intent.Endpoint)
@@ -40,7 +40,7 @@ func (c Command) Execute() (*processingpb.Response, error) {
 		reply.Messages = r.Messages
 	}
 
-	if len(c.Intent.Response) > 0 {
+	if c.Intent.Response != "" {
 		m := &processingpb.Message{
 			Content: c.Intent.Response,
 		}
@@ -48,6 +48,20 @@ func (c Command) Execute() (*processingpb.Response, error) {
 	}
 
 	return reply, nil
+}
+
+func (c Command) ProcessingRequest() *processingpb.ProcessingRequest {
+	processingRequest := &processingpb.ProcessingRequest{
+		Type:      "command",
+		IntentId:  c.Intent.Id,
+		Source:    c.Request.Source,
+		ChannelId: c.Request.ChannelId,
+		ServerId:  c.Request.ServerId,
+		BotId:     c.Request.Bot.Id,
+		UserId:    c.Request.Author.Id,
+	}
+
+	return processingRequest
 }
 
 func (c Command) isBotMentioned() bool {
