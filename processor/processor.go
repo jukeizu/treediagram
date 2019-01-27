@@ -8,6 +8,7 @@ import (
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/zerolog"
@@ -16,6 +17,7 @@ import (
 const (
 	ProcessorQueueGroup  = "processor"
 	ReplyReceivedSubject = "processor.reply.received"
+	JobsSubject          = "jobs"
 )
 
 type Processor struct {
@@ -42,6 +44,11 @@ func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intentpb.Inten
 
 func (p Processor) Start() error {
 	_, err := p.queue.QueueSubscribe(RequestReceivedSubject, ProcessorQueueGroup, p.processRequest)
+	if err != nil {
+		return err
+	}
+
+	_, err = p.queue.QueueSubscribe(JobsSubject, ProcessorQueueGroup, p.processJob)
 	if err != nil {
 		return err
 	}
@@ -122,7 +129,7 @@ func (p Processor) processCommand(command Command) {
 			return
 		}
 
-		processingRequest, err := p.createProcessingRequest(command)
+		processingRequest, err := p.createCommandProcessingRequest(command)
 		if err != nil {
 			p.logger.Error().Err(err).Caller().Msg("error creating ProcessingRequest")
 			return
@@ -142,6 +149,34 @@ func (p Processor) processCommand(command Command) {
 			p.saveResponseMessage(processingRequest, *message)
 		}
 	}(command)
+}
+
+func (p Processor) processJob(schedulingJob *schedulingpb.Job) {
+	p.logger.Debug().Msgf("job received %+v", schedulingJob)
+
+	job := Job{
+		SchedulingJob: *schedulingJob,
+	}
+
+	processingRequest, err := p.createJobProcessingRequest(job)
+	if err != nil {
+		p.logger.Error().Err(err).Caller().Msg("error creating ProcessingRequest")
+		return
+	}
+
+	p.logger.Debug().
+		Str("processingRequest", processingRequest.Id).
+		Msg("executing job")
+
+	response, err := job.Execute()
+	if err != nil {
+		p.createErrorEvent(processingRequest.Id, err)
+		return
+	}
+
+	for _, message := range response.Messages {
+		p.saveResponseMessage(processingRequest, *message)
+	}
 }
 
 func (p Processor) findServerId(request *processingpb.MessageRequest) (string, error) {
@@ -228,14 +263,31 @@ func (p Processor) saveResponseMessage(processingRequest *processingpb.Processin
 	}
 }
 
-func (p Processor) createProcessingRequest(command Command) (*processingpb.ProcessingRequest, error) {
+func (p Processor) createCommandProcessingRequest(command Command) (*processingpb.ProcessingRequest, error) {
 	processingRequest := &processingpb.ProcessingRequest{
+		Type:      "command",
 		IntentId:  command.Intent.Id,
 		Source:    command.Request.Source,
 		ChannelId: command.Request.ChannelId,
 		ServerId:  command.Request.ServerId,
 		BotId:     command.Request.Bot.Id,
 		UserId:    command.Request.Author.Id,
+	}
+
+	err := p.repository.SaveProcessingRequest(processingRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return processingRequest, nil
+}
+
+func (p Processor) createJobProcessingRequest(job Job) (*processingpb.ProcessingRequest, error) {
+	processingRequest := &processingpb.ProcessingRequest{
+		Type:      "job",
+		Source:    job.SchedulingJob.Source,
+		ChannelId: job.SchedulingJob.Destination,
+		UserId:    job.SchedulingJob.UserId,
 	}
 
 	err := p.repository.SaveProcessingRequest(processingRequest)

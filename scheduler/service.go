@@ -38,9 +38,10 @@ func NewService(logger zerolog.Logger, repository Repository, queue *nats.Encode
 
 func (s service) Create(ctx context.Context, req *schedulingpb.CreateJobRequest) (*schedulingpb.CreateJobReply, error) {
 	job := &schedulingpb.Job{
-		Type:        req.Type,
-		Content:     req.Content,
 		UserId:      req.UserId,
+		Source:      req.Source,
+		Content:     req.Content,
+		Endpoint:    req.Endpoint,
 		Destination: req.Destination,
 		Schedule:    req.Schedule,
 		Enabled:     true,
@@ -67,6 +68,7 @@ func (s service) Jobs(ctx context.Context, req *schedulingpb.JobsRequest) (*sche
 		Minute:     strconv.Itoa(t.Minute()),
 		Hour:       strconv.Itoa(t.Hour()),
 		DayOfMonth: strconv.Itoa(t.Day()),
+		Year:       strconv.Itoa(t.Year()),
 		Month:      t.Month().String(),
 		DayOfWeek:  t.Weekday().String(),
 	}
@@ -89,6 +91,7 @@ func (s service) Run(ctx context.Context, req *schedulingpb.RunJobsRequest) (*sc
 				Str("job.id", job.GetId()).
 				Msg("error publishing job")
 		}
+		s.logger.Debug().Msg("published job run to queue")
 	}
 
 	return &schedulingpb.RunJobsReply{Jobs: reply.Jobs}, nil
