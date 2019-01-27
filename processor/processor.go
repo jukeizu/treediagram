@@ -67,6 +67,18 @@ func (p Processor) processRequest(request *processing.MessageRequest) {
 		return
 	}
 
+	if serverId == "" {
+		server, err := p.setDefaultServer(request)
+		if err != nil {
+			p.logger.Error().Err(err).Caller().
+				Str("userId", request.Author.Id).
+				Msg("could not set default server")
+			return
+		}
+
+		serverId = server.Id
+	}
+
 	query := &intent.QueryIntentsRequest{ServerId: serverId}
 
 	stream, err := p.registry.QueryIntents(context.Background(), query)
@@ -154,29 +166,7 @@ func (p Processor) findServerId(request *processing.MessageRequest) (string, err
 			Str("userId", userId).
 			Msg("user does not have a preferred server")
 
-		servers := request.Servers
-		if len(servers) < 1 {
-			return "", errors.New("request does not contain any servers")
-		}
-
-		serverId := servers[0].Id
-
-		setServerRequest := user.SetServerRequest{
-			UserId:   userId,
-			ServerId: serverId,
-		}
-
-		_, err := p.userClient.SetServer(context.Background(), &setServerRequest)
-		if err != nil {
-			return "", errors.New("could not set server preference: " + err.Error())
-		}
-
-		p.logger.Debug().
-			Str("userId", userId).
-			Str("serverId", serverId).
-			Msg("user server preference has been set to the first available server")
-
-		return serverId, nil
+		return "", nil
 	}
 
 	p.logger.Debug().
@@ -185,6 +175,32 @@ func (p Processor) findServerId(request *processing.MessageRequest) (string, err
 		Msg("found server preference for user")
 
 	return preference.ServerId, nil
+}
+
+func (p Processor) setDefaultServer(request *processing.MessageRequest) (*processing.Server, error) {
+	if len(request.Servers) < 1 {
+		return nil, errors.New("no servers are available to select default")
+	}
+
+	userId := request.Author.Id
+	server := request.Servers[0]
+
+	setServerRequest := user.SetServerRequest{
+		UserId:   userId,
+		ServerId: server.Id,
+	}
+
+	_, err := p.userClient.SetServer(context.Background(), &setServerRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	p.logger.Debug().
+		Str("userId", userId).
+		Str("serverId", server.Id).
+		Msg("user server preference has been set to the first available server")
+
+	return server, nil
 }
 
 func (p Processor) saveResponseMessage(processingRequest *processing.ProcessingRequest, message processing.Message) {
