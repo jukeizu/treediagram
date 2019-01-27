@@ -65,6 +65,10 @@ func (r *repository) Preference(req *pb.PreferenceRequest) (*pb.Preference, erro
 
 	err := r.Db.QueryRow(q, req.UserId).Scan(&preference.UserId, &preference.ServerId)
 
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+
 	return preference, err
 }
 

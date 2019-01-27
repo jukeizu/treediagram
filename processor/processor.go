@@ -2,11 +2,13 @@ package processor
 
 import (
 	"context"
+	"errors"
 	"io"
 	"sync"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/intent"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/user"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/zerolog"
 )
@@ -20,15 +22,17 @@ type Processor struct {
 	logger     zerolog.Logger
 	queue      *nats.EncodedConn
 	registry   intent.IntentRegistryClient
+	userClient user.UserClient
 	repository Repository
 	waitGroup  *sync.WaitGroup
 }
 
-func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intent.IntentRegistryClient, repository Repository) Processor {
+func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intent.IntentRegistryClient, userClient user.UserClient, repository Repository) Processor {
 	p := Processor{
 		logger:     logger.With().Str("component", "processor").Logger(),
 		queue:      queue,
 		registry:   registry,
+		userClient: userClient,
 		repository: repository,
 		waitGroup:  &sync.WaitGroup{},
 	}
@@ -55,7 +59,27 @@ func (p Processor) Stop() {
 func (p Processor) processRequest(request *processing.MessageRequest) {
 	p.logger.Debug().Msgf("request received %+v", request)
 
-	query := &intent.QueryIntentsRequest{ServerId: request.ServerId}
+	serverId, err := p.findServerId(request)
+	if err != nil {
+		p.logger.Error().Err(err).Caller().
+			Str("userId", request.Author.Id).
+			Msg("could not determine serverId for user")
+		return
+	}
+
+	if serverId == "" {
+		server, err := p.setDefaultServer(request)
+		if err != nil {
+			p.logger.Error().Err(err).Caller().
+				Str("userId", request.Author.Id).
+				Msg("could not set default server")
+			return
+		}
+
+		serverId = server.Id
+	}
+
+	query := &intent.QueryIntentsRequest{ServerId: serverId}
 
 	stream, err := p.registry.QueryIntents(context.Background(), query)
 	if err != nil {
@@ -118,6 +142,65 @@ func (p Processor) processCommand(command Command) {
 			p.saveResponseMessage(processingRequest, *message)
 		}
 	}(command)
+}
+
+func (p Processor) findServerId(request *processing.MessageRequest) (string, error) {
+	if request.ServerId != "" {
+		return request.ServerId, nil
+	}
+
+	userId := request.Author.Id
+
+	p.logger.Debug().
+		Str("userId", userId).
+		Msg("looking up server preference")
+
+	preferenceReply, err := p.userClient.Preference(context.Background(), &user.PreferenceRequest{UserId: userId})
+	if err != nil {
+		return "", err
+	}
+
+	preference := preferenceReply.Preference
+	if preference == nil {
+		p.logger.Debug().
+			Str("userId", userId).
+			Msg("user does not have a preferred server")
+
+		return "", nil
+	}
+
+	p.logger.Debug().
+		Str("userId", userId).
+		Str("preferredServerId", preference.ServerId).
+		Msg("found server preference for user")
+
+	return preference.ServerId, nil
+}
+
+func (p Processor) setDefaultServer(request *processing.MessageRequest) (*processing.Server, error) {
+	if len(request.Servers) < 1 {
+		return nil, errors.New("no servers are available to select default")
+	}
+
+	userId := request.Author.Id
+	server := request.Servers[0]
+
+	setServerRequest := user.SetServerRequest{
+		UserId:   userId,
+		ServerId: server.Id,
+	}
+
+	_, err := p.userClient.SetServer(context.Background(), &setServerRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	p.logger.Debug().
+		Str("userId", userId).
+		Str("serverId", server.Id).
+		Msg("user server preference has been set to the first available server")
+
+	return server, nil
 }
 
 func (p Processor) saveResponseMessage(processingRequest *processing.ProcessingRequest, message processing.Message) {

@@ -27,6 +27,26 @@ func mapToPbUsers(discordUsers []*discordgo.User) []*pb.User {
 	return users
 }
 
+func mapToPbServers(userId string, guilds []*discordgo.Guild) []*pb.Server {
+	servers := []*pb.Server{}
+
+	for _, guild := range guilds {
+		for _, member := range guild.Members {
+			if member.User.ID == userId {
+				server := pb.Server{
+					Id:   guild.ID,
+					Name: guild.Name,
+				}
+
+				servers = append(servers, &server)
+				break
+			}
+		}
+	}
+
+	return servers
+}
+
 func mapToMessageSend(message *pb.MessageReply) (*discordgo.MessageSend, error) {
 	if message == nil {
 		return nil, nil
