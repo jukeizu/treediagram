@@ -32,7 +32,7 @@ func (c Command) Execute() (*processingpb.Response, error) {
 	if len(c.Intent.Endpoint) > 0 {
 		client := Client{}
 
-		r, err := client.Do(c)
+		r, err := client.Do(c.Request, c.Intent.Endpoint)
 		if err != nil {
 			return reply, err
 		}
