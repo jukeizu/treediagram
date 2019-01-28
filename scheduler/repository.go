@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
 	migration "github.com/jukeizu/treediagram/scheduler/migrations"
 	"github.com/shawntoffel/gossage"
 )
@@ -14,8 +14,8 @@ const (
 )
 
 type Repository interface {
-	Create(*pb.Job) error
-	Jobs(*pb.Schedule) ([]*pb.Job, error)
+	Create(*schedulingpb.Job) error
+	Jobs(*schedulingpb.Schedule) ([]*schedulingpb.Job, error)
 	Disable(id string) error
 	Migrate() error
 }
@@ -58,11 +58,20 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) Create(job *pb.Job) error {
+func (r *repository) Create(job *schedulingpb.Job) error {
+	if job == nil {
+		return nil
+	}
+
+	if job.Schedule == nil {
+		job.Schedule = &schedulingpb.Schedule{}
+	}
+
 	q := `INSERT INTO job (
-			type,
-			content,
 			userId,
+			source,
+			content,
+			endpoint,
 			destination,
 			minute,
 			hour,
@@ -72,13 +81,14 @@ func (r *repository) Create(job *pb.Job) error {
 			year,
 			enabled
 		) 
-		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
 		RETURNING id, created::INT`
 
 	err := r.Db.QueryRow(q,
-		job.Type,
-		job.Content,
 		job.UserId,
+		job.Source,
+		job.Content,
+		job.Endpoint,
 		job.Destination,
 		job.Schedule.Minute,
 		job.Schedule.Hour,
@@ -95,15 +105,16 @@ func (r *repository) Create(job *pb.Job) error {
 	return err
 }
 
-func (r *repository) Jobs(schedule *pb.Schedule) ([]*pb.Job, error) {
+func (r *repository) Jobs(schedule *schedulingpb.Schedule) ([]*schedulingpb.Job, error) {
 	if schedule == nil {
 		return r.allJobs()
 	}
 
 	q := `SELECT id,
-		type,
-		content,
 		userId,
+		source,
+		content,
+		endpoint,
 		destination,
 		minute,
 		hour,
@@ -134,11 +145,12 @@ func (r *repository) Jobs(schedule *pb.Schedule) ([]*pb.Job, error) {
 	return jobs, err
 }
 
-func (r *repository) allJobs() ([]*pb.Job, error) {
+func (r *repository) allJobs() ([]*schedulingpb.Job, error) {
 	q := `SELECT id,
-		type,
-		content,
 		userId,
+		source,
+		content,
+		endpoint,
 		destination,
 		minute,
 		hour,
@@ -164,8 +176,8 @@ func (r *repository) Disable(id string) error {
 	return err
 }
 
-func (r *repository) queryJobs(q string, dest ...interface{}) ([]*pb.Job, error) {
-	jobs := []*pb.Job{}
+func (r *repository) queryJobs(q string, dest ...interface{}) ([]*schedulingpb.Job, error) {
+	jobs := []*schedulingpb.Job{}
 
 	rows, err := r.Db.Query(q, dest...)
 	if err != nil {
@@ -174,12 +186,13 @@ func (r *repository) queryJobs(q string, dest ...interface{}) ([]*pb.Job, error)
 
 	defer rows.Close()
 	for rows.Next() {
-		job := pb.Job{Schedule: &pb.Schedule{}}
+		job := schedulingpb.Job{Schedule: &schedulingpb.Schedule{}}
 		err := rows.Scan(
 			&job.Id,
-			&job.Type,
-			&job.Content,
 			&job.UserId,
+			&job.Source,
+			&job.Content,
+			&job.Endpoint,
 			&job.Destination,
 			&job.Schedule.Minute,
 			&job.Schedule.Hour,

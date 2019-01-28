@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package processing;
+package processingpb;
 
 service Processing {
     rpc SendMessageRequest(MessageRequest) returns (SendMessageRequestReply) {}
@@ -18,11 +18,17 @@ message MessageRequest {
     User author = 4;
     string channelId = 5;
     string serverId = 6;
-    repeated User mentions = 7;
-    string content = 8;
+    repeated Server servers = 7;
+    repeated User mentions = 8;
+    string content = 9;
 }
 
 message User {
+    string id = 1;
+    string name = 2;
+}
+
+message Server {
     string id = 1;
     string name = 2;
 }
@@ -58,13 +64,14 @@ message MessageReply {
 
 message ProcessingRequest {
 	string id = 1;
-    string intentId = 2;
-    string source = 3;
-    string channelId = 4;
-    string serverId = 5;
-    string botId = 6;
-    string userId = 7;
-    int32 created = 8;
+    string type = 2;
+    string intentId = 3;
+    string source = 4;
+    string channelId = 5;
+    string serverId = 6;
+    string botId = 7;
+    string userId = 8;
+    int32 created = 9;
 }
 
 message ProcessingEvent {

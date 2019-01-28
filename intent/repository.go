@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/intent"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
 	"github.com/jukeizu/treediagram/intent/migrations"
 	_ "github.com/lib/pq"
 	"github.com/shawntoffel/gossage"
@@ -15,9 +15,9 @@ const (
 )
 
 type Repository interface {
-	Save(*pb.Intent) error
+	Save(*intentpb.Intent) error
 	Disable(string) error
-	Query(pb.QueryIntentsRequest) ([]*pb.Intent, error)
+	Query(intentpb.QueryIntentsRequest) ([]*intentpb.Intent, error)
 	Migrate() error
 }
 
@@ -59,7 +59,7 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) Save(pbIntent *pb.Intent) error {
+func (r *repository) Save(pbIntent *intentpb.Intent) error {
 	if pbIntent == nil {
 		return nil
 	}
@@ -101,8 +101,8 @@ func (r *repository) Disable(id string) error {
 	return err
 }
 
-func (r *repository) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
-	pbIntents := []*pb.Intent{}
+func (r *repository) Query(query intentpb.QueryIntentsRequest) ([]*intentpb.Intent, error) {
+	pbIntents := []*intentpb.Intent{}
 
 	q := `SELECT id,
 			serverId,
@@ -125,7 +125,7 @@ func (r *repository) Query(query pb.QueryIntentsRequest) ([]*pb.Intent, error) {
 
 	defer rows.Close()
 	for rows.Next() {
-		pbIntent := pb.Intent{}
+		pbIntent := intentpb.Intent{}
 		err := rows.Scan(
 			&pbIntent.Id,
 			&pbIntent.ServerId,

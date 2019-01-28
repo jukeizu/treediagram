@@ -4,21 +4,21 @@ import (
 	"context"
 	"time"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
 	"github.com/rs/zerolog"
 )
 
 type loggingService struct {
 	logger  zerolog.Logger
-	Service pb.UserServer
+	Service userpb.UserServer
 }
 
-func NewLoggingService(logger zerolog.Logger, s pb.UserServer) pb.UserServer {
+func NewLoggingService(logger zerolog.Logger, s userpb.UserServer) userpb.UserServer {
 	logger = logger.With().Str("service", "user").Logger()
 	return &loggingService{logger, s}
 }
 
-func (s *loggingService) Preference(ctx context.Context, req *pb.PreferenceRequest) (reply *pb.PreferenceReply, err error) {
+func (s *loggingService) Preference(ctx context.Context, req *userpb.PreferenceRequest) (reply *userpb.PreferenceReply, err error) {
 	defer func(begin time.Time) {
 		l := s.logger.With().
 			Str("method", "Preference").
@@ -39,7 +39,7 @@ func (s *loggingService) Preference(ctx context.Context, req *pb.PreferenceReque
 	return
 }
 
-func (s *loggingService) SetServer(ctx context.Context, req *pb.SetServerRequest) (reply *pb.PreferenceReply, err error) {
+func (s *loggingService) SetServer(ctx context.Context, req *userpb.SetServerRequest) (reply *userpb.PreferenceReply, err error) {
 	defer func(begin time.Time) {
 		l := s.logger.With().
 			Str("method", "SetServer").

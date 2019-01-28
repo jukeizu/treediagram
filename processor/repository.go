@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	migration "github.com/jukeizu/treediagram/processor/migrations"
 	"github.com/shawntoffel/gossage"
 )
@@ -14,12 +14,12 @@ const (
 )
 
 type Repository interface {
-	SaveProcessingRequest(*processing.ProcessingRequest) error
-	ProcessingRequest(string) (*processing.ProcessingRequest, error)
-	SaveProcessingEvent(*processing.ProcessingEvent) error
-	ProcessingEvents(string) ([]*processing.ProcessingEvent, error)
-	SaveMessageReply(*processing.MessageReply) error
-	MessageReply(string) (*processing.MessageReply, error)
+	SaveProcessingRequest(*processingpb.ProcessingRequest) error
+	ProcessingRequest(string) (*processingpb.ProcessingRequest, error)
+	SaveProcessingEvent(*processingpb.ProcessingEvent) error
+	ProcessingEvents(string) ([]*processingpb.ProcessingEvent, error)
+	SaveMessageReply(*processingpb.MessageReply) error
+	MessageReply(string) (*processingpb.MessageReply, error)
 
 	Migrate() error
 }
@@ -66,18 +66,20 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) SaveProcessingRequest(p *processing.ProcessingRequest) error {
+func (r *repository) SaveProcessingRequest(p *processingpb.ProcessingRequest) error {
 	q := `INSERT INTO processing_request (
+		type,
 		intentId,
 		source,
 		channelId,
 		serverId,
 		botId,
 		userId
-	) VALUES ($1,$2,$3,$4,$5,$6)
+	) VALUES ($1,$2,$3,$4,$5,$6,$7)
 	RETURNING id, created::INT`
 
 	err := r.Db.QueryRow(q,
+		p.Type,
 		p.IntentId,
 		p.Source,
 		p.ChannelId,
@@ -89,8 +91,9 @@ func (r *repository) SaveProcessingRequest(p *processing.ProcessingRequest) erro
 	return err
 }
 
-func (r *repository) ProcessingRequest(id string) (*processing.ProcessingRequest, error) {
+func (r *repository) ProcessingRequest(id string) (*processingpb.ProcessingRequest, error) {
 	q := `SELECT id,
+		type,
 		intentId,
 		source,
 		channelId,
@@ -101,10 +104,11 @@ func (r *repository) ProcessingRequest(id string) (*processing.ProcessingRequest
 	FROM processing_request
 	WHERE id = $1`
 
-	p := processing.ProcessingRequest{}
+	p := processingpb.ProcessingRequest{}
 
 	err := r.Db.QueryRow(q, id).Scan(
 		&p.Id,
+		&p.Type,
 		&p.IntentId,
 		&p.Source,
 		&p.ChannelId,
@@ -121,7 +125,7 @@ func (r *repository) ProcessingRequest(id string) (*processing.ProcessingRequest
 	return &p, nil
 }
 
-func (r *repository) SaveProcessingEvent(e *processing.ProcessingEvent) error {
+func (r *repository) SaveProcessingEvent(e *processingpb.ProcessingEvent) error {
 	q := `INSERT INTO processing_event (
 		processingRequestId,
 		description,
@@ -138,7 +142,7 @@ func (r *repository) SaveProcessingEvent(e *processing.ProcessingEvent) error {
 	return err
 }
 
-func (r *repository) ProcessingEvents(processingRequestId string) ([]*processing.ProcessingEvent, error) {
+func (r *repository) ProcessingEvents(processingRequestId string) ([]*processingpb.ProcessingEvent, error) {
 	q := `SELECT id,
 		processingRequestId,
 		description,
@@ -147,7 +151,7 @@ func (r *repository) ProcessingEvents(processingRequestId string) ([]*processing
 	FROM processing_event
 	WHERE processingRequestId = $1`
 
-	processingEvents := []*processing.ProcessingEvent{}
+	processingEvents := []*processingpb.ProcessingEvent{}
 
 	rows, err := r.Db.Query(q, processingRequestId)
 	if err != nil {
@@ -156,7 +160,7 @@ func (r *repository) ProcessingEvents(processingRequestId string) ([]*processing
 
 	defer rows.Close()
 	for rows.Next() {
-		e := processing.ProcessingEvent{}
+		e := processingpb.ProcessingEvent{}
 
 		err := rows.Scan(
 			&e.Id,
@@ -175,7 +179,7 @@ func (r *repository) ProcessingEvents(processingRequestId string) ([]*processing
 	return processingEvents, nil
 }
 
-func (r *repository) SaveMessageReply(mr *processing.MessageReply) error {
+func (r *repository) SaveMessageReply(mr *processingpb.MessageReply) error {
 	q := `INSERT INTO message_reply (
 		processingRequestId,
 		channelId,
@@ -198,7 +202,7 @@ func (r *repository) SaveMessageReply(mr *processing.MessageReply) error {
 	return err
 }
 
-func (r *repository) MessageReply(id string) (*processing.MessageReply, error) {
+func (r *repository) MessageReply(id string) (*processingpb.MessageReply, error) {
 	q := `SELECT id,
 		processingRequestId,
 		channelId,
@@ -210,7 +214,7 @@ func (r *repository) MessageReply(id string) (*processing.MessageReply, error) {
 	FROM message_reply
 	WHERE id = $1`
 
-	mr := processing.MessageReply{}
+	mr := processingpb.MessageReply{}
 
 	err := r.Db.QueryRow(q, id).Scan(
 		&mr.Id,

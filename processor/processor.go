@@ -2,33 +2,46 @@ package processor
 
 import (
 	"context"
+	"errors"
 	"io"
 	"sync"
 
-	"github.com/jukeizu/treediagram/api/protobuf-spec/intent"
-	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/zerolog"
 )
 
 const (
-	ProcessorQueueGroup  = "processor"
-	ReplyReceivedSubject = "processor.reply.received"
+	ProcessorQueueGroup           = "processor"
+	MessageRequestReceivedSubject = "messagerequest.received"
+	JobReceivedSubject            = "jobs"
+	ReplyReceivedSubject          = "processor.reply.received"
 )
+
+type Executable interface {
+	ShouldExecute() (bool, error)
+	Execute() (*processingpb.Response, error)
+	ProcessingRequest() *processingpb.ProcessingRequest
+}
 
 type Processor struct {
 	logger     zerolog.Logger
 	queue      *nats.EncodedConn
-	registry   intent.IntentRegistryClient
+	registry   intentpb.IntentRegistryClient
+	userClient userpb.UserClient
 	repository Repository
 	waitGroup  *sync.WaitGroup
 }
 
-func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intent.IntentRegistryClient, repository Repository) Processor {
+func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intentpb.IntentRegistryClient, userClient userpb.UserClient, repository Repository) Processor {
 	p := Processor{
 		logger:     logger.With().Str("component", "processor").Logger(),
 		queue:      queue,
 		registry:   registry,
+		userClient: userClient,
 		repository: repository,
 		waitGroup:  &sync.WaitGroup{},
 	}
@@ -37,7 +50,12 @@ func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intent.IntentR
 }
 
 func (p Processor) Start() error {
-	_, err := p.queue.QueueSubscribe(RequestReceivedSubject, ProcessorQueueGroup, p.processRequest)
+	_, err := p.queue.QueueSubscribe(MessageRequestReceivedSubject, ProcessorQueueGroup, p.processMessageRequest)
+	if err != nil {
+		return err
+	}
+
+	_, err = p.queue.QueueSubscribe(JobReceivedSubject, ProcessorQueueGroup, p.processJob)
 	if err != nil {
 		return err
 	}
@@ -52,10 +70,30 @@ func (p Processor) Stop() {
 	p.waitGroup.Wait()
 }
 
-func (p Processor) processRequest(request *processing.MessageRequest) {
+func (p Processor) processMessageRequest(request *processingpb.MessageRequest) {
 	p.logger.Debug().Msgf("request received %+v", request)
 
-	query := &intent.QueryIntentsRequest{ServerId: request.ServerId}
+	serverId, err := p.findServerId(request)
+	if err != nil {
+		p.logger.Error().Err(err).Caller().
+			Str("userId", request.Author.Id).
+			Msg("could not determine serverId for user")
+		return
+	}
+
+	if serverId == "" {
+		server, err := p.setDefaultServer(request)
+		if err != nil {
+			p.logger.Error().Err(err).Caller().
+				Str("userId", request.Author.Id).
+				Msg("could not set default server")
+			return
+		}
+
+		serverId = server.Id
+	}
+
+	query := &intentpb.QueryIntentsRequest{ServerId: serverId}
 
 	stream, err := p.registry.QueryIntents(context.Background(), query)
 	if err != nil {
@@ -79,49 +117,133 @@ func (p Processor) processRequest(request *processing.MessageRequest) {
 			Intent:  *intent,
 		}
 
-		p.processCommand(command)
+		p.process(command)
 	}
 }
 
-func (p Processor) processCommand(command Command) {
+func (p Processor) processJob(schedulingJob *schedulingpb.Job) {
+	p.logger.Debug().Msgf("job received %+v", schedulingJob)
+
+	job := Job{
+		SchedulingJob: *schedulingJob,
+	}
+
+	p.process(job)
+}
+
+func (p Processor) process(executable Executable) {
 	p.waitGroup.Add(1)
-	go func(command Command) {
+	go func(executable Executable) {
 		defer p.waitGroup.Done()
+		p.logger.Debug().Msg("starting processing for executable")
 
-		isMatch, err := command.IsMatch()
+		shouldExecute, err := executable.ShouldExecute()
 		if err != nil {
-			p.logger.Error().Err(err).Caller().Msg("could not determine if command is match")
+			p.logger.Error().Err(err).Caller().Msg("could not determine if should execute")
 			return
 		}
 
-		if !isMatch {
+		if !shouldExecute {
+			p.logger.Debug().Msg("executable should not execute")
 			return
 		}
 
-		processingRequest, err := p.createProcessingRequest(command)
+		processingRequest := executable.ProcessingRequest()
+
+		err = p.repository.SaveProcessingRequest(processingRequest)
 		if err != nil {
-			p.logger.Error().Err(err).Caller().Msg("error creating ProcessingRequest")
+			p.logger.Error().Err(err).Caller().Msg("error saving ProcessingRequest")
 			return
 		}
 
 		p.logger.Debug().
-			Str("processingRequest", processingRequest.Id).
-			Msg("executing command")
+			Str("processingRequestId", processingRequest.Id).
+			Str("processingRequestType", processingRequest.Type).
+			Msg("executing")
 
-		response, err := command.Execute()
+		response, err := executable.Execute()
 		if err != nil {
 			p.createErrorEvent(processingRequest.Id, err)
 			return
 		}
 
+		p.logger.Debug().
+			Str("processingRequestId", processingRequest.Id).
+			Str("processingRequestType", processingRequest.Type).
+			Msg("saving responses from execute")
+
 		for _, message := range response.Messages {
 			p.saveResponseMessage(processingRequest, *message)
 		}
-	}(command)
+
+		p.logger.Debug().
+			Str("processingRequestId", processingRequest.Id).
+			Str("processingRequestType", processingRequest.Type).
+			Msg("finished processing executable")
+	}(executable)
 }
 
-func (p Processor) saveResponseMessage(processingRequest *processing.ProcessingRequest, message processing.Message) {
-	messageReply := processing.MessageReply{
+func (p Processor) findServerId(request *processingpb.MessageRequest) (string, error) {
+	if request.ServerId != "" {
+		return request.ServerId, nil
+	}
+
+	userId := request.Author.Id
+
+	p.logger.Debug().
+		Str("userId", userId).
+		Msg("looking up server preference")
+
+	preferenceReply, err := p.userClient.Preference(context.Background(), &userpb.PreferenceRequest{UserId: userId})
+	if err != nil {
+		return "", err
+	}
+
+	preference := preferenceReply.Preference
+	if preference == nil {
+		p.logger.Debug().
+			Str("userId", userId).
+			Msg("user does not have a preferred server")
+
+		return "", nil
+	}
+
+	p.logger.Debug().
+		Str("userId", userId).
+		Str("preferredServerId", preference.ServerId).
+		Msg("found server preference for user")
+
+	return preference.ServerId, nil
+}
+
+func (p Processor) setDefaultServer(request *processingpb.MessageRequest) (*processingpb.Server, error) {
+	if len(request.Servers) < 1 {
+		return nil, errors.New("no servers are available to select default")
+	}
+
+	userId := request.Author.Id
+	server := request.Servers[0]
+
+	setServerRequest := userpb.SetServerRequest{
+		UserId:   userId,
+		ServerId: server.Id,
+	}
+
+	_, err := p.userClient.SetServer(context.Background(), &setServerRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	p.logger.Debug().
+		Str("userId", userId).
+		Str("serverId", server.Id).
+		Msg("user server preference has been set to the first available server")
+
+	return server, nil
+}
+
+func (p Processor) saveResponseMessage(processingRequest *processingpb.ProcessingRequest, message processingpb.Message) {
+	messageReply := processingpb.MessageReply{
 		ProcessingRequestId: processingRequest.Id,
 		ChannelId:           processingRequest.ChannelId,
 		UserId:              processingRequest.UserId,
@@ -136,7 +258,7 @@ func (p Processor) saveResponseMessage(processingRequest *processing.ProcessingR
 		return
 	}
 
-	messageReplyReceived := processing.MessageReplyReceived{Id: messageReply.Id}
+	messageReplyReceived := processingpb.MessageReplyReceived{Id: messageReply.Id}
 
 	err = p.queue.Publish(ReplyReceivedSubject+"."+processingRequest.Source, messageReplyReceived)
 	if err != nil {
@@ -145,26 +267,8 @@ func (p Processor) saveResponseMessage(processingRequest *processing.ProcessingR
 	}
 }
 
-func (p Processor) createProcessingRequest(command Command) (*processing.ProcessingRequest, error) {
-	processingRequest := &processing.ProcessingRequest{
-		IntentId:  command.Intent.Id,
-		Source:    command.Request.Source,
-		ChannelId: command.Request.ChannelId,
-		ServerId:  command.Request.ServerId,
-		BotId:     command.Request.Bot.Id,
-		UserId:    command.Request.Author.Id,
-	}
-
-	err := p.repository.SaveProcessingRequest(processingRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	return processingRequest, nil
-}
-
 func (p Processor) createProcessingEvent(processingRequestId string, eventType string, eventDescription string) {
-	e := processing.ProcessingEvent{
+	e := processingpb.ProcessingEvent{
 		ProcessingRequestId: processingRequestId,
 		Type:                eventType,
 		Description:         eventDescription,

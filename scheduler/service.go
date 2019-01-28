@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/zerolog"
 )
@@ -22,10 +22,10 @@ type service struct {
 	Queue      *nats.EncodedConn
 }
 
-func NewService(logger zerolog.Logger, repository Repository, queue *nats.EncodedConn) (pb.SchedulingServer, error) {
+func NewService(logger zerolog.Logger, repository Repository, queue *nats.EncodedConn) (schedulingpb.SchedulingServer, error) {
 	s := &service{logger, repository, queue}
 
-	_, err := s.Queue.QueueSubscribe(SchedulerTickSubject, SchedulerQueueGroup, func(req *pb.RunJobsRequest) {
+	_, err := s.Queue.QueueSubscribe(SchedulerTickSubject, SchedulerQueueGroup, func(req *schedulingpb.RunJobsRequest) {
 		s.Run(context.Background(), req)
 	})
 
@@ -36,11 +36,12 @@ func NewService(logger zerolog.Logger, repository Repository, queue *nats.Encode
 	return s, nil
 }
 
-func (s service) Create(ctx context.Context, req *pb.CreateJobRequest) (*pb.CreateJobReply, error) {
-	job := &pb.Job{
-		Type:        req.Type,
-		Content:     req.Content,
+func (s service) Create(ctx context.Context, req *schedulingpb.CreateJobRequest) (*schedulingpb.CreateJobReply, error) {
+	job := &schedulingpb.Job{
 		UserId:      req.UserId,
+		Source:      req.Source,
+		Content:     req.Content,
+		Endpoint:    req.Endpoint,
 		Destination: req.Destination,
 		Schedule:    req.Schedule,
 		Enabled:     true,
@@ -51,33 +52,34 @@ func (s service) Create(ctx context.Context, req *pb.CreateJobRequest) (*pb.Crea
 		return nil, err
 	}
 
-	return &pb.CreateJobReply{Job: job}, nil
+	return &schedulingpb.CreateJobReply{Job: job}, nil
 }
 
-func (s service) Jobs(ctx context.Context, req *pb.JobsRequest) (*pb.JobsReply, error) {
+func (s service) Jobs(ctx context.Context, req *schedulingpb.JobsRequest) (*schedulingpb.JobsReply, error) {
 	if req.Time == 0 {
 		jobs, err := s.Repository.Jobs(nil)
 
-		return &pb.JobsReply{Jobs: jobs}, err
+		return &schedulingpb.JobsReply{Jobs: jobs}, err
 	}
 
 	t := time.Unix(req.Time, 0).UTC()
 
-	schedule := &pb.Schedule{
+	schedule := &schedulingpb.Schedule{
 		Minute:     strconv.Itoa(t.Minute()),
 		Hour:       strconv.Itoa(t.Hour()),
 		DayOfMonth: strconv.Itoa(t.Day()),
+		Year:       strconv.Itoa(t.Year()),
 		Month:      t.Month().String(),
 		DayOfWeek:  t.Weekday().String(),
 	}
 
 	jobs, err := s.Repository.Jobs(schedule)
 
-	return &pb.JobsReply{Jobs: jobs}, err
+	return &schedulingpb.JobsReply{Jobs: jobs}, err
 }
 
-func (s service) Run(ctx context.Context, req *pb.RunJobsRequest) (*pb.RunJobsReply, error) {
-	reply, err := s.Jobs(ctx, &pb.JobsRequest{Time: req.Time})
+func (s service) Run(ctx context.Context, req *schedulingpb.RunJobsRequest) (*schedulingpb.RunJobsReply, error) {
+	reply, err := s.Jobs(ctx, &schedulingpb.JobsRequest{Time: req.Time})
 	if err != nil {
 		return nil, err
 	}
@@ -89,13 +91,14 @@ func (s service) Run(ctx context.Context, req *pb.RunJobsRequest) (*pb.RunJobsRe
 				Str("job.id", job.GetId()).
 				Msg("error publishing job")
 		}
+		s.logger.Debug().Msg("published job run to queue")
 	}
 
-	return &pb.RunJobsReply{Jobs: reply.Jobs}, nil
+	return &schedulingpb.RunJobsReply{Jobs: reply.Jobs}, nil
 }
 
-func (s service) Disable(ctx context.Context, req *pb.DisableJobRequest) (*pb.DisableJobReply, error) {
+func (s service) Disable(ctx context.Context, req *schedulingpb.DisableJobRequest) (*schedulingpb.DisableJobReply, error) {
 	err := s.Repository.Disable(req.Id)
 
-	return &pb.DisableJobReply{Id: req.Id, Enabled: false}, err
+	return &schedulingpb.DisableJobReply{Id: req.Id, Enabled: false}, err
 }

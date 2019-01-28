@@ -3,7 +3,7 @@ package scheduler
 import (
 	"time"
 
-	pb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
 	nats "github.com/nats-io/go-nats"
 	"github.com/robfig/cron"
 	"github.com/rs/zerolog"
@@ -45,7 +45,7 @@ func (s *scheduler) Stop() {
 }
 
 func (s *scheduler) run() {
-	request := &pb.RunJobsRequest{
+	request := &schedulingpb.RunJobsRequest{
 		Time: time.Now().Unix(),
 	}
 

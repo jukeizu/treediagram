@@ -7,10 +7,10 @@ import (
 	"sync"
 
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
-	intentpb "github.com/jukeizu/treediagram/api/protobuf-spec/intent"
-	processingpb "github.com/jukeizu/treediagram/api/protobuf-spec/processing"
-	schedulingpb "github.com/jukeizu/treediagram/api/protobuf-spec/scheduling"
-	userpb "github.com/jukeizu/treediagram/api/protobuf-spec/user"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
 	"github.com/jukeizu/treediagram/intent"
 	"github.com/jukeizu/treediagram/processor"
 	"github.com/jukeizu/treediagram/scheduler"
@@ -56,19 +56,20 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 		return nil, err
 	}
 
-	intentConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure())
+	grpcConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
 
-	intentClient := intentpb.NewIntentRegistryClient(intentConn)
+	intentClient := intentpb.NewIntentRegistryClient(grpcConn)
+	userClient := userpb.NewUserClient(grpcConn)
 
 	processorService, err := processor.NewService(conn, storage.ProcessorRepository)
 	if err != nil {
 		return nil, err
 	}
 
-	processor := processor.New(logger, conn, intentClient, storage.ProcessorRepository)
+	processor := processor.New(logger, conn, intentClient, userClient, storage.ProcessorRepository)
 	err = processor.Start()
 	if err != nil {
 		return nil, err

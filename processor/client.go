@@ -8,25 +8,25 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 )
 
 type Client struct{}
 
-func (c Client) Do(command Command) (*processing.Response, error) {
-	body, err := json.Marshal(command.Request)
+func (c Client) Do(request interface{}, endpoint string) (*processingpb.Response, error) {
+	body, err := json.Marshal(request)
 	if err != nil {
-		return nil, errors.New("could not marshal command request to json: " + err.Error())
+		return nil, errors.New("could not marshal request to json: " + err.Error())
 	}
 
-	resp, err := http.Post(command.Intent.Endpoint, "application/json", bytes.NewBuffer(body))
+	resp, err := http.Post(endpoint, "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		return nil, errors.New("error sending command request: " + err.Error())
+		return nil, errors.New("error sending request: " + err.Error())
 	}
 
 	defer resp.Body.Close()
 
-	reply := &processing.Response{}
+	reply := &processingpb.Response{}
 
 	err = c.decodeJSON(resp.Body, reply)
 	if err != nil {

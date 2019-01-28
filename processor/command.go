@@ -4,16 +4,16 @@ import (
 	"errors"
 	"regexp"
 
-	"github.com/jukeizu/treediagram/api/protobuf-spec/intent"
-	"github.com/jukeizu/treediagram/api/protobuf-spec/processing"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
+	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 )
 
 type Command struct {
-	Request processing.MessageRequest `json:"request"`
-	Intent  intent.Intent             `json:"intent"`
+	Request processingpb.MessageRequest `json:"request"`
+	Intent  intentpb.Intent             `json:"intent"`
 }
 
-func (c Command) IsMatch() (bool, error) {
+func (c Command) ShouldExecute() (bool, error) {
 	if c.Intent.Mention && !c.isBotMentioned() {
 		return false, nil
 	}
@@ -26,13 +26,13 @@ func (c Command) IsMatch() (bool, error) {
 	return match, nil
 }
 
-func (c Command) Execute() (*processing.Response, error) {
-	reply := &processing.Response{}
+func (c Command) Execute() (*processingpb.Response, error) {
+	reply := &processingpb.Response{}
 
-	if len(c.Intent.Endpoint) > 0 {
+	if c.Intent.Endpoint != "" {
 		client := Client{}
 
-		r, err := client.Do(c)
+		r, err := client.Do(c.Request, c.Intent.Endpoint)
 		if err != nil {
 			return reply, err
 		}
@@ -40,14 +40,28 @@ func (c Command) Execute() (*processing.Response, error) {
 		reply.Messages = r.Messages
 	}
 
-	if len(c.Intent.Response) > 0 {
-		m := &processing.Message{
+	if c.Intent.Response != "" {
+		m := &processingpb.Message{
 			Content: c.Intent.Response,
 		}
 		reply.Messages = append(reply.Messages, m)
 	}
 
 	return reply, nil
+}
+
+func (c Command) ProcessingRequest() *processingpb.ProcessingRequest {
+	processingRequest := &processingpb.ProcessingRequest{
+		Type:      "command",
+		IntentId:  c.Intent.Id,
+		Source:    c.Request.Source,
+		ChannelId: c.Request.ChannelId,
+		ServerId:  c.Request.ServerId,
+		BotId:     c.Request.Bot.Id,
+		UserId:    c.Request.Author.Id,
+	}
+
+	return processingRequest
 }
 
 func (c Command) isBotMentioned() bool {
