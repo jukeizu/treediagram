@@ -131,7 +131,7 @@ func (r *repository) SaveProcessingEvent(e *processingpb.ProcessingEvent) error 
 		description,
 		type
 	) VALUES ($1,$2,$3)
-	RETURNING id, created:INT`
+	RETURNING id, created::INT`
 
 	err := r.Db.QueryRow(q,
 		e.ProcessingRequestId,
@@ -184,18 +184,14 @@ func (r *repository) SaveMessageReply(mr *processingpb.MessageReply) error {
 		processingRequestId,
 		channelId,
 		userId,
-		isPrivateMessage,
-		isRedirect,
 		content
-	) VALUES ($1,$2,$3,$4,$5,$6)
+	) VALUES ($1,$2,$3,$4)
 	RETURNING id, created::INT`
 
 	err := r.Db.QueryRow(q,
 		mr.ProcessingRequestId,
 		mr.ChannelId,
 		mr.UserId,
-		mr.IsPrivateMessage,
-		mr.IsRedirect,
 		mr.Content,
 	).Scan(&mr.Id, &mr.Created)
 
@@ -207,8 +203,6 @@ func (r *repository) MessageReply(id string) (*processingpb.MessageReply, error)
 		processingRequestId,
 		channelId,
 		userId,
-		isPrivateMessage,
-		isRedirect,
 		content,
 		created::INT
 	FROM message_reply
@@ -221,8 +215,6 @@ func (r *repository) MessageReply(id string) (*processingpb.MessageReply, error)
 		&mr.ProcessingRequestId,
 		&mr.ChannelId,
 		&mr.UserId,
-		&mr.IsPrivateMessage,
-		&mr.IsRedirect,
 		&mr.Content,
 		&mr.Created,
 	)

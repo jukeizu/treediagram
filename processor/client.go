@@ -7,33 +7,40 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-
-	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 )
 
 type Client struct{}
 
-func (c Client) Do(request interface{}, endpoint string) (*processingpb.Response, error) {
+func (c Client) Do(request interface{}, endpoint string) (string, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
-		return nil, errors.New("could not marshal request to json: " + err.Error())
+		return "", errors.New("could not marshal request to json: " + err.Error())
 	}
 
 	resp, err := http.Post(endpoint, "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		return nil, errors.New("error sending request: " + err.Error())
+		return "", errors.New("error sending request: " + err.Error())
 	}
 
 	defer resp.Body.Close()
 
-	reply := &processingpb.Response{}
+	b, err := ioutil.ReadAll(resp.Body)
 
-	err = c.decodeJSON(resp.Body, reply)
 	if err != nil {
-		return nil, errors.New("failed to decode JSON response body: " + err.Error())
+		return "", err
 	}
 
-	return reply, nil
+	return string(b), nil
+
+	/*
+			response := &processingpb.Response{}
+			err = c.decodeJSON(resp.Body, response)
+			if err != nil {
+				return nil, errors.New("failed to decode JSON response body: " + err.Error())
+			}
+
+		return response, nil
+	*/
 }
 
 func (c Client) decodeJSON(body io.Reader, into interface{}) error {
