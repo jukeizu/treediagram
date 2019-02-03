@@ -14,9 +14,7 @@ func (j Job) ShouldExecute() (bool, error) {
 }
 
 func (j Job) Execute() (*processingpb.Response, error) {
-	reply := &processingpb.Response{
-		Messages: []string{j.SchedulingJob.Content},
-	}
+	reply := &processingpb.Response{}
 
 	if j.SchedulingJob.Endpoint != "" {
 		client := Client{}
@@ -29,6 +27,10 @@ func (j Job) Execute() (*processingpb.Response, error) {
 		if r != "" {
 			reply.Messages = append(reply.Messages, r)
 		}
+	}
+
+	if j.SchedulingJob.Content != "" {
+		reply.Messages = append(reply.Messages, j.SchedulingJob.Content)
 	}
 
 	return reply, nil

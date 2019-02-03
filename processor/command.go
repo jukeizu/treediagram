@@ -27,9 +27,7 @@ func (c Command) ShouldExecute() (bool, error) {
 }
 
 func (c Command) Execute() (*processingpb.Response, error) {
-	reply := &processingpb.Response{
-		Messages: []string{c.Intent.Response},
-	}
+	reply := &processingpb.Response{}
 
 	if c.Intent.Endpoint != "" {
 		client := Client{}
@@ -43,6 +41,10 @@ func (c Command) Execute() (*processingpb.Response, error) {
 			reply.Messages = append(reply.Messages, r)
 		}
 
+	}
+
+	if c.Intent.Response != "" {
+		reply.Messages = append(reply.Messages, c.Intent.Response)
 	}
 
 	return reply, nil
