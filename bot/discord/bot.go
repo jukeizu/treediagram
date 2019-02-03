@@ -122,7 +122,7 @@ func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
 
 	err := json.Unmarshal([]byte(messageReply.Content), &response)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not unmarshal response: %s", err.Error())
 	}
 
 	channelId := messageReply.ChannelId

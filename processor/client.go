@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io"
 	"io/ioutil"
 	"net/http"
 )
@@ -31,27 +30,4 @@ func (c Client) Do(request interface{}, endpoint string) (string, error) {
 	}
 
 	return string(b), nil
-
-	/*
-			response := &processingpb.Response{}
-			err = c.decodeJSON(resp.Body, response)
-			if err != nil {
-				return nil, errors.New("failed to decode JSON response body: " + err.Error())
-			}
-
-		return response, nil
-	*/
-}
-
-func (c Client) decodeJSON(body io.Reader, into interface{}) error {
-	b, err := ioutil.ReadAll(body)
-	if err != nil {
-		return errors.New("error reading response body: " + err.Error())
-	}
-
-	if b == nil || len(b) < 1 {
-		return errors.New("body did not contain any bytes")
-	}
-
-	return json.Unmarshal(b, &into)
 }
