@@ -1,8 +1,6 @@
 package startup
 
 import (
-	"bufio"
-	"os"
 	"sync"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
@@ -49,17 +47,11 @@ func NewBotRunner(logger zerolog.Logger, config Config) (*BotRunner, error) {
 	client := processingpb.NewProcessingClient(clientConn)
 
 	if config.DiscordTokenFile != "" {
-		f, _ := os.Open(config.DiscordTokenFile)
+		token, err := ReadSecretFromFile(config.DiscordTokenFile)
 		if err != nil {
 			return nil, err
 		}
-
-		s := bufio.NewScanner(f)
-		s.Scan()
-		if err := s.Err(); err != nil {
-			return nil, err
-		}
-		config.DiscordToken = s.Text()
+		config.DiscordToken = token
 	}
 
 	handler, err := discord.NewBot(config.DiscordToken, client, queue, logger)
