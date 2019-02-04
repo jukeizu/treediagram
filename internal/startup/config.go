@@ -5,5 +5,6 @@ type Config struct {
 	NatsServers       string
 	DbUrl             string
 	DiscordToken      string
+	DiscordTokenFile  string
 	ReceivingEndpoint string
 }
