@@ -77,7 +77,6 @@ func mapToMessageEmbed(contractEmbed *contract.Embed) *discordgo.MessageEmbed {
 		Image:       &discordgo.MessageEmbedImage{URL: contractEmbed.ImageUrl},
 		Thumbnail:   &discordgo.MessageEmbedThumbnail{URL: contractEmbed.ThumbnailUrl},
 		Video:       &discordgo.MessageEmbedVideo{URL: contractEmbed.VideoUrl},
-		Provider:    mapToMessageEmbedProvider(contractEmbed.Provider),
 		Author:      mapToMessageEmbedAuthor(contractEmbed.Author),
 		Fields:      mapToMessageEmbedFields(contractEmbed.Fields),
 	}
@@ -96,19 +95,6 @@ func mapToMessageEmbedFooter(contractEmbedFooter *contract.EmbedFooter) *discord
 	}
 
 	return &footer
-}
-
-func mapToMessageEmbedProvider(contractEmbedProvider *contract.EmbedProvider) *discordgo.MessageEmbedProvider {
-	if contractEmbedProvider == nil {
-		return nil
-	}
-
-	provider := discordgo.MessageEmbedProvider{
-		URL:  contractEmbedProvider.Url,
-		Name: contractEmbedProvider.Name,
-	}
-
-	return &provider
 }
 
 func mapToMessageEmbedAuthor(contractEmbedAuthor *contract.EmbedAuthor) *discordgo.MessageEmbedAuthor {
