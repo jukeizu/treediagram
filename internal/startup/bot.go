@@ -45,7 +45,7 @@ func NewBotRunner(logger zerolog.Logger, config Config) (*BotRunner, error) {
 		grpc.WithKeepaliveParams(
 			keepalive.ClientParameters{
 				Time:                30 * time.Second,
-				Timeout:             30 * time.Second,
+				Timeout:             10 * time.Second,
 				PermitWithoutStream: true,
 			},
 		),

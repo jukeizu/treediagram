@@ -8,11 +8,13 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/cheapRoc/grpc-zerolog"
 	"github.com/jukeizu/treediagram/internal/startup"
 	nats "github.com/nats-io/go-nats"
 	"github.com/oklog/run"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
+	"google.golang.org/grpc/grpclog"
 )
 
 var Version = ""
@@ -72,6 +74,9 @@ func main() {
 		Str("instance", xid.New().String()).
 		Str("version", Version).
 		Logger()
+
+	grpcLoggerV2 := grpczerolog.New(logger.With().Str("transport", "grpc").Logger())
+	grpclog.SetLoggerV2(grpcLoggerV2)
 
 	if flagMigrate {
 		migrationRunner, err := startup.NewMigrationRunner(logger, config.DbUrl)
