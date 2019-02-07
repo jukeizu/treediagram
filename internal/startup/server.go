@@ -97,12 +97,19 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 	userService := user.NewService(storage.UserRepository)
 	userService = user.NewLoggingService(logger, userService)
 
-	grpcServer := grpc.NewServer(grpc.KeepaliveParams(
-		keepalive.ServerParameters{
-			Time:    5 * time.Minute,
-			Timeout: 10 * time.Second,
-		},
-	))
+	grpcServer := grpc.NewServer(
+		grpc.KeepaliveParams(
+			keepalive.ServerParameters{
+				Time:    5 * time.Minute,
+				Timeout: 10 * time.Second,
+			},
+		),
+		grpc.KeepaliveEnforcementPolicy(
+			keepalive.EnforcementPolicy{
+				MinTime:             5 * time.Second,
+				PermitWithoutStream: true,
+			},
+		))
 
 	processingpb.RegisterProcessingServer(grpcServer, processorService)
 	schedulingpb.RegisterSchedulingServer(grpcServer, schedulerService)
