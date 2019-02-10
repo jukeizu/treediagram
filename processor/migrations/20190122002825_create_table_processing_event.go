@@ -17,7 +17,7 @@ func (m CreateTableProcessingEvent20190122002825) Up(tx *sql.Tx) error {
 			processingRequestId UUID NOT NULL REFERENCES processing_request,
 			description STRING NOT NULL DEFAULT '',
 			type STRING NOT NULL DEFAULT '',
-			timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
+			created TIMESTAMPTZ NOT NULL DEFAULT NOW()
 		)`)
 	return err
 }

@@ -8,19 +8,22 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/cheapRoc/grpc-zerolog"
 	"github.com/jukeizu/treediagram/internal/startup"
 	nats "github.com/nats-io/go-nats"
 	"github.com/oklog/run"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
+	"google.golang.org/grpc/grpclog"
 )
 
 var Version = ""
 
 const (
-	DefaultGrpcPort                 = 50051
-	DefaultReceivingEndpoint        = "localhost:50051"
-	DiscordTokenEnvironmentVariable = "TREEDIAGRAM_DISCORD_TOKEN"
+	DefaultGrpcPort                     = 50051
+	DefaultReceivingEndpoint            = "localhost:50051"
+	DiscordTokenEnvironmentVariable     = "TREEDIAGRAM_DISCORD_TOKEN"
+	DiscordTokenFileEnvironmentVariable = "TREEDIAGRAM_DISCORD_TOKEN_FILE"
 )
 
 var (
@@ -38,7 +41,6 @@ func parseConfig() startup.Config {
 	flag.IntVar(&c.GrpcPort, "grpc.port", DefaultGrpcPort, "grpc port")
 	flag.StringVar(&c.NatsServers, "nats", nats.DefaultURL, "NATS servers")
 	flag.StringVar(&c.DbUrl, "db", "root@localhost:26257", "Database connection url")
-	flag.StringVar(&c.DiscordToken, "discord.token", "", "Discord token. This can also be specified via the "+DiscordTokenEnvironmentVariable+" environment variable.")
 	flag.StringVar(&c.ReceivingEndpoint, "endpoint", DefaultReceivingEndpoint, "Url of the Receiving service")
 	flag.BoolVar(&flagServer, "server", false, "Start as server")
 	flag.BoolVar(&flagBot, "bot", false, "Start as bot")
@@ -49,9 +51,8 @@ func parseConfig() startup.Config {
 
 	flag.Parse()
 
-	if c.DiscordToken == "" {
-		c.DiscordToken = os.Getenv(DiscordTokenEnvironmentVariable)
-	}
+	c.DiscordTokenFile = os.Getenv(DiscordTokenFileEnvironmentVariable)
+	c.DiscordToken = os.Getenv(DiscordTokenEnvironmentVariable)
 
 	return c
 }
@@ -73,6 +74,9 @@ func main() {
 		Str("instance", xid.New().String()).
 		Str("version", Version).
 		Logger()
+
+	grpcLoggerV2 := grpczerolog.New(logger.With().Str("transport", "grpc").Logger())
+	grpclog.SetLoggerV2(grpcLoggerV2)
 
 	if flagMigrate {
 		migrationRunner, err := startup.NewMigrationRunner(logger, config.DbUrl)

@@ -2,12 +2,14 @@ package startup
 
 import (
 	"sync"
+	"time"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	"github.com/jukeizu/treediagram/bot/discord"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 type BotRunner struct {
@@ -39,12 +41,28 @@ func NewBotRunner(logger zerolog.Logger, config Config) (*BotRunner, error) {
 		return nil, err
 	}
 
-	clientConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure())
+	clientConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(
+			keepalive.ClientParameters{
+				Time:                30 * time.Second,
+				Timeout:             10 * time.Second,
+				PermitWithoutStream: true,
+			},
+		),
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	client := processingpb.NewProcessingClient(clientConn)
+
+	if config.DiscordTokenFile != "" {
+		token, err := ReadSecretFromFile(config.DiscordTokenFile)
+		if err != nil {
+			return nil, err
+		}
+		config.DiscordToken = token
+	}
 
 	handler, err := discord.NewBot(config.DiscordToken, client, queue, logger)
 	if err != nil {

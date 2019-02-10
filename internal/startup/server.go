@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
@@ -18,6 +19,7 @@ import (
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 type ServerRunner struct {
@@ -56,7 +58,15 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 		return nil, err
 	}
 
-	grpcConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure())
+	grpcConn, err := grpc.Dial(config.ReceivingEndpoint, grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(
+			keepalive.ClientParameters{
+				Time:                30 * time.Second,
+				Timeout:             10 * time.Second,
+				PermitWithoutStream: true,
+			},
+		),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +97,19 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 	userService := user.NewService(storage.UserRepository)
 	userService = user.NewLoggingService(logger, userService)
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.KeepaliveParams(
+			keepalive.ServerParameters{
+				Time:    5 * time.Minute,
+				Timeout: 10 * time.Second,
+			},
+		),
+		grpc.KeepaliveEnforcementPolicy(
+			keepalive.EnforcementPolicy{
+				MinTime:             5 * time.Second,
+				PermitWithoutStream: true,
+			},
+		))
 
 	processingpb.RegisterProcessingServer(grpcServer, processorService)
 	schedulingpb.RegisterSchedulingServer(grpcServer, schedulerService)

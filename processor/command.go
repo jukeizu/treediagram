@@ -37,14 +37,14 @@ func (c Command) Execute() (*processingpb.Response, error) {
 			return reply, err
 		}
 
-		reply.Messages = r.Messages
+		if r != "" {
+			reply.Messages = append(reply.Messages, r)
+		}
+
 	}
 
 	if c.Intent.Response != "" {
-		m := &processingpb.Message{
-			Content: c.Intent.Response,
-		}
-		reply.Messages = append(reply.Messages, m)
+		reply.Messages = append(reply.Messages, c.Intent.Response)
 	}
 
 	return reply, nil

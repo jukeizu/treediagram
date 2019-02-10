@@ -17,8 +17,6 @@ func (m CreateTableMessageReply20190122003737) Up(tx *sql.Tx) error {
 			processingRequestId UUID NOT NULL REFERENCES processing_request,
 			channelId STRING NOT NULL DEFAULT '',
 			userId STRING NOT NULL DEFAULT '',
-			isPrivateMessage bool NOT NULL DEFAULT false,
-			isRedirect bool NOT NULL DEFAULT false,
 			content JSONB,
 			created TIMESTAMPTZ NOT NULL DEFAULT NOW()
 		)`)

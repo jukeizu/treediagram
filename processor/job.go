@@ -24,14 +24,13 @@ func (j Job) Execute() (*processingpb.Response, error) {
 			return reply, err
 		}
 
-		reply.Messages = r.Messages
+		if r != "" {
+			reply.Messages = append(reply.Messages, r)
+		}
 	}
 
 	if j.SchedulingJob.Content != "" {
-		m := &processingpb.Message{
-			Content: j.SchedulingJob.Content,
-		}
-		reply.Messages = append(reply.Messages, m)
+		reply.Messages = append(reply.Messages, j.SchedulingJob.Content)
 	}
 
 	return reply, nil

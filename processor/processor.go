@@ -173,7 +173,7 @@ func (p Processor) process(executable Executable) {
 			Msg("saving responses from execute")
 
 		for _, message := range response.Messages {
-			p.saveResponseMessage(processingRequest, *message)
+			p.saveResponseMessage(processingRequest, message)
 		}
 
 		p.logger.Debug().
@@ -242,14 +242,12 @@ func (p Processor) setDefaultServer(request *processingpb.MessageRequest) (*proc
 	return server, nil
 }
 
-func (p Processor) saveResponseMessage(processingRequest *processingpb.ProcessingRequest, message processingpb.Message) {
+func (p Processor) saveResponseMessage(processingRequest *processingpb.ProcessingRequest, message string) {
 	messageReply := processingpb.MessageReply{
 		ProcessingRequestId: processingRequest.Id,
 		ChannelId:           processingRequest.ChannelId,
 		UserId:              processingRequest.UserId,
-		IsPrivateMessage:    message.IsPrivateMessage,
-		IsRedirect:          message.IsRedirect,
-		Content:             message.Content,
+		Content:             message,
 	}
 
 	err := p.repository.SaveMessageReply(&messageReply)
@@ -288,8 +286,9 @@ func (p Processor) createProcessingEvent(processingRequestId string, eventType s
 }
 
 func (p Processor) createErrorEvent(processingRequestId string, processingError error) {
-	p.createProcessingEvent(processingRequestId, "error", processingError.Error())
 	p.logger.Error().Err(processingError).Caller().
 		Str("processingRequestId", processingRequestId).
-		Msg("")
+		Msg("error event")
+
+	p.createProcessingEvent(processingRequestId, "error", processingError.Error())
 }

@@ -2,9 +2,11 @@ package discord
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/jukeizu/contract"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/zerolog"
@@ -114,38 +116,50 @@ func (d *bot) messageReplyReceived(r *processingpb.MessageReplyReceived) {
 	}
 }
 
-func (d *bot) publishMessage(message *processingpb.MessageReply) error {
-	d.Logger.Debug().Str("message.id", message.Id).Msg("received publish request")
+func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
+	d.Logger.Debug().Str("messageReply.id", messageReply.Id).Msg("received publish request")
+	response := contract.Response{}
 
-	channelId := message.ChannelId
-
-	if message.IsRedirect {
-		id, err := d.getUserChannelId(message.UserId)
-		if err != nil {
-			return err
-		}
-
-		if id == channelId {
-			return nil
-		}
-	}
-
-	if message.IsPrivateMessage {
-		id, err := d.getUserChannelId(message.UserId)
-		if err != nil {
-			return err
-		}
-
-		channelId = id
-	}
-
-	messageSend, err := mapToMessageSend(message)
+	err := json.Unmarshal([]byte(messageReply.Content), &response)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not unmarshal response: %s", err.Error())
 	}
 
-	_, err = d.Session.ChannelMessageSendComplex(channelId, messageSend)
+	channelId := messageReply.ChannelId
 
+	for _, message := range response.Messages {
+
+		if message.IsRedirect {
+			id, err := d.getUserChannelId(messageReply.UserId)
+			if err != nil {
+				return err
+			}
+
+			if id == channelId {
+				return nil
+			}
+		}
+
+		if message.IsPrivateMessage {
+			id, err := d.getUserChannelId(messageReply.UserId)
+			if err != nil {
+				return err
+			}
+
+			channelId = id
+		}
+
+		messageSend, err := mapToMessageSend(message)
+		if err != nil {
+			return err
+		}
+
+		_, err = d.Session.ChannelMessageSendComplex(channelId, messageSend)
+		if err != nil {
+			return err
+		}
+
+	}
 	return err
 }
 
