@@ -14,7 +14,7 @@ before_deploy:
 deploy:
   - provider: script
     script:
-        - make docker-deploy-latest
+        - make docker-deploy
     skip_cleanup: true
     on:
       tags: true

@@ -28,12 +28,6 @@ docker-build:
 docker-deploy:
 	docker push $(REPO):$(VERSION)
 
-docker-deploy-latest:
-	docker build -t $(REPO):$(VERSION) .
-	docker push $(REPO):$(VERSION)
-	docker tag $(REPO):$(VERSION) $(REPO):latest
-	docker push $(REPO):latest
-
 proto: $(PBFILES)
 
 %.pb.go: %.proto
