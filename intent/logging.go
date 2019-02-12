@@ -30,7 +30,7 @@ func (s loggingService) AddIntent(ctx context.Context, req *intentpb.AddIntentRe
 			return
 		}
 
-		l.Info().Msg("")
+		l.Info().Msg("called")
 	}(time.Now())
 
 	reply, err = s.Service.AddIntent(ctx, req)
@@ -50,7 +50,7 @@ func (s loggingService) DisableIntent(ctx context.Context, req *intentpb.Disable
 			return
 		}
 
-		l.Info().Msg("")
+		l.Info().Msg("called")
 	}(time.Now())
 
 	reply, err = s.Service.DisableIntent(ctx, req)
@@ -70,7 +70,7 @@ func (s loggingService) QueryIntents(req *intentpb.QueryIntentsRequest, stream i
 			return
 		}
 
-		l.Info().Msg("")
+		l.Debug().Msg("called")
 	}(time.Now())
 
 	err = s.Service.QueryIntents(req, stream)
