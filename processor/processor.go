@@ -93,7 +93,9 @@ func (p Processor) processMessageRequest(request *processingpb.MessageRequest) {
 		serverId = server.Id
 	}
 
-	query := &intentpb.QueryIntentsRequest{ServerId: serverId}
+	request.ServerId = serverId
+
+	query := &intentpb.QueryIntentsRequest{ServerId: request.ServerId}
 
 	stream, err := p.registry.QueryIntents(context.Background(), query)
 	if err != nil {
