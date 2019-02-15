@@ -93,7 +93,9 @@ func (p Processor) processMessageRequest(request *processingpb.MessageRequest) {
 		serverId = server.Id
 	}
 
-	query := &intentpb.QueryIntentsRequest{ServerId: serverId}
+	request.ServerId = serverId
+
+	query := &intentpb.QueryIntentsRequest{ServerId: request.ServerId}
 
 	stream, err := p.registry.QueryIntents(context.Background(), query)
 	if err != nil {
@@ -135,7 +137,6 @@ func (p Processor) process(executable Executable) {
 	p.waitGroup.Add(1)
 	go func(executable Executable) {
 		defer p.waitGroup.Done()
-		p.logger.Debug().Msg("starting processing for executable")
 
 		shouldExecute, err := executable.ShouldExecute()
 		if err != nil {
@@ -148,6 +149,8 @@ func (p Processor) process(executable Executable) {
 			return
 		}
 
+		p.logger.Info().Msg("starting processing for executable")
+
 		processingRequest := executable.ProcessingRequest()
 
 		err = p.repository.SaveProcessingRequest(processingRequest)
@@ -156,7 +159,7 @@ func (p Processor) process(executable Executable) {
 			return
 		}
 
-		p.logger.Debug().
+		p.logger.Info().
 			Str("processingRequestId", processingRequest.Id).
 			Str("processingRequestType", processingRequest.Type).
 			Msg("executing")
@@ -176,10 +179,10 @@ func (p Processor) process(executable Executable) {
 			p.saveResponseMessage(processingRequest, message)
 		}
 
-		p.logger.Debug().
+		p.logger.Info().
 			Str("processingRequestId", processingRequest.Id).
 			Str("processingRequestType", processingRequest.Type).
-			Msg("finished processing executable")
+			Msg("finished processing for executable")
 	}(executable)
 }
 

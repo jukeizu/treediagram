@@ -125,6 +125,11 @@ func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
 		return fmt.Errorf("could not unmarshal response: %s", err.Error())
 	}
 
+	if len(response.Messages) < 1 {
+		d.Logger.Debug().Str("messageReply.id", messageReply.Id).Msg("response contains no messages")
+		return nil
+	}
+
 	channelId := messageReply.ChannelId
 
 	for _, message := range response.Messages {
@@ -160,7 +165,8 @@ func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
 		}
 
 	}
-	return err
+
+	return nil
 }
 
 func (d *bot) getUserChannelId(userId string) (string, error) {
