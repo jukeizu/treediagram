@@ -130,9 +130,8 @@ func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
 		return nil
 	}
 
-	channelId := messageReply.ChannelId
-
 	for _, message := range response.Messages {
+		channelId := messageReply.ChannelId
 
 		if message.IsRedirect {
 			id, err := d.getUserChannelId(messageReply.UserId)
@@ -141,7 +140,7 @@ func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
 			}
 
 			if id == channelId {
-				return nil
+				continue
 			}
 		}
 
