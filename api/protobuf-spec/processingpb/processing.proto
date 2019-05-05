@@ -26,6 +26,7 @@ message MessageRequest {
 message User {
     string id = 1;
     string name = 2;
+    string discriminator = 3;
 }
 
 message Server {

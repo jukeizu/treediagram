@@ -11,8 +11,9 @@ import (
 
 func mapToPbUser(discordUser *discordgo.User) *processingpb.User {
 	user := &processingpb.User{
-		Id:   discordUser.ID,
-		Name: discordUser.Username,
+		Id:            discordUser.ID,
+		Name:          discordUser.Username,
+		Discriminator: discordUser.Discriminator,
 	}
 
 	return user
