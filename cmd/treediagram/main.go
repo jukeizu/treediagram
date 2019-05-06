@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	grpczerolog "github.com/cheapRoc/grpc-zerolog"
+	"github.com/cheapRoc/grpc-zerolog"
 	"github.com/jukeizu/treediagram/internal/startup"
 	nats "github.com/nats-io/go-nats"
 	"github.com/oklog/run"

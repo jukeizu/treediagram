@@ -29,7 +29,7 @@ func (h HttpServer) Start() error {
 	h.logger.Info().Str("transport", "http").Msg("starting")
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/help", h.makeLoggingHTTPHandlerFunc("help", h.helpHandler.Help))
+	mux.HandleFunc("/help", h.makeLoggingHttpHandlerFunc("help", h.helpHandler.Help))
 
 	h.httpServer.Handler = mux
 
@@ -42,7 +42,7 @@ func (h HttpServer) Stop() error {
 	return h.httpServer.Shutdown(context.Background())
 }
 
-func (h HttpServer) makeLoggingHTTPHandlerFunc(name string, f func(contract.Request) (*contract.Response, error)) http.HandlerFunc {
+func (h HttpServer) makeLoggingHttpHandlerFunc(name string, f func(contract.Request) (*contract.Response, error)) http.HandlerFunc {
 	contractHandlerFunc := contract.MakeRequestHttpHandlerFunc(f)
 
 	return func(w http.ResponseWriter, r *http.Request) {
