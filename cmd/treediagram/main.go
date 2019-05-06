@@ -21,6 +21,7 @@ var Version = ""
 
 const (
 	DefaultGrpcPort                     = 50051
+	DefaultHttpPort                     = 10002
 	DefaultReceivingEndpoint            = "localhost:50051"
 	DiscordTokenEnvironmentVariable     = "TREEDIAGRAM_DISCORD_TOKEN"
 	DiscordTokenFileEnvironmentVariable = "TREEDIAGRAM_DISCORD_TOKEN_FILE"
@@ -39,6 +40,7 @@ func parseConfig() startup.Config {
 	c := startup.Config{}
 
 	flag.IntVar(&c.GrpcPort, "grpc.port", DefaultGrpcPort, "grpc port")
+	flag.IntVar(&c.HttpPort, "http.port", DefaultHttpPort, "http port")
 	flag.StringVar(&c.NatsServers, "nats", nats.DefaultURL, "NATS servers")
 	flag.StringVar(&c.DbUrl, "db", "root@localhost:26257", "Database connection url")
 	flag.StringVar(&c.ReceivingEndpoint, "endpoint", DefaultReceivingEndpoint, "Url of the Receiving service")
