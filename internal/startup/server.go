@@ -12,6 +12,7 @@ import (
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
+	"github.com/jukeizu/treediagram/builtin"
 	"github.com/jukeizu/treediagram/intent"
 	"github.com/jukeizu/treediagram/processor"
 	"github.com/jukeizu/treediagram/scheduler"
@@ -31,6 +32,7 @@ type ServerRunner struct {
 	GrpcPort    int
 	WaitGroup   *sync.WaitGroup
 	Processor   processor.Processor
+	Builtin     builtin.HttpServer
 }
 
 func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error) {
@@ -97,6 +99,9 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 	userService := user.NewService(storage.UserRepository)
 	userService = user.NewLoggingService(logger, userService)
 
+	helpHandler := builtin.NewHelpHandler(logger, intentClient)
+	builtinServer := builtin.NewHttpServer(logger, fmt.Sprintf(":%d", config.HttpPort), helpHandler)
+
 	grpcServer := grpc.NewServer(
 		grpc.KeepaliveParams(
 			keepalive.ServerParameters{
@@ -125,6 +130,7 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 		GrpcPort:    config.GrpcPort,
 		WaitGroup:   &wg,
 		Processor:   processor,
+		Builtin:     builtinServer,
 	}
 
 	return serverRunner, nil
@@ -134,6 +140,14 @@ func (r *ServerRunner) Start() error {
 	r.Logger.Info().Msg("starting")
 
 	errC := make(chan error)
+
+	go func() {
+		err := r.Builtin.Start()
+		if err != nil {
+			errC <- err
+			return
+		}
+	}()
 
 	go func() {
 		port := fmt.Sprintf(":%d", r.GrpcPort)
@@ -156,6 +170,7 @@ func (r *ServerRunner) Start() error {
 func (r *ServerRunner) Stop() {
 	r.Logger.Info().Msg("stopping")
 
+	r.Builtin.Stop()
 	r.EncodedConn.Drain()
 	r.Conn.Drain()
 
