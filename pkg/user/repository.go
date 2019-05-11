@@ -50,7 +50,7 @@ func (r *repository) Migrate() error {
 		return err
 	}
 
-	err = g.RegisterMigrations(migration.CreateTablePreference20190113020925{})
+	err = g.RegisterMigrations(migrations.CreateTablePreference20190113020925{})
 	if err != nil {
 		return err
 	}

@@ -51,7 +51,7 @@ func (r *repository) Migrate() error {
 		return err
 	}
 
-	err = g.RegisterMigrations(migration.CreateTableIntent20190113072028{})
+	err = g.RegisterMigrations(migrations.CreateTableIntent20190113072028{})
 	if err != nil {
 		return err
 	}
