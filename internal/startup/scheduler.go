@@ -1,7 +1,7 @@
 package startup
 
 import (
-	"github.com/jukeizu/treediagram/scheduler"
+	"github.com/jukeizu/treediagram/pkg/scheduler"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/zerolog"
 )

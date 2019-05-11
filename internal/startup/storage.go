@@ -1,10 +1,10 @@
 package startup
 
 import (
-	"github.com/jukeizu/treediagram/intent"
-	"github.com/jukeizu/treediagram/processor"
-	"github.com/jukeizu/treediagram/scheduler"
-	"github.com/jukeizu/treediagram/user"
+	"github.com/jukeizu/treediagram/pkg/intent"
+	"github.com/jukeizu/treediagram/pkg/processor"
+	"github.com/jukeizu/treediagram/pkg/scheduler"
+	"github.com/jukeizu/treediagram/pkg/user"
 	"github.com/rs/zerolog"
 )
 
