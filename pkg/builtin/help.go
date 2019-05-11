@@ -1,9 +1,7 @@
 package builtin
 
 import (
-	"bytes"
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/jukeizu/contract"
@@ -30,9 +28,11 @@ func (h HelpHandler) Help(request contract.Request) (*contract.Response, error) 
 		return nil, err
 	}
 
-	buffer := bytes.Buffer{}
-	buffer.WriteString("```")
-	buffer.WriteString("\ntreediagram help\n\n")
+	embed := &contract.Embed{
+		Title:       "treediagram",
+		Description: "help",
+		Color:       6139372,
+	}
 
 	for {
 		intent, err := intentStream.Recv()
@@ -44,10 +44,17 @@ func (h HelpHandler) Help(request contract.Request) (*contract.Response, error) 
 			break
 		}
 
-		buffer.WriteString(fmt.Sprintf("%s\n    %s\n", intent.Name, intent.Help))
+		if intent.Name == "" || intent.Help == "" {
+			continue
+		}
+
+		field := &contract.EmbedField{
+			Name:  intent.Name,
+			Value: intent.Help,
+		}
+
+		embed.Fields = append(embed.Fields, field)
 	}
 
-	buffer.WriteString("```")
-
-	return contract.StringResponse(buffer.String()), nil
+	return &contract.Response{Messages: []*contract.Message{&contract.Message{Embed: embed}}}, nil
 }
