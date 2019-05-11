@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
-	"github.com/jukeizu/treediagram/bot/discord"
+	"github.com/jukeizu/treediagram/pkg/bot/discord"
 	nats "github.com/nats-io/go-nats"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"

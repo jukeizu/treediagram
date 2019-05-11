@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
-	migration "github.com/jukeizu/treediagram/scheduler/migrations"
+	"github.com/jukeizu/treediagram/pkg/scheduler/migrations"
 	"github.com/shawntoffel/gossage"
 )
 
@@ -50,7 +50,7 @@ func (r *repository) Migrate() error {
 		return err
 	}
 
-	err = g.RegisterMigrations(migration.CreateTableJob20190119052738{})
+	err = g.RegisterMigrations(migrations.CreateTableJob20190119052738{})
 	if err != nil {
 		return err
 	}

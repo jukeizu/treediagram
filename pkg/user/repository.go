@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
-	"github.com/jukeizu/treediagram/user/migrations"
+	"github.com/jukeizu/treediagram/pkg/user/migrations"
 	_ "github.com/lib/pq"
 	"github.com/shawntoffel/gossage"
 )
@@ -50,7 +50,7 @@ func (r *repository) Migrate() error {
 		return err
 	}
 
-	err = g.RegisterMigrations(migration.CreateTablePreference20190113020925{})
+	err = g.RegisterMigrations(migrations.CreateTablePreference20190113020925{})
 	if err != nil {
 		return err
 	}
