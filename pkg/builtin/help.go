@@ -3,6 +3,7 @@ package builtin
 import (
 	"context"
 	"io"
+	"sort"
 
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
@@ -55,6 +56,10 @@ func (h HelpHandler) Help(request contract.Request) (*contract.Response, error) 
 
 		embed.Fields = append(embed.Fields, field)
 	}
+
+	sort.Slice(embed.Fields, func(i, j int) bool {
+		return embed.Fields[i].Name < embed.Fields[j].Name
+	})
 
 	return &contract.Response{Messages: []*contract.Message{&contract.Message{Embed: embed}}}, nil
 }
