@@ -13,24 +13,4 @@
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 
-bin
-
-receiving
-!receiving/
-
-treediagram
-!treediagram/
-
-publishing
-!publishing/
-
-registration
-!registration/
-
-user
-!user/
-
-discord
-!discord/
-
-testconfig*.toml
+bin/
