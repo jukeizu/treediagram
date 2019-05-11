@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
-	migration "github.com/jukeizu/treediagram/processor/migrations"
+	"github.com/jukeizu/treediagram/pkg/processor/migrations"
 	"github.com/shawntoffel/gossage"
 )
 
@@ -55,9 +55,9 @@ func (r *repository) Migrate() error {
 	}
 
 	err = g.RegisterMigrations(
-		migration.CreateTableProcessingRequest20190121234940{},
-		migration.CreateTableProcessingEvent20190122002825{},
-		migration.CreateTableMessageReply20190122003737{},
+		migrations.CreateTableProcessingRequest20190121234940{},
+		migrations.CreateTableProcessingEvent20190122002825{},
+		migrations.CreateTableMessageReply20190122003737{},
 	)
 	if err != nil {
 		return err
