@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
-	migration "github.com/jukeizu/treediagram/scheduler/migrations"
+	"github.com/jukeizu/treediagram/pkg/scheduler/migrations"
 	"github.com/shawntoffel/gossage"
 )
 

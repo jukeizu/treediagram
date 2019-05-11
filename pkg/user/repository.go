@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
-	"github.com/jukeizu/treediagram/user/migrations"
+	"github.com/jukeizu/treediagram/pkg/user/migrations"
 	_ "github.com/lib/pq"
 	"github.com/shawntoffel/gossage"
 )
