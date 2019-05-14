@@ -69,7 +69,7 @@ func (h SelectServerHandler) parseSelection(input string, serverCount int) (int,
 
 func (h SelectServerHandler) formatSelectionPrompt(request contract.Request) string {
 	if len(request.Servers) == 1 {
-		return fmt.Sprintf("You only share 1 server! Your preferred server is: %s", request.Servers[0])
+		return fmt.Sprintf("You only share 1 server! Your preferred server is: %s", request.Servers[0].Name)
 	}
 
 	buffer := bytes.Buffer{}
