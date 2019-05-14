@@ -100,7 +100,8 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 	userService = user.NewLoggingService(logger, userService)
 
 	helpHandler := builtin.NewHelpHandler(logger, intentClient)
-	builtinServer := builtin.NewHttpServer(logger, fmt.Sprintf(":%d", config.HttpPort), helpHandler)
+	selectServerHandler := builtin.NewSelectServerHandler(logger, userClient)
+	builtinServer := builtin.NewHttpServer(logger, fmt.Sprintf(":%d", config.HttpPort), helpHandler, selectServerHandler)
 
 	grpcServer := grpc.NewServer(
 		grpc.KeepaliveParams(
