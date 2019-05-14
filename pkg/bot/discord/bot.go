@@ -70,7 +70,8 @@ func (d *bot) Close() {
 }
 
 func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.ID == s.State.User.ID {
+	// ignore messages from bots
+	if m.Author.Bot {
 		return
 	}
 
