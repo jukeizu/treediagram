@@ -6,6 +6,7 @@ import (
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
+	"github.com/rs/zerolog"
 )
 
 type Command struct {
@@ -62,6 +63,17 @@ func (c Command) ProcessingRequest() *processingpb.ProcessingRequest {
 	}
 
 	return processingRequest
+}
+
+func (c Command) MarshalZerologObject(e *zerolog.Event) {
+	e.Str("type", "command").
+		Str("intentId", c.Intent.Id).
+		Str("intentName", c.Intent.Name).
+		Str("source", c.Request.Source).
+		Str("channelId", c.Request.ChannelId).
+		Str("serverId", c.Request.ServerId).
+		Str("botId", c.Request.Bot.Id).
+		Str("userId", c.Request.Author.Id)
 }
 
 func (c Command) isBotMentioned() bool {
