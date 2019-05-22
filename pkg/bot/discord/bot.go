@@ -95,11 +95,14 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	d.Logger.Debug().Str("reply.id", reply.Id).Msg("request sent")
+	d.Logger.Debug().Str("requestId", reply.Id).Msg("request sent")
 }
 
 func (d *bot) messageReplyReceived(r *processingpb.MessageReplyReceived) {
-	d.Logger.Debug().Str("reply", r.Id).Msg("reply received")
+	d.Logger.Info().
+		Str("messageReplyId", r.Id).
+		Msg("message reply received")
+
 	message, err := d.Client.GetMessageReply(context.Background(), &processingpb.MessageReplyRequest{Id: r.Id})
 	if err != nil {
 		d.Logger.Error().Caller().Err(err).
@@ -108,6 +111,13 @@ func (d *bot) messageReplyReceived(r *processingpb.MessageReplyReceived) {
 		return
 	}
 
+	d.Logger.Info().
+		Str("messageReplyId", message.Id).
+		Str("processingRequestId", message.ProcessingRequestId).
+		Str("channelId", message.ChannelId).
+		Str("userId", message.UserId).
+		Msg("starting processing for message reply")
+
 	err = d.publishMessage(message)
 	if err != nil {
 		d.Logger.Error().Caller().Err(err).
@@ -115,10 +125,17 @@ func (d *bot) messageReplyReceived(r *processingpb.MessageReplyReceived) {
 			Msg("error publishing message")
 		return
 	}
+
+	d.Logger.Info().
+		Str("messageReplyId", message.Id).
+		Str("processingRequestId", message.ProcessingRequestId).
+		Str("channelId", message.ChannelId).
+		Str("userId", message.UserId).
+		Msg("finished processing for message reply")
 }
 
 func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
-	d.Logger.Debug().Str("messageReply.id", messageReply.Id).Msg("received publish request")
+
 	response := contract.Response{}
 
 	err := json.Unmarshal([]byte(messageReply.Content), &response)
@@ -127,7 +144,10 @@ func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
 	}
 
 	if len(response.Messages) < 1 {
-		d.Logger.Debug().Str("messageReply.id", messageReply.Id).Msg("response contains no messages")
+		d.Logger.Info().
+			Str("messageReplyId", messageReply.Id).
+			Msg("message reply contains no messages")
+
 		return nil
 	}
 
@@ -163,7 +183,6 @@ func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
 		if err != nil {
 			return err
 		}
-
 	}
 
 	return nil
@@ -171,7 +190,6 @@ func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
 
 func (d *bot) getUserChannelId(userId string) (string, error) {
 	dmChannel, err := d.Session.UserChannelCreate(userId)
-
 	if err != nil {
 		return "", err
 	}

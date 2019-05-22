@@ -3,6 +3,7 @@ package processor
 import (
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
+	"github.com/rs/zerolog"
 )
 
 type Job struct {
@@ -45,4 +46,12 @@ func (j Job) ProcessingRequest() *processingpb.ProcessingRequest {
 	}
 
 	return processingRequest
+}
+
+func (j Job) MarshalZerologObject(e *zerolog.Event) {
+	e.Str("type", "job").
+		Str("jobId", j.SchedulingJob.Id).
+		Str("source", j.SchedulingJob.Source).
+		Str("channelId", j.SchedulingJob.Destination).
+		Str("userId", j.SchedulingJob.UserId)
 }

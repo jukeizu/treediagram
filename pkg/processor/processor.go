@@ -25,6 +25,7 @@ type Executable interface {
 	ShouldExecute() (bool, error)
 	Execute() (*processingpb.Response, error)
 	ProcessingRequest() *processingpb.ProcessingRequest
+	MarshalZerologObject(e *zerolog.Event)
 }
 
 type Processor struct {
@@ -124,7 +125,18 @@ func (p Processor) processMessageRequest(request *processingpb.MessageRequest) {
 }
 
 func (p Processor) processJob(schedulingJob *schedulingpb.Job) {
-	p.logger.Debug().Msgf("job received %+v", schedulingJob)
+	p.logger.Info().
+		Str("jobId", schedulingJob.Id).
+		Str("userId", schedulingJob.UserId).
+		Str("source", schedulingJob.Source).
+		Str("destination", schedulingJob.Destination).
+		Str("schedule.minute", schedulingJob.Schedule.Minute).
+		Str("schedule.hour", schedulingJob.Schedule.Hour).
+		Str("schedule.dayOfMonth", schedulingJob.Schedule.DayOfMonth).
+		Str("schedule.month", schedulingJob.Schedule.Month).
+		Str("schedule.dayOfWeek", schedulingJob.Schedule.DayOfWeek).
+		Str("schedule.year", schedulingJob.Schedule.Year).
+		Msg("job received")
 
 	job := Job{
 		SchedulingJob: *schedulingJob,
@@ -140,28 +152,36 @@ func (p Processor) process(executable Executable) {
 
 		shouldExecute, err := executable.ShouldExecute()
 		if err != nil {
-			p.logger.Error().Err(err).Caller().Msg("could not determine if should execute")
+			p.logger.Error().Err(err).Caller().
+				EmbedObject(executable).
+				Msg("could not determine if should execute")
 			return
 		}
 
 		if !shouldExecute {
-			p.logger.Debug().Msg("executable should not execute")
+			p.logger.Debug().
+				EmbedObject(executable).
+				Msg("executable should not execute")
 			return
 		}
 
-		p.logger.Info().Msg("starting processing for executable")
+		p.logger.Info().
+			EmbedObject(executable).
+			Msg("starting processing for executable")
 
 		processingRequest := executable.ProcessingRequest()
 
 		err = p.repository.SaveProcessingRequest(processingRequest)
 		if err != nil {
-			p.logger.Error().Err(err).Caller().Msg("error saving ProcessingRequest")
+			p.logger.Error().Err(err).Caller().
+				EmbedObject(executable).
+				Msg("error saving ProcessingRequest")
 			return
 		}
 
 		p.logger.Info().
 			Str("processingRequestId", processingRequest.Id).
-			Str("processingRequestType", processingRequest.Type).
+			EmbedObject(executable).
 			Msg("executing")
 
 		response, err := executable.Execute()
@@ -170,9 +190,9 @@ func (p Processor) process(executable Executable) {
 			return
 		}
 
-		p.logger.Debug().
+		p.logger.Info().
 			Str("processingRequestId", processingRequest.Id).
-			Str("processingRequestType", processingRequest.Type).
+			EmbedObject(executable).
 			Msg("saving responses from execute")
 
 		for _, message := range response.Messages {
@@ -181,7 +201,7 @@ func (p Processor) process(executable Executable) {
 
 		p.logger.Info().
 			Str("processingRequestId", processingRequest.Id).
-			Str("processingRequestType", processingRequest.Type).
+			EmbedObject(executable).
 			Msg("finished processing for executable")
 	}(executable)
 }
@@ -193,7 +213,7 @@ func (p Processor) findServerId(request *processingpb.MessageRequest) (string, e
 
 	userId := request.Author.Id
 
-	p.logger.Debug().
+	p.logger.Info().
 		Str("userId", userId).
 		Msg("looking up server preference")
 
@@ -204,14 +224,14 @@ func (p Processor) findServerId(request *processingpb.MessageRequest) (string, e
 
 	preference := preferenceReply.Preference
 	if preference == nil {
-		p.logger.Debug().
+		p.logger.Info().
 			Str("userId", userId).
 			Msg("user does not have a preferred server")
 
 		return "", nil
 	}
 
-	p.logger.Debug().
+	p.logger.Info().
 		Str("userId", userId).
 		Str("preferredServerId", preference.ServerId).
 		Msg("found server preference for user")
@@ -237,7 +257,7 @@ func (p Processor) setDefaultServer(request *processingpb.MessageRequest) (*proc
 		return nil, err
 	}
 
-	p.logger.Debug().
+	p.logger.Info().
 		Str("userId", userId).
 		Str("serverId", server.Id).
 		Msg("user server preference has been set to the first available server")
@@ -281,7 +301,7 @@ func (p Processor) createProcessingEvent(processingRequestId string, eventType s
 		return
 	}
 
-	p.logger.Debug().
+	p.logger.Info().
 		Str("processingRequestId", processingRequestId).
 		Str("type", eventType).
 		Str("description", eventDescription).
