@@ -144,7 +144,7 @@ func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
 	}
 
 	if len(response.Messages) < 1 {
-		d.Logger.Debug().
+		d.Logger.Info().
 			Str("messageReplyId", messageReply.Id).
 			Msg("message reply contains no messages")
 
