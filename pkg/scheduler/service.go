@@ -88,10 +88,13 @@ func (s service) Run(ctx context.Context, req *schedulingpb.RunJobsRequest) (*sc
 		err := s.Queue.Publish(JobsSubject, job)
 		if err != nil {
 			s.logger.Error().Err(err).Caller().
-				Str("job.id", job.GetId()).
+				Str("jobId", job.GetId()).
 				Msg("error publishing job")
 		}
-		s.logger.Debug().Msg("published job run to queue")
+
+		s.logger.Info().
+			Str("jobId", job.GetId()).
+			Msg("published job run to queue")
 	}
 
 	return &schedulingpb.RunJobsReply{Jobs: reply.Jobs}, nil
