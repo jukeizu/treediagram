@@ -5,6 +5,7 @@ package processingpb;
 service Processing {
     rpc SendMessageRequest(MessageRequest) returns (SendMessageRequestReply) {}
     rpc GetMessageReply(MessageReplyRequest) returns (MessageReply) {}
+    rpc ProcessingRequestIntentStatistics(ProcessingRequestIntentStatisticsRequest) returns (ProcessingRequestIntentStatisticsReply) {}
 }
 
 message MessageReplyReceived {
@@ -52,7 +53,7 @@ message MessageReply {
     string channelId = 3;
     string userId = 4;
     string content = 5;
-    int32 created = 6;
+    int64 created = 6;
 }
 
 message ProcessingRequest {
@@ -64,7 +65,7 @@ message ProcessingRequest {
     string serverId = 6;
     string botId = 7;
     string userId = 8;
-    int32 created = 9;
+    int64 created = 9;
 }
 
 message ProcessingEvent {
@@ -72,5 +73,25 @@ message ProcessingEvent {
     string processingRequestId = 2;
     string description = 3;
     string type = 4;
-    int32 created = 5;
+    int64 created = 5;
+}
+
+message ProcessingRequestIntentStatisticsRequest {
+    string serverId = 1;
+    string intentId = 2;
+    string userId = 3;
+    string type = 4;
+    int64 createdGreaterThanOrEqualTo = 5;
+    int64 createdLessThanOrEqualTo = 6;
+    int32 userLimit = 7;
+}
+
+message ProcessingRequestIntentStatisticsReply {
+    string intentId = 1;
+    repeated UserStatistic userStatistics = 2;
+}
+
+message UserStatistic {
+    string userId = 1;
+    string count = 2;
 }

@@ -20,6 +20,7 @@ type Repository interface {
 	ProcessingEvents(string) ([]*processingpb.ProcessingEvent, error)
 	SaveMessageReply(*processingpb.MessageReply) error
 	MessageReply(string) (*processingpb.MessageReply, error)
+	CountProcessingRequestsForIntentByUser(req *processingpb.ProcessingRequestIntentStatisticsRequest) ([]*processingpb.UserStatistic, error)
 
 	Migrate() error
 }
@@ -224,4 +225,50 @@ func (r *repository) MessageReply(id string) (*processingpb.MessageReply, error)
 	}
 
 	return &mr, nil
+}
+
+func (r *repository) CountProcessingRequestsForIntentByUser(req *processingpb.ProcessingRequestIntentStatisticsRequest) ([]*processingpb.UserStatistic, error) {
+	userStatistics := []*processingpb.UserStatistic{}
+
+	q := `SELECT userid,
+			count(*)
+	FROM processing_request
+	WHERE serverId = $1
+	AND intentId = $2
+	AND type = $3
+	AND created::INT <= $4
+	AND created::INT >= $5
+	GROUP BY intentid, userid
+	ORDER BY count desc
+	LIMIT $6
+	`
+
+	rows, err := r.Db.Query(q,
+		req.ServerId,
+		req.IntentId,
+		req.Type,
+		req.CreatedLessThanOrEqualTo,
+		req.CreatedGreaterThanOrEqualTo,
+		req.UserLimit,
+	)
+	if err != nil {
+		return userStatistics, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		s := processingpb.UserStatistic{}
+
+		err := rows.Scan(
+			&s.UserId,
+			&s.Count,
+		)
+		if err != nil {
+			return userStatistics, err
+		}
+
+		userStatistics = append(userStatistics, &s)
+	}
+
+	return userStatistics, nil
 }

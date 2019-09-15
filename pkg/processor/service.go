@@ -2,6 +2,7 @@ package processor
 
 import (
 	"context"
+	"time"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	nats "github.com/nats-io/go-nats"
@@ -24,4 +25,22 @@ func (s service) SendMessageRequest(ctx context.Context, req *processingpb.Messa
 
 func (s service) GetMessageReply(ctx context.Context, req *processingpb.MessageReplyRequest) (*processingpb.MessageReply, error) {
 	return s.repository.MessageReply(req.Id)
+}
+
+func (s service) ProcessingRequestIntentStatistics(ctx context.Context, req *processingpb.ProcessingRequestIntentStatisticsRequest) (*processingpb.ProcessingRequestIntentStatisticsReply, error) {
+	if req.CreatedLessThanOrEqualTo == 0 {
+		req.CreatedLessThanOrEqualTo = time.Now().UTC().Unix()
+	}
+
+	userStatistics, err := s.repository.CountProcessingRequestsForIntentByUser(req)
+	if err != nil {
+		return nil, err
+	}
+
+	reply := &processingpb.ProcessingRequestIntentStatisticsReply{
+		IntentId:       req.IntentId,
+		UserStatistics: userStatistics,
+	}
+
+	return reply, nil
 }
