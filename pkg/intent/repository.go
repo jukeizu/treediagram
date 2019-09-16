@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
 	"github.com/jukeizu/treediagram/pkg/intent/migrations"
 	_ "github.com/lib/pq"
@@ -64,7 +65,8 @@ func (r *repository) Save(pbIntent *intentpb.Intent) error {
 		return nil
 	}
 
-	q := `INSERT INTO intent (
+	q := squirrel.Insert("intent").
+		Columns(`
 		serverId,
 		name,
 		regex,
@@ -72,20 +74,19 @@ func (r *repository) Save(pbIntent *intentpb.Intent) error {
 		response,
 		endpoint,
 		help,
-		enabled
-	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-	RETURNING id, created::INT`
+		enabled`).
+		Values(
+			pbIntent.ServerId,
+			pbIntent.Name,
+			pbIntent.Regex,
+			pbIntent.Mention,
+			pbIntent.Response,
+			pbIntent.Endpoint,
+			pbIntent.Help,
+			pbIntent.Enabled).
+		Suffix("RETURNING id, created::INT")
 
-	err := r.Db.QueryRow(q,
-		pbIntent.ServerId,
-		pbIntent.Name,
-		pbIntent.Regex,
-		pbIntent.Mention,
-		pbIntent.Response,
-		pbIntent.Endpoint,
-		pbIntent.Help,
-		pbIntent.Enabled,
-	).Scan(
+	err := q.PlaceholderFormat(squirrel.Dollar).RunWith(r.Db).QueryRow().Scan(
 		&pbIntent.Id,
 		&pbIntent.Created,
 	)
@@ -94,17 +95,17 @@ func (r *repository) Save(pbIntent *intentpb.Intent) error {
 }
 
 func (r *repository) Disable(id string) error {
-	q := `UPDATE intent SET enabled = false WHERE id = $1`
+	q := squirrel.Update("intent").Set("enabled", false).Where("id = ?", id)
 
-	_, err := r.Db.Exec(q, id)
+	_, err := q.PlaceholderFormat(squirrel.Dollar).RunWith(r.Db).Exec()
 
 	return err
 }
 
 func (r *repository) Query(query intentpb.QueryIntentsRequest) ([]*intentpb.Intent, error) {
 	pbIntents := []*intentpb.Intent{}
-
-	q := `SELECT id,
+	q := squirrel.Select(`
+			id,
 			serverId,
 			name,
 			regex,
@@ -113,12 +114,16 @@ func (r *repository) Query(query intentpb.QueryIntentsRequest) ([]*intentpb.Inte
 			endpoint,
 			help,
 			enabled,
-			created::INT
-		FROM intent 
-		WHERE (serverId = $1 OR serverId = '') 
-		AND enabled = true`
+			created::INT`).
+		From("intent").
+		Where("(serverId = ? OR serverId = '')", query.ServerId).
+		Where("enabled = ?", true)
 
-	rows, err := r.Db.Query(q, query.ServerId)
+	if query.Name != "" {
+		q = q.Where("name = ?", query.Name)
+	}
+
+	rows, err := q.PlaceholderFormat(squirrel.Dollar).RunWith(r.Db).Query()
 	if err != nil {
 		return pbIntents, err
 	}

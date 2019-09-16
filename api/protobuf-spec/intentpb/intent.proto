@@ -24,6 +24,7 @@ message Intent {
 
 message QueryIntentsRequest {
     string serverId = 1;
+    string name = 2;
 }
 
 message AddIntentRequest {
