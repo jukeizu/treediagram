@@ -23,7 +23,8 @@ type Repository interface {
 }
 
 type repository struct {
-	Db *sql.DB
+	db *sql.DB
+	sb squirrel.StatementBuilderType
 }
 
 func NewRepository(url string) (Repository, error) {
@@ -35,19 +36,20 @@ func NewRepository(url string) (Repository, error) {
 	}
 
 	i := repository{
-		Db: db,
+		db: db,
+		sb: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).RunWith(db),
 	}
 
 	return &i, err
 }
 
 func (r *repository) Migrate() error {
-	_, err := r.Db.Exec(`CREATE DATABASE IF NOT EXISTS ` + DatabaseName)
+	_, err := r.db.Exec(`CREATE DATABASE IF NOT EXISTS ` + DatabaseName)
 	if err != nil {
 		return err
 	}
 
-	g, err := gossage.New(r.Db)
+	g, err := gossage.New(r.db)
 	if err != nil {
 		return err
 	}
@@ -65,7 +67,7 @@ func (r *repository) Save(pbIntent *intentpb.Intent) error {
 		return nil
 	}
 
-	q := squirrel.Insert("intent").
+	q := r.sb.Insert("intent").
 		Columns(`
 		serverId,
 		name,
@@ -86,25 +88,30 @@ func (r *repository) Save(pbIntent *intentpb.Intent) error {
 			pbIntent.Enabled).
 		Suffix("RETURNING id, created::INT")
 
-	err := q.PlaceholderFormat(squirrel.Dollar).RunWith(r.Db).QueryRow().Scan(
+	err := q.QueryRow().Scan(
 		&pbIntent.Id,
 		&pbIntent.Created,
 	)
+	/*
+		err := q.PlaceholderFormat(squirrel.Dollar).RunWith(r.Db).QueryRow().Scan(
+			&pbIntent.Id,
+			&pbIntent.Created,
+		)*/
 
 	return err
 }
 
 func (r *repository) Disable(id string) error {
-	q := squirrel.Update("intent").Set("enabled", false).Where("id = ?", id)
+	q := r.sb.Update("intent").Set("enabled", false).Where("id = ?", id)
 
-	_, err := q.PlaceholderFormat(squirrel.Dollar).RunWith(r.Db).Exec()
+	_, err := q.Exec()
 
 	return err
 }
 
 func (r *repository) Query(query intentpb.QueryIntentsRequest) ([]*intentpb.Intent, error) {
 	pbIntents := []*intentpb.Intent{}
-	q := squirrel.Select(`
+	q := r.sb.Select(`
 			id,
 			serverId,
 			name,
@@ -123,7 +130,7 @@ func (r *repository) Query(query intentpb.QueryIntentsRequest) ([]*intentpb.Inte
 		q = q.Where("name = ?", query.Name)
 	}
 
-	rows, err := q.PlaceholderFormat(squirrel.Dollar).RunWith(r.Db).Query()
+	rows, err := q.Query()
 	if err != nil {
 		return pbIntents, err
 	}
