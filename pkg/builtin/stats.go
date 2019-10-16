@@ -42,7 +42,17 @@ func (h StatsHandler) Stats(request contract.Request) (*contract.Response, error
 		return nil, nil
 	}
 
-	return contract.StringResponse(reply), nil
+	redirect := &contract.Message{
+		Content:    fmt.Sprintf("<@!%s> The stats have been sent to your direct messages.", request.Author.Id),
+		IsRedirect: true,
+	}
+
+	message := &contract.Message{
+		Content:          reply,
+		IsPrivateMessage: true,
+	}
+
+	return &contract.Response{Messages: []*contract.Message{redirect, message}}, nil
 }
 
 func parseIntentID(request contract.Request) string {
@@ -58,8 +68,10 @@ func formatUserStatisticsReply(intentID string, userStatistics []*processingpb.U
 
 	buffer := bytes.Buffer{}
 
+	buffer.WriteString("**Count by user for command: `" + intentID + "`\n**")
+
 	for _, userStat := range userStatistics {
-		buffer.WriteString(fmt.Sprintf("%s: %d\n", userStat.UserId, userStat.Count))
+		buffer.WriteString(fmt.Sprintf("<@!%s>: %d\n", userStat.UserId, userStat.Count))
 	}
 
 	return buffer.String()
