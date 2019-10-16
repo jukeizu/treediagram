@@ -93,5 +93,5 @@ message ProcessingRequestIntentStatisticsReply {
 
 message UserStatistic {
     string userId = 1;
-    string count = 2;
+    int64 count = 2;
 }
