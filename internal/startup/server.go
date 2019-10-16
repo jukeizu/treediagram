@@ -75,6 +75,7 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 
 	intentClient := intentpb.NewIntentRegistryClient(grpcConn)
 	userClient := userpb.NewUserClient(grpcConn)
+	processingClient := processingpb.NewProcessingClient(grpcConn)
 
 	processorService, err := processor.NewService(conn, storage.ProcessorRepository)
 	if err != nil {
@@ -101,7 +102,8 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 
 	helpHandler := builtin.NewHelpHandler(logger, intentClient)
 	selectServerHandler := builtin.NewSelectServerHandler(logger, userClient)
-	builtinServer := builtin.NewHttpServer(logger, fmt.Sprintf(":%d", config.HttpPort), helpHandler, selectServerHandler)
+	statsHandler := builtin.NewStatsHandler(logger, processingClient)
+	builtinServer := builtin.NewHttpServer(logger, fmt.Sprintf(":%d", config.HttpPort), helpHandler, selectServerHandler, statsHandler)
 
 	grpcServer := grpc.NewServer(
 		grpc.KeepaliveParams(

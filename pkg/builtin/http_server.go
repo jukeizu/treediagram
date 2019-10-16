@@ -14,16 +14,17 @@ type HttpServer struct {
 	httpServer          *http.Server
 	helpHandler         HelpHandler
 	selectServerHandler SelectServerHandler
+	statsHandler        StatsHandler
 }
 
-func NewHttpServer(logger zerolog.Logger, addr string, helpHandler HelpHandler, selectServerHandler SelectServerHandler) HttpServer {
+func NewHttpServer(logger zerolog.Logger, addr string, helpHandler HelpHandler, selectServerHandler SelectServerHandler, statsHandler StatsHandler) HttpServer {
 	logger = logger.With().Str("component", "intent.endpoint.builtin").Logger()
 
 	httpServer := http.Server{
 		Addr: addr,
 	}
 
-	return HttpServer{logger, &httpServer, helpHandler, selectServerHandler}
+	return HttpServer{logger, &httpServer, helpHandler, selectServerHandler, statsHandler}
 }
 
 func (h HttpServer) Start() error {
@@ -32,6 +33,7 @@ func (h HttpServer) Start() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/help", h.makeLoggingHttpHandlerFunc("help", h.helpHandler.Help))
 	mux.HandleFunc("/selectserver", h.makeLoggingHttpHandlerFunc("selectserver", h.selectServerHandler.SelectServer))
+	mux.HandleFunc("/stats", h.makeLoggingHttpHandlerFunc("stats", h.statsHandler.Stats))
 
 	h.httpServer.Handler = mux
 
