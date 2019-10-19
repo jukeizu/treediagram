@@ -34,7 +34,7 @@ func (m *MessageReplyReceived) Reset()         { *m = MessageReplyReceived{} }
 func (m *MessageReplyReceived) String() string { return proto.CompactTextString(m) }
 func (*MessageReplyReceived) ProtoMessage()    {}
 func (*MessageReplyReceived) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_5e3944672e89f9e9, []int{0}
+	return fileDescriptor_processing_71872319b933da96, []int{0}
 }
 func (m *MessageReplyReceived) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MessageReplyReceived.Unmarshal(m, b)
@@ -80,7 +80,7 @@ func (m *MessageRequest) Reset()         { *m = MessageRequest{} }
 func (m *MessageRequest) String() string { return proto.CompactTextString(m) }
 func (*MessageRequest) ProtoMessage()    {}
 func (*MessageRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_5e3944672e89f9e9, []int{1}
+	return fileDescriptor_processing_71872319b933da96, []int{1}
 }
 func (m *MessageRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MessageRequest.Unmarshal(m, b)
@@ -176,7 +176,7 @@ func (m *User) Reset()         { *m = User{} }
 func (m *User) String() string { return proto.CompactTextString(m) }
 func (*User) ProtoMessage()    {}
 func (*User) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_5e3944672e89f9e9, []int{2}
+	return fileDescriptor_processing_71872319b933da96, []int{2}
 }
 func (m *User) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_User.Unmarshal(m, b)
@@ -229,7 +229,7 @@ func (m *Server) Reset()         { *m = Server{} }
 func (m *Server) String() string { return proto.CompactTextString(m) }
 func (*Server) ProtoMessage()    {}
 func (*Server) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_5e3944672e89f9e9, []int{3}
+	return fileDescriptor_processing_71872319b933da96, []int{3}
 }
 func (m *Server) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Server.Unmarshal(m, b)
@@ -274,7 +274,7 @@ func (m *Response) Reset()         { *m = Response{} }
 func (m *Response) String() string { return proto.CompactTextString(m) }
 func (*Response) ProtoMessage()    {}
 func (*Response) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_5e3944672e89f9e9, []int{4}
+	return fileDescriptor_processing_71872319b933da96, []int{4}
 }
 func (m *Response) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Response.Unmarshal(m, b)
@@ -312,7 +312,7 @@ func (m *SendMessageRequestReply) Reset()         { *m = SendMessageRequestReply
 func (m *SendMessageRequestReply) String() string { return proto.CompactTextString(m) }
 func (*SendMessageRequestReply) ProtoMessage()    {}
 func (*SendMessageRequestReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_5e3944672e89f9e9, []int{5}
+	return fileDescriptor_processing_71872319b933da96, []int{5}
 }
 func (m *SendMessageRequestReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SendMessageRequestReply.Unmarshal(m, b)
@@ -350,7 +350,7 @@ func (m *MessageReplyRequest) Reset()         { *m = MessageReplyRequest{} }
 func (m *MessageReplyRequest) String() string { return proto.CompactTextString(m) }
 func (*MessageReplyRequest) ProtoMessage()    {}
 func (*MessageReplyRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_5e3944672e89f9e9, []int{6}
+	return fileDescriptor_processing_71872319b933da96, []int{6}
 }
 func (m *MessageReplyRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MessageReplyRequest.Unmarshal(m, b)
@@ -393,7 +393,7 @@ func (m *MessageReply) Reset()         { *m = MessageReply{} }
 func (m *MessageReply) String() string { return proto.CompactTextString(m) }
 func (*MessageReply) ProtoMessage()    {}
 func (*MessageReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_5e3944672e89f9e9, []int{7}
+	return fileDescriptor_processing_71872319b933da96, []int{7}
 }
 func (m *MessageReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MessageReply.Unmarshal(m, b)
@@ -474,7 +474,7 @@ func (m *ProcessingRequest) Reset()         { *m = ProcessingRequest{} }
 func (m *ProcessingRequest) String() string { return proto.CompactTextString(m) }
 func (*ProcessingRequest) ProtoMessage()    {}
 func (*ProcessingRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_5e3944672e89f9e9, []int{8}
+	return fileDescriptor_processing_71872319b933da96, []int{8}
 }
 func (m *ProcessingRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ProcessingRequest.Unmarshal(m, b)
@@ -572,7 +572,7 @@ func (m *ProcessingEvent) Reset()         { *m = ProcessingEvent{} }
 func (m *ProcessingEvent) String() string { return proto.CompactTextString(m) }
 func (*ProcessingEvent) ProtoMessage()    {}
 func (*ProcessingEvent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_5e3944672e89f9e9, []int{9}
+	return fileDescriptor_processing_71872319b933da96, []int{9}
 }
 func (m *ProcessingEvent) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ProcessingEvent.Unmarshal(m, b)
@@ -646,7 +646,7 @@ func (m *ProcessingRequestIntentStatisticsRequest) Reset() {
 func (m *ProcessingRequestIntentStatisticsRequest) String() string { return proto.CompactTextString(m) }
 func (*ProcessingRequestIntentStatisticsRequest) ProtoMessage()    {}
 func (*ProcessingRequestIntentStatisticsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_5e3944672e89f9e9, []int{10}
+	return fileDescriptor_processing_71872319b933da96, []int{10}
 }
 func (m *ProcessingRequestIntentStatisticsRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ProcessingRequestIntentStatisticsRequest.Unmarshal(m, b)
@@ -729,7 +729,7 @@ func (m *ProcessingRequestIntentStatisticsReply) Reset() {
 func (m *ProcessingRequestIntentStatisticsReply) String() string { return proto.CompactTextString(m) }
 func (*ProcessingRequestIntentStatisticsReply) ProtoMessage()    {}
 func (*ProcessingRequestIntentStatisticsReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_5e3944672e89f9e9, []int{11}
+	return fileDescriptor_processing_71872319b933da96, []int{11}
 }
 func (m *ProcessingRequestIntentStatisticsReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ProcessingRequestIntentStatisticsReply.Unmarshal(m, b)
@@ -765,7 +765,7 @@ func (m *ProcessingRequestIntentStatisticsReply) GetUserStatistics() []*UserStat
 
 type UserStatistic struct {
 	UserId               string   `protobuf:"bytes,1,opt,name=userId,proto3" json:"userId,omitempty"`
-	Count                string   `protobuf:"bytes,2,opt,name=count,proto3" json:"count,omitempty"`
+	Count                int64    `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -775,7 +775,7 @@ func (m *UserStatistic) Reset()         { *m = UserStatistic{} }
 func (m *UserStatistic) String() string { return proto.CompactTextString(m) }
 func (*UserStatistic) ProtoMessage()    {}
 func (*UserStatistic) Descriptor() ([]byte, []int) {
-	return fileDescriptor_processing_5e3944672e89f9e9, []int{12}
+	return fileDescriptor_processing_71872319b933da96, []int{12}
 }
 func (m *UserStatistic) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UserStatistic.Unmarshal(m, b)
@@ -802,11 +802,11 @@ func (m *UserStatistic) GetUserId() string {
 	return ""
 }
 
-func (m *UserStatistic) GetCount() string {
+func (m *UserStatistic) GetCount() int64 {
 	if m != nil {
 		return m.Count
 	}
-	return ""
+	return 0
 }
 
 func init() {
@@ -963,10 +963,10 @@ var _Processing_serviceDesc = grpc.ServiceDesc{
 	Metadata: "processing.proto",
 }
 
-func init() { proto.RegisterFile("processing.proto", fileDescriptor_processing_5e3944672e89f9e9) }
+func init() { proto.RegisterFile("processing.proto", fileDescriptor_processing_71872319b933da96) }
 
-var fileDescriptor_processing_5e3944672e89f9e9 = []byte{
-	// 708 bytes of a gzipped FileDescriptorProto
+var fileDescriptor_processing_71872319b933da96 = []byte{
+	// 709 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x56, 0xdd, 0x6e, 0xd3, 0x30,
 	0x14, 0x5e, 0x92, 0xfe, 0x9e, 0xfd, 0x81, 0x57, 0x0d, 0xab, 0xdb, 0x45, 0x67, 0x6d, 0x53, 0x41,
 	0xa8, 0x42, 0x03, 0x71, 0x81, 0x84, 0x84, 0x84, 0xa6, 0xa9, 0xd2, 0x10, 0x53, 0x36, 0xae, 0xb8,
@@ -1005,11 +1005,11 @@ var fileDescriptor_processing_5e3944672e89f9e9 = []byte{
 	0xbc, 0xb6, 0x8d, 0xe6, 0x76, 0xca, 0xa6, 0x4c, 0x19, 0x03, 0x34, 0xfd, 0x62, 0x81, 0x7c, 0x72,
 	0xe0, 0xf0, 0x1e, 0x62, 0xe9, 0x97, 0x59, 0x96, 0xc3, 0xa9, 0xc8, 0xf1, 0x16, 0x36, 0xf4, 0x99,
 	0xc5, 0x16, 0xec, 0x9a, 0x81, 0xb8, 0x53, 0x1f, 0x88, 0x39, 0xc6, 0xaf, 0x6c, 0x21, 0xaf, 0x61,
-	0xdd, 0x02, 0x94, 0x44, 0x76, 0x2c, 0x91, 0x7b, 0xd0, 0x0c, 0xc5, 0x8c, 0xab, 0xac, 0x2b, 0x69,
-	0x70, 0xf4, 0xc3, 0x05, 0x28, 0xae, 0x82, 0x3e, 0x02, 0xaa, 0xcf, 0x2a, 0xb4, 0x6b, 0x13, 0xb2,
-	0xb3, 0xfd, 0x83, 0xea, 0xc0, 0x5f, 0x38, 0xeb, 0xc8, 0x0a, 0xf2, 0x61, 0xf3, 0x84, 0x2a, 0x6b,
-	0x70, 0xed, 0x2d, 0x39, 0xb9, 0x18, 0x7e, 0xfd, 0xfe, 0x72, 0x08, 0x59, 0x41, 0x9f, 0x1d, 0xd8,
-	0xfb, 0x63, 0x2b, 0xd0, 0x4b, 0xfb, 0x8c, 0xfb, 0x1a, 0xbd, 0xff, 0xe2, 0xaf, 0xf7, 0x19, 0x56,
-	0x93, 0x96, 0xf9, 0x63, 0xf0, 0xfc, 0x57, 0x00, 0x00, 0x00, 0xff, 0xff, 0xa3, 0xef, 0x6a, 0x25,
-	0x2c, 0x08, 0x00, 0x00,
+	0xdd, 0x02, 0x94, 0x44, 0x76, 0x2c, 0x91, 0x7b, 0xd0, 0x0c, 0xc5, 0x8c, 0x2b, 0xd3, 0x15, 0xcf,
+	0x4f, 0x83, 0xa3, 0x1f, 0x2e, 0x40, 0x71, 0x15, 0xf4, 0x11, 0x50, 0x7d, 0x56, 0xa1, 0x5d, 0x9b,
+	0x90, 0x9d, 0xed, 0x1f, 0x54, 0x07, 0xfe, 0xc2, 0x59, 0x47, 0x56, 0x90, 0x0f, 0x9b, 0x27, 0x54,
+	0x59, 0x83, 0x6b, 0x6f, 0xc9, 0xc9, 0xc5, 0xf0, 0xeb, 0xf7, 0x97, 0x43, 0xc8, 0x0a, 0xfa, 0xec,
+	0xc0, 0xde, 0x1f, 0x5b, 0x81, 0x5e, 0xda, 0x67, 0xdc, 0xd7, 0xe8, 0xfd, 0x17, 0x7f, 0xbd, 0xcf,
+	0xb0, 0x9a, 0xb4, 0xcc, 0x1f, 0x83, 0xe7, 0xbf, 0x02, 0x00, 0x00, 0xff, 0xff, 0xd9, 0x08, 0x2a,
+	0xb9, 0x2c, 0x08, 0x00, 0x00,
 }
