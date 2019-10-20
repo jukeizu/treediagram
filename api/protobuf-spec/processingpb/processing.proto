@@ -5,6 +5,7 @@ package processingpb;
 service Processing {
     rpc SendMessageRequest(MessageRequest) returns (SendMessageRequestReply) {}
     rpc GetMessageReply(MessageReplyRequest) returns (MessageReply) {}
+    rpc SendProcessingEvent(ProcessingEvent) returns (SendProcessingEventReply) {}
     rpc ProcessingRequestIntentStatistics(ProcessingRequestIntentStatisticsRequest) returns (ProcessingRequestIntentStatisticsReply) {}
 }
 
@@ -95,3 +96,5 @@ message UserStatistic {
     string userId = 1;
     int64 count = 2;
 }
+
+message SendProcessingEventReply {}

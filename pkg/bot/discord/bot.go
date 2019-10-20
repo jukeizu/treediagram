@@ -120,9 +120,34 @@ func (d *bot) messageReplyReceived(r *processingpb.MessageReplyReceived) {
 
 	err = d.publishMessage(message)
 	if err != nil {
-		d.Logger.Error().Caller().Err(err).
-			Str("id", r.Id).
-			Msg("error publishing message")
+		d.Logger.Error().
+			Err(err).
+			Str("messageReplyId", message.Id).
+			Msg("error publishing message.")
+
+		d.Logger.Info().
+			Str("messageReplyId", message.Id).
+			Msg("sending error event")
+
+		errorEvent := &processingpb.ProcessingEvent{
+			Type:                "error",
+			Description:         err.Error(),
+			ProcessingRequestId: message.GetProcessingRequestId(),
+		}
+
+		_, err = d.Client.SendProcessingEvent(context.Background(), errorEvent)
+		if err != nil {
+			d.Logger.Error().Caller().Err(err).
+				Str("id", r.Id).
+				Msg("error sending event")
+
+			return
+		}
+
+		d.Logger.Info().
+			Str("messageReplyId", message.Id).
+			Msg("finished sending error event")
+
 		return
 	}
 
@@ -135,7 +160,6 @@ func (d *bot) messageReplyReceived(r *processingpb.MessageReplyReceived) {
 }
 
 func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
-
 	response := contract.Response{}
 
 	err := json.Unmarshal([]byte(messageReply.Content), &response)

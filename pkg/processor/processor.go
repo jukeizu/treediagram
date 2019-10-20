@@ -19,6 +19,7 @@ const (
 	MessageRequestReceivedSubject = "messagerequest.received"
 	JobReceivedSubject            = "jobs"
 	ReplyReceivedSubject          = "processor.reply.received"
+	EventReceivedSubject          = "processor.event.received"
 )
 
 type Executable interface {
@@ -57,6 +58,11 @@ func (p Processor) Start() error {
 	}
 
 	_, err = p.queue.QueueSubscribe(JobReceivedSubject, ProcessorQueueGroup, p.processJob)
+	if err != nil {
+		return err
+	}
+
+	_, err = p.queue.QueueSubscribe(EventReceivedSubject, ProcessorQueueGroup, p.processEvent)
 	if err != nil {
 		return err
 	}
@@ -288,6 +294,10 @@ func (p Processor) saveResponseMessage(processingRequest *processingpb.Processin
 	}
 }
 
+func (p Processor) createErrorEvent(processingRequestId string, processingError error) {
+	p.createProcessingEvent(processingRequestId, "error", processingError.Error())
+}
+
 func (p Processor) createProcessingEvent(processingRequestId string, eventType string, eventDescription string) {
 	e := processingpb.ProcessingEvent{
 		ProcessingRequestId: processingRequestId,
@@ -295,23 +305,19 @@ func (p Processor) createProcessingEvent(processingRequestId string, eventType s
 		Description:         eventDescription,
 	}
 
-	err := p.repository.SaveProcessingEvent(&e)
+	p.processEvent(&e)
+}
+
+func (p Processor) processEvent(e *processingpb.ProcessingEvent) {
+	err := p.repository.SaveProcessingEvent(e)
 	if err != nil {
 		p.logger.Error().Err(err).Caller().Msg("error saving processing event")
 		return
 	}
 
 	p.logger.Info().
-		Str("processingRequestId", processingRequestId).
-		Str("type", eventType).
-		Str("description", eventDescription).
+		Str("processingRequestId", e.GetProcessingRequestId()).
+		Str("type", e.GetType()).
+		Str("description", e.GetDescription()).
 		Msg("saved processing event")
-}
-
-func (p Processor) createErrorEvent(processingRequestId string, processingError error) {
-	p.logger.Error().Err(processingError).Caller().
-		Str("processingRequestId", processingRequestId).
-		Msg("error event")
-
-	p.createProcessingEvent(processingRequestId, "error", processingError.Error())
 }

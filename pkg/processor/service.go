@@ -27,6 +27,12 @@ func (s service) GetMessageReply(ctx context.Context, req *processingpb.MessageR
 	return s.repository.MessageReply(req.Id)
 }
 
+func (s service) SendProcessingEvent(ctx context.Context, req *processingpb.ProcessingEvent) (*processingpb.SendProcessingEventReply, error) {
+	err := s.queue.Publish(EventReceivedSubject, req)
+
+	return &processingpb.SendProcessingEventReply{}, err
+}
+
 func (s service) ProcessingRequestIntentStatistics(ctx context.Context, req *processingpb.ProcessingRequestIntentStatisticsRequest) (*processingpb.ProcessingRequestIntentStatisticsReply, error) {
 	if req.CreatedLessThanOrEqualTo == 0 {
 		req.CreatedLessThanOrEqualTo = time.Now().UTC().Unix()
