@@ -92,11 +92,6 @@ func (r *repository) Save(pbIntent *intentpb.Intent) error {
 		&pbIntent.Id,
 		&pbIntent.Created,
 	)
-	/*
-		err := q.PlaceholderFormat(squirrel.Dollar).RunWith(r.Db).QueryRow().Scan(
-			&pbIntent.Id,
-			&pbIntent.Created,
-		)*/
 
 	return err
 }
