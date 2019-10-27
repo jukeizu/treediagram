@@ -111,19 +111,12 @@ func (d *bot) messageReplyReceived(r *processingpb.MessageReplyReceived) {
 		return
 	}
 
-	d.Logger.Info().
-		Str("messageReplyId", message.Id).
-		Str("processingRequestId", message.ProcessingRequestId).
-		Str("channelId", message.ChannelId).
-		Str("userId", message.UserId).
-		Msg("starting processing for message reply")
-
-	err = d.publishMessage(message)
+	err = d.processMessageReply(message)
 	if err != nil {
 		d.Logger.Error().
 			Err(err).
 			Str("messageReplyId", message.Id).
-			Msg("error publishing message.")
+			Msg("failed to process message reply")
 
 		d.Logger.Info().
 			Str("messageReplyId", message.Id).
@@ -139,7 +132,7 @@ func (d *bot) messageReplyReceived(r *processingpb.MessageReplyReceived) {
 		if err != nil {
 			d.Logger.Error().Caller().Err(err).
 				Str("id", r.Id).
-				Msg("error sending event")
+				Msg("failed to send event")
 
 			return
 		}
@@ -150,32 +143,45 @@ func (d *bot) messageReplyReceived(r *processingpb.MessageReplyReceived) {
 
 		return
 	}
-
-	d.Logger.Info().
-		Str("messageReplyId", message.Id).
-		Str("processingRequestId", message.ProcessingRequestId).
-		Str("channelId", message.ChannelId).
-		Str("userId", message.UserId).
-		Msg("finished processing for message reply")
 }
 
-func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
+func (d *bot) processMessageReply(messageReply *processingpb.MessageReply) error {
+	d.Logger.Info().
+		Str("messageReplyId", messageReply.Id).
+		Str("processingRequestId", messageReply.ProcessingRequestId).
+		Str("channelId", messageReply.ChannelId).
+		Str("userId", messageReply.UserId).
+		Msg("starting processing for message reply")
+
 	response := contract.Response{}
 
 	err := json.Unmarshal([]byte(messageReply.Content), &response)
 	if err != nil {
-		return fmt.Errorf("could not unmarshal response: %s", err.Error())
+		return fmt.Errorf("failed to unmarshal response: %s", err.Error())
 	}
 
-	if len(response.Messages) < 1 {
-		d.Logger.Info().
-			Str("messageReplyId", messageReply.Id).
-			Msg("message reply contains no messages")
-
-		return nil
+	err = d.publishReactions(messageReply, response.Reactions)
+	if err != nil {
+		return fmt.Errorf("failed to publish reactions: %s", err.Error())
 	}
 
-	for _, message := range response.Messages {
+	err = d.publishMessages(messageReply, response.Messages)
+	if err != nil {
+		return fmt.Errorf("failed to publish messages: %s", err.Error())
+	}
+
+	d.Logger.Info().
+		Str("messageReplyId", messageReply.Id).
+		Str("processingRequestId", messageReply.ProcessingRequestId).
+		Str("channelId", messageReply.ChannelId).
+		Str("userId", messageReply.UserId).
+		Msg("finished processing for message reply")
+
+	return nil
+}
+
+func (d *bot) publishMessages(messageReply *processingpb.MessageReply, messages []*contract.Message) error {
+	for _, message := range messages {
 		channelId := messageReply.ChannelId
 
 		if message.IsRedirect {
@@ -203,7 +209,30 @@ func (d *bot) publishMessage(messageReply *processingpb.MessageReply) error {
 			return err
 		}
 
+		d.Logger.Info().
+			Str("messageReplyId", messageReply.Id).
+			Str("channelId", channelId).
+			Msg("sending message to discord")
+
 		_, err = d.Session.ChannelMessageSendComplex(channelId, messageSend)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (d *bot) publishReactions(messageReply *processingpb.MessageReply, reactions []*contract.Reaction) error {
+	for _, reaction := range reactions {
+		d.Logger.Info().
+			Str("messageReplyId", messageReply.Id).
+			Str("channelId", reaction.ChannelId).
+			Str("messageId", reaction.MessageId).
+			Str("emojiId", reaction.EmojiId).
+			Msg("sending message reaction to discord")
+
+		err := d.Session.MessageReactionAdd(reaction.ChannelId, reaction.MessageId, reaction.EmojiId)
 		if err != nil {
 			return err
 		}

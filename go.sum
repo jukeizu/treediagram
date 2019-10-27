@@ -19,8 +19,8 @@ github.com/gorilla/websocket v1.4.1 h1:q7AeDBpnBk8AogcD4DSag/Ukw/KV+YhzLj2bP5HvK
 github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c h1:BabrRUCK8Y4SkFBZEFZbEhJRzOd5lh6IP6bHZIYcIjs=
 github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c/go.mod h1:p90weUVX4yVbP76ZY9TzApwCCr8WZ5xwIxh8+JeFY0Y=
-github.com/jukeizu/contract v0.1.2 h1:xmEI2XaANJ37ApgKEkB09aYmPZqshbR4D+AF9vzrxi8=
-github.com/jukeizu/contract v0.1.2/go.mod h1:ky1EwHEkgEXZXEh1WFLhJ+VjHGgaZvn4/3bCXXX2OrQ=
+github.com/jukeizu/contract v0.1.3 h1:GEZiIeKsDLphy/uDzW/TcGjAL4YZZNmtIMzLr9at88I=
+github.com/jukeizu/contract v0.1.3/go.mod h1:ky1EwHEkgEXZXEh1WFLhJ+VjHGgaZvn4/3bCXXX2OrQ=
 github.com/lib/pq v1.0.0 h1:X5PMW56eZitiTeO7tKzZxFCSpbFZJtkMMooicw2us9A=
 github.com/lib/pq v1.0.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/lib/pq v1.1.0 h1:/5u4a+KGJptBRqGzPvYQL9p0d/tPR4S31+Tnzj9lEO4=
