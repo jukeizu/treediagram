@@ -182,6 +182,10 @@ func (d *bot) processMessageReply(messageReply *processingpb.MessageReply) error
 
 func (d *bot) publishMessages(messageReply *processingpb.MessageReply, messages []*contract.Message) error {
 	for _, message := range messages {
+		if message == nil {
+			continue
+		}
+
 		channelId := messageReply.ChannelId
 
 		if message.IsRedirect {
@@ -225,6 +229,10 @@ func (d *bot) publishMessages(messageReply *processingpb.MessageReply, messages 
 
 func (d *bot) publishReactions(messageReply *processingpb.MessageReply, reactions []*contract.Reaction) error {
 	for _, reaction := range reactions {
+		if reaction == nil {
+			continue
+		}
+
 		d.Logger.Info().
 			Str("messageReplyId", messageReply.Id).
 			Str("channelId", reaction.ChannelId).
