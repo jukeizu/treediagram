@@ -5,6 +5,7 @@ package processingpb;
 service Processing {
     rpc SendMessageRequest(MessageRequest) returns (SendMessageRequestReply) {}
     rpc GetMessageReply(MessageReplyRequest) returns (MessageReply) {}
+    rpc SendReaction(Reaction) returns (SendReactionReply) {}
     rpc SendProcessingEvent(ProcessingEvent) returns (SendProcessingEventReply) {}
     rpc ProcessingRequestIntentStatistics(ProcessingRequestIntentStatisticsRequest) returns (ProcessingRequestIntentStatisticsReply) {}
 }
@@ -98,3 +99,23 @@ message UserStatistic {
 }
 
 message SendProcessingEventReply {}
+
+message Reaction {
+    string userId = 1;
+    MessageRequest messageRequest = 2;
+    Emoji emoji = 3;
+    string channelId = 4;
+    string serverId = 5;
+}
+
+message Emoji {
+    string id = 1;
+    string name = 2;
+    repeated string roles = 3;
+    bool managed = 4;
+    bool requireColons = 5;
+    bool animated = 6;
+    bool available = 7;
+}
+
+message SendReactionReply {}
