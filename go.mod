@@ -8,6 +8,7 @@ require (
 	github.com/jnewmano/grpc-json-proxy v0.0.0-20190711184636-c105eed9ab4a
 	github.com/jukeizu/contract v0.2.0
 	github.com/lib/pq v1.2.0
+	github.com/mattn/go-shellwords v1.0.6
 	github.com/nats-io/nats-server/v2 v2.1.0 // indirect
 	github.com/nats-io/nats.go v1.9.1
 	github.com/oklog/run v1.0.0

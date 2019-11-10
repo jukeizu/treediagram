@@ -15,16 +15,22 @@ type HttpServer struct {
 	helpHandler         HelpHandler
 	selectServerHandler SelectServerHandler
 	statsHandler        StatsHandler
+	intentHandler       IntentHandler
 }
 
-func NewHttpServer(logger zerolog.Logger, addr string, helpHandler HelpHandler, selectServerHandler SelectServerHandler, statsHandler StatsHandler) HttpServer {
+func NewHttpServer(logger zerolog.Logger, addr string,
+	helpHandler HelpHandler,
+	selectServerHandler SelectServerHandler,
+	statsHandler StatsHandler,
+	intentHandler IntentHandler,
+) HttpServer {
 	logger = logger.With().Str("component", "intent.endpoint.builtin").Logger()
 
 	httpServer := http.Server{
 		Addr: addr,
 	}
 
-	return HttpServer{logger, &httpServer, helpHandler, selectServerHandler, statsHandler}
+	return HttpServer{logger, &httpServer, helpHandler, selectServerHandler, statsHandler, intentHandler}
 }
 
 func (h HttpServer) Start() error {
@@ -34,6 +40,8 @@ func (h HttpServer) Start() error {
 	mux.HandleFunc("/help", h.makeLoggingHttpHandlerFunc("help", h.helpHandler.Help))
 	mux.HandleFunc("/selectserver", h.makeLoggingHttpHandlerFunc("selectserver", h.selectServerHandler.SelectServer))
 	mux.HandleFunc("/stats", h.makeLoggingHttpHandlerFunc("stats", h.statsHandler.Stats))
+	mux.HandleFunc("/addintent", h.makeLoggingHttpHandlerFunc("addintent", h.intentHandler.AddIntent))
+	mux.HandleFunc("/disableintent", h.makeLoggingHttpHandlerFunc("disableintent", h.intentHandler.DisableIntent))
 
 	h.httpServer.Handler = mux
 
