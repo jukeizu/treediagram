@@ -19,11 +19,12 @@ message Intent {
     string help = 8;
     bool enabled = 9;
     int32 created = 10;
+    string type = 11;
 }
-
 
 message QueryIntentsRequest {
     string serverId = 1;
+    string type = 2;
 }
 
 message AddIntentRequest {

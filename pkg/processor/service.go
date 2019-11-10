@@ -27,6 +27,12 @@ func (s service) GetMessageReply(ctx context.Context, req *processingpb.MessageR
 	return s.repository.MessageReply(req.Id)
 }
 
+func (s service) SendReaction(ctx context.Context, req *processingpb.Reaction) (*processingpb.SendReactionReply, error) {
+	err := s.queue.Publish(ReactionReceivedSubject, req)
+
+	return &processingpb.SendReactionReply{}, err
+}
+
 func (s service) SendProcessingEvent(ctx context.Context, req *processingpb.ProcessingEvent) (*processingpb.SendProcessingEventReply, error) {
 	err := s.queue.Publish(EventReceivedSubject, req)
 

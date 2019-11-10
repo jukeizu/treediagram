@@ -9,21 +9,17 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type Command struct {
-	Request processingpb.MessageRequest `json:"request"`
-	Intent  intentpb.Intent             `json:"intent"`
+type Reaction struct {
+	Request processingpb.Reaction `json:"request"`
+	Intent  intentpb.Intent       `json:"intent"`
 }
 
-func (c Command) ShouldExecute() (bool, error) {
-	if c.Intent.Type != "command" {
+func (c Reaction) ShouldExecute() (bool, error) {
+	if c.Intent.Type != "reaction" {
 		return false, nil
 	}
 
-	if c.Intent.Mention && !c.isBotMentioned() {
-		return false, nil
-	}
-
-	match, err := regexp.MatchString(c.Intent.Regex, c.Request.Content)
+	match, err := regexp.MatchString(c.Intent.Regex, c.Request.Emoji.Name)
 	if err != nil {
 		return match, errors.New("regexp: " + err.Error())
 	}
@@ -31,7 +27,7 @@ func (c Command) ShouldExecute() (bool, error) {
 	return match, nil
 }
 
-func (c Command) Execute() (*processingpb.Response, error) {
+func (c Reaction) Execute() (*processingpb.Response, error) {
 	reply := &processingpb.Response{}
 
 	if c.Intent.Endpoint != "" {
@@ -55,37 +51,27 @@ func (c Command) Execute() (*processingpb.Response, error) {
 	return reply, nil
 }
 
-func (c Command) ProcessingRequest() *processingpb.ProcessingRequest {
+func (c Reaction) ProcessingRequest() *processingpb.ProcessingRequest {
 	processingRequest := &processingpb.ProcessingRequest{
-		Type:      "command",
+		Type:      "reaction",
 		IntentId:  c.Intent.Id,
-		Source:    c.Request.Source,
+		Source:    c.Request.MessageRequest.Source,
 		ChannelId: c.Request.ChannelId,
 		ServerId:  c.Request.ServerId,
-		BotId:     c.Request.Bot.Id,
-		UserId:    c.Request.Author.Id,
+		BotId:     c.Request.MessageRequest.Bot.Id,
+		UserId:    c.Request.MessageRequest.Author.Id,
 	}
 
 	return processingRequest
 }
 
-func (c Command) MarshalZerologObject(e *zerolog.Event) {
-	e.Str("type", "command").
+func (c Reaction) MarshalZerologObject(e *zerolog.Event) {
+	e.Str("type", "reaction").
 		Str("intentId", c.Intent.Id).
 		Str("intentName", c.Intent.Name).
-		Str("source", c.Request.Source).
+		Str("source", c.Request.MessageRequest.Source).
 		Str("channelId", c.Request.ChannelId).
 		Str("serverId", c.Request.ServerId).
-		Str("botId", c.Request.Bot.Id).
-		Str("userId", c.Request.Author.Id)
-}
-
-func (c Command) isBotMentioned() bool {
-	for _, mention := range c.Request.Mentions {
-		if mention.Id == c.Request.Bot.Id {
-			return true
-		}
-	}
-
-	return false
+		Str("botId", c.Request.MessageRequest.Bot.Id).
+		Str("userId", c.Request.MessageRequest.Author.Id)
 }

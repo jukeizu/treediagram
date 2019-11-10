@@ -44,8 +44,10 @@ func NewBot(token string, client processingpb.ProcessingClient, queue *nats.Enco
 	}
 
 	session.LogLevel = discordgo.LogInformational
+	session.State.MaxMessageCount = 20
 
 	session.AddHandler(dh.messageCreate)
+	session.AddHandler(dh.messageReactionAdd)
 
 	dh.Session = session
 
@@ -75,17 +77,7 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	request := &processingpb.MessageRequest{
-		Id:        m.ID,
-		Source:    "discord",
-		Bot:       mapToPbUser(s.State.User),
-		Author:    mapToPbUser(m.Author),
-		ChannelId: m.ChannelID,
-		ServerId:  m.GuildID,
-		Servers:   mapToPbServers(m.Author.ID, d.Session.State.Guilds),
-		Content:   m.Content,
-		Mentions:  mapToPbUsers(m.Mentions),
-	}
+	request := mapToPbMessageRequest(s.State, m.Message)
 
 	reply, err := d.Client.SendMessageRequest(context.Background(), request)
 	if err != nil {
@@ -96,6 +88,41 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	d.Logger.Debug().Str("requestId", reply.Id).Msg("request sent")
+}
+
+func (d *bot) messageReactionAdd(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
+	message, err := d.Session.State.Message(r.ChannelID, r.MessageID)
+	if err == discordgo.ErrStateNotFound {
+		d.Logger.Info().
+			Str("messageID", r.MessageID).
+			Str("channelID", r.ChannelID).
+			Msg("lookup up message from discord api")
+
+		message, err = d.Session.ChannelMessage(r.ChannelID, r.MessageID)
+	}
+	if err != nil {
+		d.Logger.Error().Caller().Err(err).
+			Str("messageID", r.MessageID).
+			Str("channelID", r.ChannelID).
+			Msg("error looking up message")
+
+		return
+	}
+
+	reaction := mapToPbReaction(s.State, r.MessageReaction, message)
+
+	_, err = d.Client.SendReaction(context.Background(), reaction)
+	if err != nil {
+		d.Logger.Error().Caller().Err(err).
+			Msg("error sending reaction")
+		return
+	}
+
+	d.Logger.Debug().
+		Str("emojiID", reaction.Emoji.Id).
+		Str("emojiName", reaction.Emoji.Name).
+		Str("messageId", reaction.MessageRequest.Id).
+		Msg("reaction sent")
 }
 
 func (d *bot) messageReplyReceived(r *processingpb.MessageReplyReceived) {

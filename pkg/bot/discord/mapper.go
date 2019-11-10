@@ -49,6 +49,42 @@ func mapToPbServers(userId string, guilds []*discordgo.Guild) []*processingpb.Se
 	return servers
 }
 
+func mapToPbMessageRequest(state *discordgo.State, m *discordgo.Message) *processingpb.MessageRequest {
+	return &processingpb.MessageRequest{
+		Id:        m.ID,
+		Source:    "discord",
+		Bot:       mapToPbUser(state.User),
+		Author:    mapToPbUser(m.Author),
+		ChannelId: m.ChannelID,
+		ServerId:  m.GuildID,
+		Servers:   mapToPbServers(m.Author.ID, state.Guilds),
+		Content:   m.Content,
+		Mentions:  mapToPbUsers(m.Mentions),
+	}
+}
+
+func mapToPbReaction(state *discordgo.State, r *discordgo.MessageReaction, m *discordgo.Message) *processingpb.Reaction {
+	return &processingpb.Reaction{
+		UserId:         r.UserID,
+		ChannelId:      r.ChannelID,
+		ServerId:       r.GuildID,
+		Emoji:          mapToPbEmoji(r.Emoji),
+		MessageRequest: mapToPbMessageRequest(state, m),
+	}
+}
+
+func mapToPbEmoji(e discordgo.Emoji) *processingpb.Emoji {
+	return &processingpb.Emoji{
+		Id:            e.ID,
+		Name:          e.Name,
+		Roles:         e.Roles,
+		Managed:       e.Managed,
+		RequireColons: e.RequireColons,
+		Animated:      e.Animated,
+		Available:     e.Available,
+	}
+}
+
 func mapToMessageSend(contractMessage *contract.Message) (*discordgo.MessageSend, error) {
 	if contractMessage == nil {
 		return nil, nil

@@ -17,6 +17,7 @@ import (
 const (
 	ProcessorQueueGroup           = "processor"
 	MessageRequestReceivedSubject = "messagerequest.received"
+	ReactionReceivedSubject       = "reaction.received"
 	JobReceivedSubject            = "jobs"
 	ReplyReceivedSubject          = "processor.reply.received"
 	EventReceivedSubject          = "processor.event.received"
@@ -67,6 +68,11 @@ func (p Processor) Start() error {
 		return err
 	}
 
+	_, err = p.queue.QueueSubscribe(ReactionReceivedSubject, ProcessorQueueGroup, p.processReaction)
+	if err != nil {
+		return err
+	}
+
 	p.logger.Info().Msg("started")
 
 	return nil
@@ -78,7 +84,9 @@ func (p Processor) Stop() {
 }
 
 func (p Processor) processMessageRequest(request *processingpb.MessageRequest) {
-	p.logger.Debug().Msgf("request received %+v", request)
+	p.logger.Debug().
+		Interface("messageRequest", request).
+		Msg("message request received")
 
 	serverId, err := p.findServerId(request)
 	if err != nil {
@@ -102,7 +110,10 @@ func (p Processor) processMessageRequest(request *processingpb.MessageRequest) {
 
 	request.ServerId = serverId
 
-	query := &intentpb.QueryIntentsRequest{ServerId: request.ServerId}
+	query := &intentpb.QueryIntentsRequest{
+		ServerId: request.ServerId,
+		Type:     "command",
+	}
 
 	stream, err := p.registry.QueryIntents(context.Background(), query)
 	if err != nil {
@@ -149,6 +160,42 @@ func (p Processor) processJob(schedulingJob *schedulingpb.Job) {
 	}
 
 	p.process(job)
+}
+
+func (p Processor) processReaction(reaction *processingpb.Reaction) {
+	p.logger.Info().
+		Interface("reaction", reaction).
+		Msg("reaction received")
+
+	query := &intentpb.QueryIntentsRequest{
+		ServerId: reaction.ServerId,
+		Type:     "reaction",
+	}
+
+	stream, err := p.registry.QueryIntents(context.Background(), query)
+	if err != nil {
+		p.logger.Error().Err(err).Caller().Msg("error getting QueryIntents stream")
+		return
+	}
+
+	for {
+		intent, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			p.logger.Error().Err(err).Caller().Msg("error receiving intent from stream")
+			break
+		}
+
+		r := Reaction{
+			Request: *reaction,
+			Intent:  *intent,
+		}
+
+		p.process(r)
+	}
 }
 
 func (p Processor) process(executable Executable) {
