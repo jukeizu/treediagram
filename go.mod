@@ -6,7 +6,7 @@ require (
 	github.com/golang/protobuf v1.3.2
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/jnewmano/grpc-json-proxy v0.0.0-20190711184636-c105eed9ab4a
-	github.com/jukeizu/contract v0.1.3
+	github.com/jukeizu/contract v0.2.0
 	github.com/lib/pq v1.2.0
 	github.com/nats-io/nats-server/v2 v2.1.0 // indirect
 	github.com/nats-io/nats.go v1.9.1
