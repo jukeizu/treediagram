@@ -122,10 +122,14 @@ func (r *repository) Query(query intentpb.QueryIntentsRequest) ([]*intentpb.Inte
 			created::INT,
 			type
 		FROM intent 
-		WHERE (serverId = $1 OR serverId = '') 
+		WHERE (serverId = $1 OR serverId = '')
+		AND type = $2 
 		AND enabled = true`
 
-	rows, err := r.Db.Query(q, query.ServerId)
+	rows, err := r.Db.Query(q,
+		query.ServerId,
+		query.Type,
+	)
 	if err != nil {
 		return pbIntents, err
 	}
