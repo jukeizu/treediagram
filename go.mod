@@ -7,7 +7,7 @@ require (
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c
 	github.com/jukeizu/contract v0.1.3
-	github.com/lib/pq v1.1.0
+	github.com/lib/pq v1.2.0
 	github.com/nats-io/nats-server/v2 v2.1.0 // indirect
 	github.com/nats-io/nats.go v1.9.1
 	github.com/oklog/run v1.0.0
