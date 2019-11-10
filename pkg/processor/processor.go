@@ -110,7 +110,10 @@ func (p Processor) processMessageRequest(request *processingpb.MessageRequest) {
 
 	request.ServerId = serverId
 
-	query := &intentpb.QueryIntentsRequest{ServerId: request.ServerId}
+	query := &intentpb.QueryIntentsRequest{
+		ServerId: request.ServerId,
+		Type:     "command",
+	}
 
 	stream, err := p.registry.QueryIntents(context.Background(), query)
 	if err != nil {
@@ -163,6 +166,36 @@ func (p Processor) processReaction(reaction *processingpb.Reaction) {
 	p.logger.Info().
 		Interface("reaction", reaction).
 		Msg("reaction received")
+
+	query := &intentpb.QueryIntentsRequest{
+		ServerId: reaction.ServerId,
+		Type:     "reaction",
+	}
+
+	stream, err := p.registry.QueryIntents(context.Background(), query)
+	if err != nil {
+		p.logger.Error().Err(err).Caller().Msg("error getting QueryIntents stream")
+		return
+	}
+
+	for {
+		intent, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			p.logger.Error().Err(err).Caller().Msg("error receiving intent from stream")
+			break
+		}
+
+		r := Reaction{
+			Request: *reaction,
+			Intent:  *intent,
+		}
+
+		p.process(r)
+	}
 }
 
 func (p Processor) process(executable Executable) {

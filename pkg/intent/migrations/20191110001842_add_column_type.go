@@ -10,7 +10,11 @@ func (m AddColumnType20191110001842) Version() string {
 
 func (m AddColumnType20191110001842) Up(tx *sql.Tx) error {
 	_, err := tx.Exec(`ALTER TABLE intent ADD COLUMN type STRING NOT NULL DEFAULT ''`)
+	if err != nil {
+		return err
+	}
 
+	_, err = tx.Exec(`UPDATE intent SET type = 'command'`)
 	return err
 }
 

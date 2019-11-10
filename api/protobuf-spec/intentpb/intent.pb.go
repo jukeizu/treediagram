@@ -44,7 +44,7 @@ func (m *Intent) Reset()         { *m = Intent{} }
 func (m *Intent) String() string { return proto.CompactTextString(m) }
 func (*Intent) ProtoMessage()    {}
 func (*Intent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_intent_24326a0ea3cfca56, []int{0}
+	return fileDescriptor_intent_c04db3a5485097e4, []int{0}
 }
 func (m *Intent) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Intent.Unmarshal(m, b)
@@ -153,7 +153,7 @@ func (m *QueryIntentsRequest) Reset()         { *m = QueryIntentsRequest{} }
 func (m *QueryIntentsRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryIntentsRequest) ProtoMessage()    {}
 func (*QueryIntentsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_intent_24326a0ea3cfca56, []int{1}
+	return fileDescriptor_intent_c04db3a5485097e4, []int{1}
 }
 func (m *QueryIntentsRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_QueryIntentsRequest.Unmarshal(m, b)
@@ -198,7 +198,7 @@ func (m *AddIntentRequest) Reset()         { *m = AddIntentRequest{} }
 func (m *AddIntentRequest) String() string { return proto.CompactTextString(m) }
 func (*AddIntentRequest) ProtoMessage()    {}
 func (*AddIntentRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_intent_24326a0ea3cfca56, []int{2}
+	return fileDescriptor_intent_c04db3a5485097e4, []int{2}
 }
 func (m *AddIntentRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AddIntentRequest.Unmarshal(m, b)
@@ -236,7 +236,7 @@ func (m *AddIntentReply) Reset()         { *m = AddIntentReply{} }
 func (m *AddIntentReply) String() string { return proto.CompactTextString(m) }
 func (*AddIntentReply) ProtoMessage()    {}
 func (*AddIntentReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_intent_24326a0ea3cfca56, []int{3}
+	return fileDescriptor_intent_c04db3a5485097e4, []int{3}
 }
 func (m *AddIntentReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AddIntentReply.Unmarshal(m, b)
@@ -274,7 +274,7 @@ func (m *DisableIntentRequest) Reset()         { *m = DisableIntentRequest{} }
 func (m *DisableIntentRequest) String() string { return proto.CompactTextString(m) }
 func (*DisableIntentRequest) ProtoMessage()    {}
 func (*DisableIntentRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_intent_24326a0ea3cfca56, []int{4}
+	return fileDescriptor_intent_c04db3a5485097e4, []int{4}
 }
 func (m *DisableIntentRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DisableIntentRequest.Unmarshal(m, b)
@@ -312,7 +312,7 @@ func (m *DisableIntentReply) Reset()         { *m = DisableIntentReply{} }
 func (m *DisableIntentReply) String() string { return proto.CompactTextString(m) }
 func (*DisableIntentReply) ProtoMessage()    {}
 func (*DisableIntentReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_intent_24326a0ea3cfca56, []int{5}
+	return fileDescriptor_intent_c04db3a5485097e4, []int{5}
 }
 func (m *DisableIntentReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_DisableIntentReply.Unmarshal(m, b)
@@ -514,9 +514,9 @@ var _IntentRegistry_serviceDesc = grpc.ServiceDesc{
 	Metadata: "intent.proto",
 }
 
-func init() { proto.RegisterFile("intent.proto", fileDescriptor_intent_24326a0ea3cfca56) }
+func init() { proto.RegisterFile("intent.proto", fileDescriptor_intent_c04db3a5485097e4) }
 
-var fileDescriptor_intent_24326a0ea3cfca56 = []byte{
+var fileDescriptor_intent_c04db3a5485097e4 = []byte{
 	// 370 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x53, 0x4f, 0x4f, 0xfa, 0x40,
 	0x10, 0xa5, 0xfd, 0x41, 0x29, 0x03, 0x3f, 0x42, 0x56, 0x0e, 0x9b, 0x46, 0x0d, 0x69, 0x8c, 0xe9,

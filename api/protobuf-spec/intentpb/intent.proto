@@ -22,7 +22,6 @@ message Intent {
     string type = 11;
 }
 
-
 message QueryIntentsRequest {
     string serverId = 1;
     string type = 2;
