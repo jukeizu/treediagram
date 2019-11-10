@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
-	nats "github.com/nats-io/go-nats"
+	nats "github.com/nats-io/nats.go"
 )
 
 type service struct {

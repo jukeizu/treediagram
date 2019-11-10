@@ -10,7 +10,7 @@ import (
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
-	nats "github.com/nats-io/go-nats"
+	nats "github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 )
 

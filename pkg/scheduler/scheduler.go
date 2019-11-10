@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
-	nats "github.com/nats-io/go-nats"
+	nats "github.com/nats-io/nats.go"
 	"github.com/robfig/cron"
 	"github.com/rs/zerolog"
 )

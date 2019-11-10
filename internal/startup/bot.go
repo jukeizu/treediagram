@@ -6,7 +6,7 @@ import (
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	"github.com/jukeizu/treediagram/pkg/bot/discord"
-	nats "github.com/nats-io/go-nats"
+	nats "github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"

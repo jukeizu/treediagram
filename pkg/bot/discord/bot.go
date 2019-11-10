@@ -8,7 +8,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
-	nats "github.com/nats-io/go-nats"
+	nats "github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 )
 

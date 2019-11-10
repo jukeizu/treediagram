@@ -3,15 +3,13 @@ module github.com/jukeizu/treediagram
 require (
 	github.com/bwmarrin/discordgo v0.20.1
 	github.com/cheapRoc/grpc-zerolog v0.0.0-20180425150930-27ca9d023ead
-	github.com/golang/protobuf v1.3.1
+	github.com/golang/protobuf v1.3.2
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c
 	github.com/jukeizu/contract v0.1.3
 	github.com/lib/pq v1.1.0
-	github.com/nats-io/gnatsd v1.4.0 // indirect
-	github.com/nats-io/go-nats v1.7.0
-	github.com/nats-io/nkeys v0.0.2 // indirect
-	github.com/nats-io/nuid v1.0.0 // indirect
+	github.com/nats-io/nats-server/v2 v2.1.0 // indirect
+	github.com/nats-io/nats.go v1.9.1
 	github.com/oklog/run v1.0.0
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
 	github.com/rs/xid v1.2.1

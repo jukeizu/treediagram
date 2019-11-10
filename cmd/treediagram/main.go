@@ -10,7 +10,7 @@ import (
 
 	"github.com/cheapRoc/grpc-zerolog"
 	"github.com/jukeizu/treediagram/internal/startup"
-	nats "github.com/nats-io/go-nats"
+	nats "github.com/nats-io/nats.go"
 	"github.com/oklog/run"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
