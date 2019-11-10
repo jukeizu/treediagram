@@ -22,7 +22,10 @@ func NewHelpHandler(logger zerolog.Logger, intentClient intentpb.IntentRegistryC
 }
 
 func (h HelpHandler) Help(request contract.Request) (*contract.Response, error) {
-	query := &intentpb.QueryIntentsRequest{ServerId: request.ServerId}
+	query := &intentpb.QueryIntentsRequest{
+		ServerId: request.ServerId,
+		Type:     "command",
+	}
 
 	intentStream, err := h.intentClient.QueryIntents(context.Background(), query)
 	if err != nil {
