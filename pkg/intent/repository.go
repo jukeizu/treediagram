@@ -51,7 +51,11 @@ func (r *repository) Migrate() error {
 		return err
 	}
 
-	err = g.RegisterMigrations(migrations.CreateTableIntent20190113072028{})
+	err = g.RegisterMigrations(
+		migrations.CreateTableIntent20190113072028{},
+		migrations.AddColumnType20191110001842{},
+		migrations.UpdateIntentSetTypeCommand20191110003505{},
+	)
 	if err != nil {
 		return err
 	}
@@ -72,8 +76,9 @@ func (r *repository) Save(pbIntent *intentpb.Intent) error {
 		response,
 		endpoint,
 		help,
-		enabled
-	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+		enabled,
+		type
+	) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
 	RETURNING id, created::INT`
 
 	err := r.Db.QueryRow(q,
@@ -85,6 +90,7 @@ func (r *repository) Save(pbIntent *intentpb.Intent) error {
 		pbIntent.Endpoint,
 		pbIntent.Help,
 		pbIntent.Enabled,
+		pbIntent.Type,
 	).Scan(
 		&pbIntent.Id,
 		&pbIntent.Created,
@@ -113,7 +119,8 @@ func (r *repository) Query(query intentpb.QueryIntentsRequest) ([]*intentpb.Inte
 			endpoint,
 			help,
 			enabled,
-			created::INT
+			created::INT,
+			type
 		FROM intent 
 		WHERE (serverId = $1 OR serverId = '') 
 		AND enabled = true`
@@ -137,6 +144,7 @@ func (r *repository) Query(query intentpb.QueryIntentsRequest) ([]*intentpb.Inte
 			&pbIntent.Help,
 			&pbIntent.Enabled,
 			&pbIntent.Created,
+			&pbIntent.Type,
 		)
 		if err != nil {
 			return pbIntents, err
