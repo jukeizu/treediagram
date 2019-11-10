@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
-	nats "github.com/nats-io/go-nats"
-	"github.com/robfig/cron"
+	nats "github.com/nats-io/nats.go"
+	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog"
 )
 
@@ -27,7 +27,7 @@ func NewScheduler(logger zerolog.Logger, queue *nats.EncodedConn) Scheduler {
 		Cron:   cron.New(),
 	}
 
-	s.Cron.AddFunc("0 * * * * *", s.run)
+	s.Cron.AddFunc("* * * * *", s.run)
 
 	return &s
 }

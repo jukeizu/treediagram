@@ -17,7 +17,7 @@ import (
 	"github.com/jukeizu/treediagram/pkg/processor"
 	"github.com/jukeizu/treediagram/pkg/scheduler"
 	"github.com/jukeizu/treediagram/pkg/user"
-	nats "github.com/nats-io/go-nats"
+	nats "github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
