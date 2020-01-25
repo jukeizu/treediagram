@@ -18,7 +18,7 @@ func (e ParseError) Error() string {
 	return e.Message
 }
 
-func formatErrorResponse(err error) (*contract.Response, error) {
+func FormatErrorResponse(err error) (*contract.Response, error) {
 	if err == nil {
 		return nil, nil
 	}

@@ -1,4 +1,4 @@
-package builtin
+package serverselect
 
 import (
 	"bytes"
@@ -9,21 +9,28 @@ import (
 
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
+	"github.com/jukeizu/treediagram/pkg/builtin"
 	"github.com/rs/zerolog"
 )
 
-type SelectServerHandler struct {
+type ServerSelectSHandler struct {
 	logger     zerolog.Logger
 	userClient userpb.UserClient
 }
 
-func NewSelectServerHandler(logger zerolog.Logger, userClient userpb.UserClient) SelectServerHandler {
-	logger = logger.With().Str("component", "intent.endpoint.builtin.selectserver").Logger()
+func NewServerSelectHandler(logger zerolog.Logger, userClient userpb.UserClient) ServerSelectSHandler {
+	logger = logger.With().Str("component", "intent.endpoint.builtin.serverselect").Logger()
 
-	return SelectServerHandler{logger, userClient}
+	return ServerSelectSHandler{logger, userClient}
 }
 
-func (h SelectServerHandler) SelectServer(request contract.Request) (*contract.Response, error) {
+func (h ServerSelectSHandler) Registrations() []builtin.HandlerRegistration {
+	return []builtin.HandlerRegistration{
+		builtin.HandlerRegistration{Name: "serverselect", Handler: h.ServerSelect},
+	}
+}
+
+func (h ServerSelectSHandler) ServerSelect(request contract.Request) (*contract.Response, error) {
 	if len(request.Servers) < 1 {
 		return nil, fmt.Errorf("server selection request did not contain any servers")
 	}
@@ -36,7 +43,7 @@ func (h SelectServerHandler) SelectServer(request contract.Request) (*contract.R
 
 	selection, err := h.parseSelection(fields[1], len(request.Servers))
 	if err != nil {
-		return formatErrorResponse(err)
+		return builtin.FormatErrorResponse(err)
 	}
 
 	server := request.Servers[selection-1]
@@ -54,20 +61,20 @@ func (h SelectServerHandler) SelectServer(request contract.Request) (*contract.R
 	return contract.StringResponse(h.formatSelectionReply(server)), nil
 }
 
-func (h SelectServerHandler) parseSelection(input string, serverCount int) (int, error) {
+func (h ServerSelectSHandler) parseSelection(input string, serverCount int) (int, error) {
 	selection, err := strconv.Atoi(input)
 	if err != nil {
-		return 0, NewParseError("Selection must be an integer")
+		return 0, builtin.NewParseError("Selection must be an integer")
 	}
 
 	if selection < 1 || selection > serverCount {
-		return 0, NewParseError("That selection is not valid")
+		return 0, builtin.NewParseError("That selection is not valid")
 	}
 
 	return selection, nil
 }
 
-func (h SelectServerHandler) formatSelectionPrompt(request contract.Request) string {
+func (h ServerSelectSHandler) formatSelectionPrompt(request contract.Request) string {
 	if len(request.Servers) == 1 {
 		return fmt.Sprintf("You only share 1 server! Your preferred server is: %s", request.Servers[0].Name)
 	}
@@ -88,6 +95,6 @@ func (h SelectServerHandler) formatSelectionPrompt(request contract.Request) str
 	return buffer.String()
 }
 
-func (h SelectServerHandler) formatSelectionReply(server contract.Server) string {
+func (h ServerSelectSHandler) formatSelectionReply(server contract.Server) string {
 	return fmt.Sprintf("Your preferred server has been set to: %s `%s`", server.Name, server.Id)
 }

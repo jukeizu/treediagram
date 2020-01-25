@@ -35,6 +35,11 @@ message User {
 message Server {
     string id = 1;
     string name = 2;
+    string ownerId = 3;
+    string description = 4;
+    int32 userCount = 5;
+    string iconUrl = 6;
+    string systemChannelId = 7;
 }
 
 message Response {

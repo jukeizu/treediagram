@@ -29,18 +29,26 @@ func mapToPbUsers(discordUsers []*discordgo.User) []*processingpb.User {
 	return users
 }
 
+func mapToPbServer(guild *discordgo.Guild) *processingpb.Server {
+	return &processingpb.Server{
+		Id:              guild.ID,
+		Name:            guild.Name,
+		OwnerId:         guild.OwnerID,
+		Description:     guild.Description,
+		UserCount:       int32(guild.MemberCount),
+		IconUrl:         guild.IconURL(),
+		SystemChannelId: guild.SystemChannelID,
+	}
+}
+
 func mapToPbServers(userId string, guilds []*discordgo.Guild) []*processingpb.Server {
 	servers := []*processingpb.Server{}
 
 	for _, guild := range guilds {
 		for _, member := range guild.Members {
 			if member.User.ID == userId {
-				server := processingpb.Server{
-					Id:   guild.ID,
-					Name: guild.Name,
-				}
-
-				servers = append(servers, &server)
+				server := mapToPbServer(guild)
+				servers = append(servers, server)
 				break
 			}
 		}

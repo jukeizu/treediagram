@@ -13,6 +13,10 @@ import (
 	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
 	"github.com/jukeizu/treediagram/pkg/builtin"
+	"github.com/jukeizu/treediagram/pkg/builtin/help"
+	bintent "github.com/jukeizu/treediagram/pkg/builtin/intent"
+	serverselect "github.com/jukeizu/treediagram/pkg/builtin/server_select"
+	"github.com/jukeizu/treediagram/pkg/builtin/stats"
 	"github.com/jukeizu/treediagram/pkg/intent"
 	"github.com/jukeizu/treediagram/pkg/processor"
 	"github.com/jukeizu/treediagram/pkg/scheduler"
@@ -100,10 +104,18 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 	userService := user.NewService(storage.UserRepository)
 	userService = user.NewLoggingService(logger, userService)
 
-	helpHandler := builtin.NewHelpHandler(logger, intentClient)
-	selectServerHandler := builtin.NewSelectServerHandler(logger, userClient)
-	statsHandler := builtin.NewStatsHandler(logger, processingClient)
-	builtinServer := builtin.NewHttpServer(logger, fmt.Sprintf(":%d", config.HttpPort), helpHandler, selectServerHandler, statsHandler)
+	helpHandler := help.NewHelpHandler(logger, intentClient)
+	serverSelectHandler := serverselect.NewServerSelectHandler(logger, userClient)
+	statsHandler := stats.NewStatsHandler(logger, processingClient)
+	intentHandler := bintent.NewIntentHandler(logger, intentClient)
+
+	builtinServer := builtin.NewHttpServer(logger, fmt.Sprintf(":%d", config.HttpPort))
+	builtinServer.RegisterHandlers(
+		helpHandler,
+		serverSelectHandler,
+		statsHandler,
+		intentHandler,
+	)
 
 	grpcServer := grpc.NewServer(
 		grpc.KeepaliveParams(
