@@ -1,4 +1,4 @@
-package builtin
+package stats
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
+	"github.com/jukeizu/treediagram/pkg/builtin"
 	"github.com/rs/zerolog"
 )
 
@@ -20,6 +21,12 @@ func NewStatsHandler(logger zerolog.Logger, processingClient processingpb.Proces
 	logger = logger.With().Str("component", "intent.endpoint.builtin.stats").Logger()
 
 	return StatsHandler{logger, processingClient}
+}
+
+func (h StatsHandler) Registrations() []builtin.HandlerRegistration {
+	return []builtin.HandlerRegistration{
+		builtin.HandlerRegistration{Name: "stats", Handler: h.Stats},
+	}
 }
 
 func (h StatsHandler) Stats(request contract.Request) (*contract.Response, error) {

@@ -1,14 +1,16 @@
-package builtin
+package intent
 
 import (
 	"bytes"
 	"context"
 	"flag"
+	"strings"
 
 	"encoding/json"
 
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
+	"github.com/jukeizu/treediagram/pkg/builtin"
 	shellwords "github.com/mattn/go-shellwords"
 	"github.com/rs/zerolog"
 )
@@ -24,6 +26,13 @@ func NewIntentHandler(logger zerolog.Logger, intentClient intentpb.IntentRegistr
 	return IntentHandler{logger, intentClient}
 }
 
+func (h IntentHandler) Registrations() []builtin.HandlerRegistration {
+	return []builtin.HandlerRegistration{
+		builtin.HandlerRegistration{Name: "addintent", Handler: h.AddIntent},
+		builtin.HandlerRegistration{Name: "disableintent", Handler: h.DisableIntent},
+	}
+}
+
 func (h IntentHandler) AddIntent(request contract.Request) (*contract.Response, error) {
 	if !authorIsOwner(request) {
 		return nil, nil
@@ -31,7 +40,7 @@ func (h IntentHandler) AddIntent(request contract.Request) (*contract.Response, 
 
 	addIntentRequest, err := parseAddIntentRequest(request)
 	if err != nil {
-		return formatErrorResponse(err)
+		return builtin.FormatErrorResponse(err)
 	}
 
 	reply, err := h.intentClient.AddIntent(context.Background(), addIntentRequest)
@@ -52,7 +61,8 @@ func (h IntentHandler) DisableIntent(request contract.Request) (*contract.Respon
 		return nil, nil
 	}
 
-	intentID := parseIntentID(request)
+	words := strings.Fields(request.Content)
+	intentID := words[1]
 
 	reply, err := h.intentClient.DisableIntent(context.Background(), &intentpb.DisableIntentRequest{Id: intentID})
 	if err != nil {
@@ -87,7 +97,7 @@ func parseAddIntentRequest(request contract.Request) (*intentpb.AddIntentRequest
 
 	err = parser.Parse(args[1:])
 	if err != nil {
-		return nil, ParseError{Message: outputBuffer.String()}
+		return nil, builtin.ParseError{Message: outputBuffer.String()}
 	}
 
 	intent := &intentpb.Intent{

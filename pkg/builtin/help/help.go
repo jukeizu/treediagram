@@ -1,4 +1,4 @@
-package builtin
+package help
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
+	"github.com/jukeizu/treediagram/pkg/builtin"
 	"github.com/rs/zerolog"
 )
 
@@ -19,6 +20,12 @@ func NewHelpHandler(logger zerolog.Logger, intentClient intentpb.IntentRegistryC
 	logger = logger.With().Str("component", "intent.endpoint.builtin.help").Logger()
 
 	return HelpHandler{logger, intentClient}
+}
+
+func (h HelpHandler) Registrations() []builtin.HandlerRegistration {
+	return []builtin.HandlerRegistration{
+		builtin.HandlerRegistration{Name: "help", Handler: h.Help},
+	}
 }
 
 func (h HelpHandler) Help(request contract.Request) (*contract.Response, error) {

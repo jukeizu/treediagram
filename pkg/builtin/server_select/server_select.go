@@ -1,4 +1,4 @@
-package builtin
+package serverselect
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
+	"github.com/jukeizu/treediagram/pkg/builtin"
 	"github.com/rs/zerolog"
 )
 
@@ -17,10 +18,16 @@ type SelectServerHandler struct {
 	userClient userpb.UserClient
 }
 
-func NewSelectServerHandler(logger zerolog.Logger, userClient userpb.UserClient) SelectServerHandler {
+func NewServerSelectHandler(logger zerolog.Logger, userClient userpb.UserClient) SelectServerHandler {
 	logger = logger.With().Str("component", "intent.endpoint.builtin.selectserver").Logger()
 
 	return SelectServerHandler{logger, userClient}
+}
+
+func (h SelectServerHandler) Registrations() []builtin.HandlerRegistration {
+	return []builtin.HandlerRegistration{
+		builtin.HandlerRegistration{Name: "selectserver", Handler: h.SelectServer},
+	}
 }
 
 func (h SelectServerHandler) SelectServer(request contract.Request) (*contract.Response, error) {
@@ -36,7 +43,7 @@ func (h SelectServerHandler) SelectServer(request contract.Request) (*contract.R
 
 	selection, err := h.parseSelection(fields[1], len(request.Servers))
 	if err != nil {
-		return formatErrorResponse(err)
+		return builtin.FormatErrorResponse(err)
 	}
 
 	server := request.Servers[selection-1]
@@ -57,11 +64,11 @@ func (h SelectServerHandler) SelectServer(request contract.Request) (*contract.R
 func (h SelectServerHandler) parseSelection(input string, serverCount int) (int, error) {
 	selection, err := strconv.Atoi(input)
 	if err != nil {
-		return 0, NewParseError("Selection must be an integer")
+		return 0, builtin.NewParseError("Selection must be an integer")
 	}
 
 	if selection < 1 || selection > serverCount {
-		return 0, NewParseError("That selection is not valid")
+		return 0, builtin.NewParseError("That selection is not valid")
 	}
 
 	return selection, nil

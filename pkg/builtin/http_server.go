@@ -10,42 +10,41 @@ import (
 )
 
 type HttpServer struct {
-	logger              zerolog.Logger
-	httpServer          *http.Server
-	helpHandler         HelpHandler
-	selectServerHandler SelectServerHandler
-	statsHandler        StatsHandler
-	intentHandler       IntentHandler
+	logger     zerolog.Logger
+	httpServer *http.Server
 }
 
-func NewHttpServer(logger zerolog.Logger, addr string,
-	helpHandler HelpHandler,
-	selectServerHandler SelectServerHandler,
-	statsHandler StatsHandler,
-	intentHandler IntentHandler,
-) HttpServer {
+func NewHttpServer(logger zerolog.Logger, addr string) HttpServer {
 	logger = logger.With().Str("component", "intent.endpoint.builtin").Logger()
 
 	httpServer := http.Server{
 		Addr: addr,
 	}
 
-	return HttpServer{logger, &httpServer, helpHandler, selectServerHandler, statsHandler, intentHandler}
+	return HttpServer{logger, &httpServer}
+}
+
+func (h HttpServer) RegisterHandlers(handlers ...Handler) {
+	mux := http.NewServeMux()
+
+	for _, handler := range handlers {
+		for _, r := range handler.Registrations() {
+			mux.Handle("/builtin/"+r.Name, h.makeLoggingHttpHandlerFunc(r.Name, r.Handler))
+		}
+	}
+
+	h.httpServer.Handler = mux
 }
 
 func (h HttpServer) Start() error {
+	if h.httpServer == nil {
+		return nil
+	}
+
 	h.logger.Info().Str("transport", "http").Msg("starting")
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/help", h.makeLoggingHttpHandlerFunc("help", h.helpHandler.Help))
-	mux.HandleFunc("/selectserver", h.makeLoggingHttpHandlerFunc("selectserver", h.selectServerHandler.SelectServer))
-	mux.HandleFunc("/stats", h.makeLoggingHttpHandlerFunc("stats", h.statsHandler.Stats))
-	mux.HandleFunc("/addintent", h.makeLoggingHttpHandlerFunc("addintent", h.intentHandler.AddIntent))
-	mux.HandleFunc("/disableintent", h.makeLoggingHttpHandlerFunc("disableintent", h.intentHandler.DisableIntent))
-
-	h.httpServer.Handler = mux
-
 	return h.httpServer.ListenAndServe()
+
 }
 
 func (h HttpServer) Stop() error {
