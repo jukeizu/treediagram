@@ -1,4 +1,4 @@
-FROM golang:1.13 as build
+FROM golang:1.14 as build
 WORKDIR /go/src/github.com/jukeizu/treediagram
 COPY Makefile go.mod go.sum ./
 RUN make deps
