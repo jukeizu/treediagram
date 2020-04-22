@@ -80,13 +80,14 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 	intentClient := intentpb.NewIntentRegistryClient(grpcConn)
 	userClient := userpb.NewUserClient(grpcConn)
 	processingClient := processingpb.NewProcessingClient(grpcConn)
+	schedulerClient := schedulingpb.NewSchedulingClient(grpcConn)
 
 	processorService, err := processor.NewService(conn, storage.ProcessorRepository)
 	if err != nil {
 		return nil, err
 	}
 
-	processor := processor.New(logger, conn, intentClient, userClient, storage.ProcessorRepository)
+	processor := processor.New(logger, conn, intentClient, userClient, schedulerClient, storage.ProcessorRepository)
 	err = processor.Start()
 	if err != nil {
 		return nil, err

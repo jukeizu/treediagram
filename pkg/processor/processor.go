@@ -2,6 +2,7 @@ package processor
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"sync"
@@ -31,22 +32,24 @@ type Executable interface {
 }
 
 type Processor struct {
-	logger     zerolog.Logger
-	queue      *nats.EncodedConn
-	registry   intentpb.IntentRegistryClient
-	userClient userpb.UserClient
-	repository Repository
-	waitGroup  *sync.WaitGroup
+	logger          zerolog.Logger
+	queue           *nats.EncodedConn
+	registry        intentpb.IntentRegistryClient
+	userClient      userpb.UserClient
+	schedulerClient schedulingpb.SchedulingClient
+	repository      Repository
+	waitGroup       *sync.WaitGroup
 }
 
-func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intentpb.IntentRegistryClient, userClient userpb.UserClient, repository Repository) Processor {
+func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intentpb.IntentRegistryClient, userClient userpb.UserClient, schedulerClient schedulingpb.SchedulingClient, repository Repository) Processor {
 	p := Processor{
-		logger:     logger.With().Str("component", "processor").Logger(),
-		queue:      queue,
-		registry:   registry,
-		userClient: userClient,
-		repository: repository,
-		waitGroup:  &sync.WaitGroup{},
+		logger:          logger.With().Str("component", "processor").Logger(),
+		queue:           queue,
+		registry:        registry,
+		userClient:      userClient,
+		schedulerClient: schedulerClient,
+		repository:      repository,
+		waitGroup:       &sync.WaitGroup{},
 	}
 
 	return p
@@ -255,6 +258,25 @@ func (p Processor) process(executable Executable) {
 		p.logger.Info().
 			Str("processingRequestId", processingRequest.Id).
 			EmbedObject(executable).
+			Msg("finished saving responses from execute")
+
+		p.logger.Info().
+			Str("processingRequestId", processingRequest.Id).
+			EmbedObject(executable).
+			Msg("scheduling jobs")
+
+		for _, message := range response.Messages {
+			p.scheduleJobs(processingRequest, message)
+		}
+
+		p.logger.Info().
+			Str("processingRequestId", processingRequest.Id).
+			EmbedObject(executable).
+			Msg("finished scheduling jobs")
+
+		p.logger.Info().
+			Str("processingRequestId", processingRequest.Id).
+			EmbedObject(executable).
 			Msg("finished processing for executable")
 	}(executable)
 }
@@ -367,4 +389,32 @@ func (p Processor) processEvent(e *processingpb.ProcessingEvent) {
 		Str("type", e.GetType()).
 		Str("description", e.GetDescription()).
 		Msg("saved processing event")
+}
+
+func (p Processor) scheduleJobs(processingRequest *processingpb.ProcessingRequest, message string) {
+	createJobRequests := struct {
+		Jobs []*schedulingpb.CreateJobRequest `json:"jobs"`
+	}{}
+
+	err := json.Unmarshal([]byte(message), &createJobRequests)
+	if err != nil {
+		p.logger.Error().Err(err).
+			Str("processingRequestId", processingRequest.Id).
+			Msg("Failed to unmarshal create job requests from message")
+		return
+	}
+
+	for _, createJobRequest := range createJobRequests.Jobs {
+		reply, err := p.schedulerClient.Create(context.Background(), createJobRequest)
+		if err != nil {
+			p.logger.Error().Err(err).
+				Str("processingRequestId", processingRequest.Id).
+				Msg("failed to create job")
+		}
+
+		p.logger.Info().
+			Str("processingRequestId", processingRequest.Id).
+			Str("jobId", reply.Job.Id).
+			Msg("created job")
+	}
 }

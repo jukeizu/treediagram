@@ -45,7 +45,6 @@ func (c Command) Execute() (*processingpb.Response, error) {
 		if r != "" {
 			reply.Messages = append(reply.Messages, r)
 		}
-
 	}
 
 	if c.Intent.Response != "" {
