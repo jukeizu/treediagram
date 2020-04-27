@@ -22,22 +22,24 @@ message Schedule {
 message Job {
     string id = 1;
     string userId = 2;
+    string instanceId = 3;
+    string source = 4;
+    string content = 5;
+    string endpoint = 6;
+    string destination = 7;
+    Schedule schedule = 8;
+    bool enabled = 9;
+    int32 created = 10;
+}
+
+message CreateJobRequest {
+    string userId = 1;
+    string instanceId = 2;
     string source = 3;
     string content = 4;
     string endpoint = 5;
     string destination = 6;
     Schedule schedule = 7;
-    bool enabled = 8;
-    int32 created = 9;
-}
-
-message CreateJobRequest {
-    string userId = 1;
-    string source = 2;
-    string content = 3;
-    string endpoint = 4;
-    string destination = 5;
-    Schedule schedule = 6;
 }
 
 message CreateJobReply {
