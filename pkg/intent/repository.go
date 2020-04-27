@@ -17,7 +17,7 @@ const (
 type Repository interface {
 	Save(*intentpb.Intent) error
 	Disable(string) error
-	Query(intentpb.QueryIntentsRequest) ([]*intentpb.Intent, error)
+	Query(*intentpb.QueryIntentsRequest) ([]*intentpb.Intent, error)
 	Migrate() error
 }
 
@@ -107,7 +107,7 @@ func (r *repository) Disable(id string) error {
 	return err
 }
 
-func (r *repository) Query(query intentpb.QueryIntentsRequest) ([]*intentpb.Intent, error) {
+func (r *repository) Query(query *intentpb.QueryIntentsRequest) ([]*intentpb.Intent, error) {
 	pbIntents := []*intentpb.Intent{}
 
 	q := `SELECT id,

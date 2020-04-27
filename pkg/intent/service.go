@@ -33,7 +33,7 @@ func (s *service) DisableIntent(ctx context.Context, req *intentpb.DisableIntent
 }
 
 func (s *service) QueryIntents(req *intentpb.QueryIntentsRequest, stream intentpb.IntentRegistry_QueryIntentsServer) error {
-	intents, err := s.Repository.Query(*req)
+	intents, err := s.Repository.Query(req)
 	if err != nil {
 		return err
 	}

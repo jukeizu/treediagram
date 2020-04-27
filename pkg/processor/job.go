@@ -7,7 +7,7 @@ import (
 )
 
 type Job struct {
-	SchedulingJob schedulingpb.Job
+	SchedulingJob *schedulingpb.Job
 }
 
 func (j Job) ShouldExecute() (bool, error) {

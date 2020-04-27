@@ -10,8 +10,8 @@ import (
 )
 
 type Command struct {
-	Request processingpb.MessageRequest `json:"request"`
-	Intent  intentpb.Intent             `json:"intent"`
+	Request *processingpb.MessageRequest `json:"request"`
+	Intent  *intentpb.Intent             `json:"intent"`
 }
 
 func (c Command) ShouldExecute() (bool, error) {
