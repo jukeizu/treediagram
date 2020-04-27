@@ -10,8 +10,8 @@ import (
 )
 
 type Reaction struct {
-	Request processingpb.Reaction `json:"request"`
-	Intent  intentpb.Intent       `json:"intent"`
+	Request *processingpb.Reaction `json:"request"`
+	Intent  *intentpb.Intent       `json:"intent"`
 }
 
 func (c Reaction) ShouldExecute() (bool, error) {

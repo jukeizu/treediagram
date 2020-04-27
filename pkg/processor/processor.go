@@ -136,8 +136,8 @@ func (p Processor) processMessageRequest(request *processingpb.MessageRequest) {
 		}
 
 		command := Command{
-			Request: *request,
-			Intent:  *intent,
+			Request: request,
+			Intent:  intent,
 		}
 
 		p.process(command)
@@ -159,7 +159,7 @@ func (p Processor) processJob(schedulingJob *schedulingpb.Job) {
 		Msg("job received")
 
 	job := Job{
-		SchedulingJob: *schedulingJob,
+		SchedulingJob: schedulingJob,
 	}
 
 	p.process(job)
@@ -193,8 +193,8 @@ func (p Processor) processReaction(reaction *processingpb.Reaction) {
 		}
 
 		r := Reaction{
-			Request: *reaction,
-			Intent:  *intent,
+			Request: reaction,
+			Intent:  intent,
 		}
 
 		p.process(r)
@@ -354,7 +354,7 @@ func (p Processor) saveResponseMessage(processingRequest *processingpb.Processin
 		return
 	}
 
-	messageReplyReceived := processingpb.MessageReplyReceived{Id: messageReply.Id}
+	messageReplyReceived := &processingpb.MessageReplyReceived{Id: messageReply.Id}
 
 	err = p.queue.Publish(ReplyReceivedSubject+"."+processingRequest.Source, messageReplyReceived)
 	if err != nil {
