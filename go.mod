@@ -21,6 +21,7 @@ require (
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f // indirect
 	google.golang.org/genproto v0.0.0-20200424135956-bca184e23272 // indirect
 	google.golang.org/grpc v1.29.1
+	google.golang.org/protobuf v1.21.0
 )
 
 go 1.13
