@@ -39,12 +39,13 @@ func NewService(logger zerolog.Logger, repository Repository, queue *nats.Encode
 func (s service) Create(ctx context.Context, req *schedulingpb.CreateJobRequest) (*schedulingpb.CreateJobReply, error) {
 	job := &schedulingpb.Job{
 		UserId:      req.UserId,
+		InstanceId:  req.InstanceId,
 		Source:      req.Source,
 		Content:     req.Content,
 		Endpoint:    req.Endpoint,
 		Destination: req.Destination,
 		Schedule:    req.Schedule,
-		Enabled:     true,
+		Enabled:     req.Enabled,
 	}
 
 	err := s.Repository.Create(job)

@@ -50,7 +50,11 @@ func (r *repository) Migrate() error {
 		return err
 	}
 
-	err = g.RegisterMigrations(migrations.CreateTableJob20190119052738{})
+	err = g.RegisterMigrations(
+		migrations.CreateTableJob20190119052738{},
+		migrations.AlterJobAddColumnInstanceid20200427030530{},
+	)
+
 	if err != nil {
 		return err
 	}
@@ -68,6 +72,7 @@ func (r *repository) Create(job *schedulingpb.Job) error {
 	}
 
 	q := `INSERT INTO job (
+			instanceId,
 			userId,
 			source,
 			content,
@@ -81,10 +86,38 @@ func (r *repository) Create(job *schedulingpb.Job) error {
 			year,
 			enabled
 		) 
-		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+		ON CONFLICT (instanceId) DO UPDATE SET (
+			userId,
+			source,
+			content,
+			endpoint,
+			destination,
+			minute,
+			hour,
+			dayOfMonth,
+			month,
+			dayOfWeek,	
+			year,
+			enabled, 
+			updated) = (
+			excluded.userId,
+			excluded.source,
+			excluded.content,
+			excluded.endpoint,
+			excluded.destination,
+			excluded.minute,
+			excluded.hour,
+			excluded.dayOfMonth,
+			excluded.month,
+			excluded.dayOfWeek,	
+			excluded.year,
+			excluded.enabled,
+			NOW())
 		RETURNING id, created::INT`
 
 	err := r.Db.QueryRow(q,
+		job.InstanceId,
 		job.UserId,
 		job.Source,
 		job.Content,
