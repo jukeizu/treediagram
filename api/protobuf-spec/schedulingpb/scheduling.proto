@@ -40,6 +40,7 @@ message CreateJobRequest {
     string endpoint = 5;
     string destination = 6;
     Schedule schedule = 7;
+    bool enabled = 8;
 }
 
 message CreateJobReply {

@@ -45,7 +45,7 @@ func (s service) Create(ctx context.Context, req *schedulingpb.CreateJobRequest)
 		Endpoint:    req.Endpoint,
 		Destination: req.Destination,
 		Schedule:    req.Schedule,
-		Enabled:     true,
+		Enabled:     req.Enabled,
 	}
 
 	err := s.Repository.Create(job)
