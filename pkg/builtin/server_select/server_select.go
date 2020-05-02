@@ -13,24 +13,24 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type ServerSelectSHandler struct {
+type ServerSelectHandler struct {
 	logger     zerolog.Logger
 	userClient userpb.UserClient
 }
 
-func NewServerSelectHandler(logger zerolog.Logger, userClient userpb.UserClient) ServerSelectSHandler {
+func NewServerSelectHandler(logger zerolog.Logger, userClient userpb.UserClient) ServerSelectHandler {
 	logger = logger.With().Str("component", "intent.endpoint.builtin.serverselect").Logger()
 
-	return ServerSelectSHandler{logger, userClient}
+	return ServerSelectHandler{logger, userClient}
 }
 
-func (h ServerSelectSHandler) Registrations() []builtin.HandlerRegistration {
+func (h ServerSelectHandler) Registrations() []builtin.HandlerRegistration {
 	return []builtin.HandlerRegistration{
 		builtin.HandlerRegistration{Name: "serverselect", Handler: h.ServerSelect},
 	}
 }
 
-func (h ServerSelectSHandler) ServerSelect(request contract.Request) (*contract.Response, error) {
+func (h ServerSelectHandler) ServerSelect(request contract.Request) (*contract.Response, error) {
 	if len(request.Servers) < 1 {
 		return nil, fmt.Errorf("server selection request did not contain any servers")
 	}
@@ -61,7 +61,7 @@ func (h ServerSelectSHandler) ServerSelect(request contract.Request) (*contract.
 	return contract.StringResponse(h.formatSelectionReply(server)), nil
 }
 
-func (h ServerSelectSHandler) parseSelection(input string, serverCount int) (int, error) {
+func (h ServerSelectHandler) parseSelection(input string, serverCount int) (int, error) {
 	selection, err := strconv.Atoi(input)
 	if err != nil {
 		return 0, builtin.NewParseError("Selection must be an integer")
@@ -74,7 +74,7 @@ func (h ServerSelectSHandler) parseSelection(input string, serverCount int) (int
 	return selection, nil
 }
 
-func (h ServerSelectSHandler) formatSelectionPrompt(request contract.Request) string {
+func (h ServerSelectHandler) formatSelectionPrompt(request contract.Request) string {
 	if len(request.Servers) == 1 {
 		return fmt.Sprintf("You only share 1 server! Your preferred server is: %s", request.Servers[0].Name)
 	}
@@ -95,6 +95,6 @@ func (h ServerSelectSHandler) formatSelectionPrompt(request contract.Request) st
 	return buffer.String()
 }
 
-func (h ServerSelectSHandler) formatSelectionReply(server contract.Server) string {
+func (h ServerSelectHandler) formatSelectionReply(server contract.Server) string {
 	return fmt.Sprintf("Your preferred server has been set to: %s `%s`", server.Name, server.Id)
 }

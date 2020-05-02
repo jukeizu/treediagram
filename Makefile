@@ -3,7 +3,7 @@ VERSION=$(TAG:v%=%)
 NAME=treediagram
 REPO=jukeizu/$(NAME)
 GO=go
-BUILD=GOARCH=amd64 $(GO) build -ldflags="-s -w -X main.Version=$(VERSION)" 
+BUILD=GOARCH=amd64 $(GO) build -ldflags="-s -w -X 'github.com/$(REPO)/internal.Version=$(VERSION)'" 
 PROTOFILES=$(wildcard api/protobuf-spec/*/*.proto)
 PBFILES=$(patsubst %.proto,%.pb.go, $(PROTOFILES))
 
