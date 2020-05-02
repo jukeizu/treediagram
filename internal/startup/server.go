@@ -17,6 +17,7 @@ import (
 	bintent "github.com/jukeizu/treediagram/pkg/builtin/intent"
 	serverselect "github.com/jukeizu/treediagram/pkg/builtin/server_select"
 	"github.com/jukeizu/treediagram/pkg/builtin/stats"
+	"github.com/jukeizu/treediagram/pkg/builtin/version"
 	"github.com/jukeizu/treediagram/pkg/intent"
 	"github.com/jukeizu/treediagram/pkg/processor"
 	"github.com/jukeizu/treediagram/pkg/scheduler"
@@ -109,6 +110,7 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 	serverSelectHandler := serverselect.NewServerSelectHandler(logger, userClient)
 	statsHandler := stats.NewStatsHandler(logger, processingClient)
 	intentHandler := bintent.NewIntentHandler(logger, intentClient)
+	versionHandler := version.NewVersionHandler(logger)
 
 	builtinServer := builtin.NewHttpServer(logger, fmt.Sprintf(":%d", config.HttpPort))
 	builtinServer.RegisterHandlers(
@@ -116,6 +118,7 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 		serverSelectHandler,
 		statsHandler,
 		intentHandler,
+		versionHandler,
 	)
 
 	grpcServer := grpc.NewServer(

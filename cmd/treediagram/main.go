@@ -8,7 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/cheapRoc/grpc-zerolog"
+	grpczerolog "github.com/cheapRoc/grpc-zerolog"
+	"github.com/jukeizu/treediagram/internal"
 	"github.com/jukeizu/treediagram/internal/startup"
 	nats "github.com/nats-io/nats.go"
 	"github.com/oklog/run"
@@ -16,8 +17,6 @@ import (
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc/grpclog"
 )
-
-var Version = ""
 
 const (
 	DefaultGrpcPort                     = 50051
@@ -63,7 +62,7 @@ func main() {
 	config := parseConfig()
 
 	if flagVersion {
-		fmt.Println(Version)
+		fmt.Println(internal.Version)
 		os.Exit(0)
 	}
 
@@ -74,7 +73,7 @@ func main() {
 
 	logger := zerolog.New(os.Stdout).With().Timestamp().
 		Str("instance", xid.New().String()).
-		Str("version", Version).
+		Str("version", internal.Version).
 		Logger()
 
 	grpcLoggerV2 := grpczerolog.New(logger.With().Str("transport", "grpc").Logger())
