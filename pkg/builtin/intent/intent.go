@@ -73,7 +73,12 @@ func (h IntentHandler) DisableIntent(request contract.Request) (*contract.Respon
 }
 
 func authorIsOwner(request contract.Request) bool {
+	if request.Application.Owner.Id == request.Author.Id {
+		return true
+	}
+
 	server := request.Server()
+
 	return request.Author.Id == server.OwnerId
 }
 
