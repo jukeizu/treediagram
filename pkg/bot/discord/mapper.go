@@ -57,27 +57,28 @@ func mapToPbServers(userId string, guilds []*discordgo.Guild) []*processingpb.Se
 	return servers
 }
 
-func mapToPbMessageRequest(state *discordgo.State, m *discordgo.Message) *processingpb.MessageRequest {
+func mapToPbMessageRequest(state *discordgo.State, a *discordgo.Application, m *discordgo.Message) *processingpb.MessageRequest {
 	return &processingpb.MessageRequest{
-		Id:        m.ID,
-		Source:    "discord",
-		Bot:       mapToPbUser(state.User),
-		Author:    mapToPbUser(m.Author),
-		ChannelId: m.ChannelID,
-		ServerId:  m.GuildID,
-		Servers:   mapToPbServers(m.Author.ID, state.Guilds),
-		Content:   m.Content,
-		Mentions:  mapToPbUsers(m.Mentions),
+		Id:          m.ID,
+		Source:      "discord",
+		Bot:         mapToPbUser(state.User),
+		Author:      mapToPbUser(m.Author),
+		ChannelId:   m.ChannelID,
+		ServerId:    m.GuildID,
+		Servers:     mapToPbServers(m.Author.ID, state.Guilds),
+		Content:     m.Content,
+		Mentions:    mapToPbUsers(m.Mentions),
+		Application: mapToPbApplication(a),
 	}
 }
 
-func mapToPbReaction(state *discordgo.State, r *discordgo.MessageReaction, m *discordgo.Message) *processingpb.Reaction {
+func mapToPbReaction(state *discordgo.State, r *discordgo.MessageReaction, a *discordgo.Application, m *discordgo.Message) *processingpb.Reaction {
 	return &processingpb.Reaction{
 		UserId:         r.UserID,
 		ChannelId:      r.ChannelID,
 		ServerId:       r.GuildID,
 		Emoji:          mapToPbEmoji(r.Emoji),
-		MessageRequest: mapToPbMessageRequest(state, m),
+		MessageRequest: mapToPbMessageRequest(state, a, m),
 	}
 }
 
@@ -90,6 +91,16 @@ func mapToPbEmoji(e discordgo.Emoji) *processingpb.Emoji {
 		RequireColons: e.RequireColons,
 		Animated:      e.Animated,
 		Available:     e.Available,
+	}
+}
+
+func mapToPbApplication(a *discordgo.Application) *processingpb.Application {
+	return &processingpb.Application{
+		Id:          a.ID,
+		Name:        a.Name,
+		Description: a.Description,
+		Icon:        a.Icon,
+		Owner:       mapToPbUser(a.Owner),
 	}
 }
 

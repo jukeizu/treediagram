@@ -23,10 +23,11 @@ type Bot interface {
 }
 
 type bot struct {
-	Session *discordgo.Session
-	Client  processingpb.ProcessingClient
-	Queue   *nats.EncodedConn
-	Logger  zerolog.Logger
+	Session     *discordgo.Session
+	Application *discordgo.Application
+	Client      processingpb.ProcessingClient
+	Queue       *nats.EncodedConn
+	Logger      zerolog.Logger
 }
 
 func NewBot(token string, client processingpb.ProcessingClient, queue *nats.EncodedConn, logger zerolog.Logger) (Bot, error) {
@@ -45,6 +46,12 @@ func NewBot(token string, client processingpb.ProcessingClient, queue *nats.Enco
 
 	session.LogLevel = discordgo.LogInformational
 	session.State.MaxMessageCount = 20
+
+	application, _ := session.Application("@me")
+	if err != nil {
+		return &dh, err
+	}
+	dh.Application = application
 
 	session.AddHandler(dh.messageCreate)
 	session.AddHandler(dh.messageReactionAdd)
@@ -77,7 +84,7 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	request := mapToPbMessageRequest(s.State, m.Message)
+	request := mapToPbMessageRequest(s.State, d.Application, m.Message)
 
 	reply, err := d.Client.SendMessageRequest(context.Background(), request)
 	if err != nil {
@@ -109,7 +116,7 @@ func (d *bot) messageReactionAdd(s *discordgo.Session, r *discordgo.MessageReact
 		return
 	}
 
-	reaction := mapToPbReaction(s.State, r.MessageReaction, message)
+	reaction := mapToPbReaction(s.State, r.MessageReaction, d.Application, message)
 
 	_, err = d.Client.SendReaction(context.Background(), reaction)
 	if err != nil {
@@ -245,10 +252,24 @@ func (d *bot) publishMessages(messageReply *processingpb.MessageReply, messages 
 			Str("channelId", channelId).
 			Msg("sending message to discord")
 
-		_, err = d.Session.ChannelMessageSendComplex(channelId, messageSend)
+		publishedMessage, err := d.Session.ChannelMessageSendComplex(channelId, messageSend)
 		if err != nil {
 			return err
 		}
+
+		reactions := []*contract.Reaction{}
+
+		for _, emojiId := range message.Reactions {
+			reaction := &contract.Reaction{
+				EmojiId:   emojiId,
+				ChannelId: publishedMessage.ChannelID,
+				MessageId: publishedMessage.ID,
+			}
+
+			reactions = append(reactions, reaction)
+		}
+
+		d.publishReactions(messageReply, reactions)
 	}
 
 	return nil

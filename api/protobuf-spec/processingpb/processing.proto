@@ -25,6 +25,7 @@ message MessageRequest {
     repeated Server servers = 7;
     repeated User mentions = 8;
     string content = 9;
+    Application application = 10;
 }
 
 message User {
@@ -41,6 +42,14 @@ message Server {
     int32 userCount = 5;
     string iconUrl = 6;
     string systemChannelId = 7;
+}
+
+message Application {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string icon = 4;
+    User owner = 5;
 }
 
 message Response {
