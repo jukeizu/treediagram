@@ -47,6 +47,9 @@ func NewBot(token string, client processingpb.ProcessingClient, queue *nats.Enco
 	session.LogLevel = discordgo.LogInformational
 	session.State.MaxMessageCount = 20
 
+	// Enable all intents to include privileged intents
+	session.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAll)
+
 	application, _ := session.Application("@me")
 	if err != nil {
 		return &dh, err
