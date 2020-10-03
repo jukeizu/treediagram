@@ -1,7 +1,7 @@
 module github.com/jukeizu/treediagram
 
 require (
-	github.com/bwmarrin/discordgo v0.21.1
+	github.com/bwmarrin/discordgo v0.22.0
 	github.com/cheapRoc/grpc-zerolog v0.0.0-20180425150930-27ca9d023ead
 	github.com/golang/protobuf v1.4.0
 	github.com/gorilla/websocket v1.4.2 // indirect
@@ -16,9 +16,9 @@ require (
 	github.com/rs/xid v1.2.1
 	github.com/rs/zerolog v1.16.0
 	github.com/shawntoffel/gossage v0.0.2
-	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899 // indirect
+	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0 // indirect
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0 // indirect
-	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
+	golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f // indirect
 	google.golang.org/genproto v0.0.0-20200424135956-bca184e23272 // indirect
 	google.golang.org/grpc v1.29.1
 	google.golang.org/protobuf v1.21.0
