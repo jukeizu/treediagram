@@ -1,17 +1,18 @@
 package processor
 
 import (
+	"encoding/json"
 	"errors"
 	"regexp"
 
-	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
+	"github.com/jukeizu/contract"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	"github.com/rs/zerolog"
 )
 
 type Reaction struct {
 	Request *processingpb.Reaction `json:"request"`
-	Intent  *intentpb.Intent       `json:"intent"`
+	Intent  *contract.Intent       `json:"intent"`
 }
 
 func (c Reaction) ShouldExecute() (bool, error) {
@@ -44,8 +45,13 @@ func (c Reaction) Execute() (*processingpb.Response, error) {
 
 	}
 
-	if c.Intent.Response != "" {
-		reply.Messages = append(reply.Messages, c.Intent.Response)
+	if c.Intent.Response != nil {
+		content, err := json.Marshal(c.Intent.Response)
+		if err != nil {
+			return nil, err
+		}
+
+		reply.Messages = append(reply.Messages, string(content))
 	}
 
 	return reply, nil

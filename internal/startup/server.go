@@ -8,7 +8,6 @@ import (
 	"time"
 
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
-	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
@@ -78,7 +77,6 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 		return nil, err
 	}
 
-	intentClient := intentpb.NewIntentRegistryClient(grpcConn)
 	userClient := userpb.NewUserClient(grpcConn)
 	processingClient := processingpb.NewProcessingClient(grpcConn)
 	schedulerClient := schedulingpb.NewSchedulingClient(grpcConn)
@@ -88,14 +86,17 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 		return nil, err
 	}
 
-	processor := processor.New(logger, conn, intentClient, userClient, schedulerClient, storage.ProcessorRepository)
-	err = processor.Start()
+	registry := intent.NewRegistry(config.IntentEndpoint)
+	err = registry.Load()
 	if err != nil {
 		return nil, err
 	}
 
-	intentService := intent.NewService(storage.IntentRepository)
-	intentService = intent.NewLoggingService(logger, intentService)
+	processor := processor.New(logger, conn, registry, userClient, schedulerClient, storage.ProcessorRepository)
+	err = processor.Start()
+	if err != nil {
+		return nil, err
+	}
 
 	schedulerService, err := scheduler.NewService(logger, storage.SchedulerRepository, conn)
 	if err != nil {
@@ -106,10 +107,10 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 	userService := user.NewService(storage.UserRepository)
 	userService = user.NewLoggingService(logger, userService)
 
-	helpHandler := help.NewHelpHandler(logger, intentClient)
+	helpHandler := help.NewHelpHandler(logger, registry)
 	serverSelectHandler := serverselect.NewServerSelectHandler(logger, userClient)
 	statsHandler := stats.NewStatsHandler(logger, processingClient)
-	intentHandler := bintent.NewIntentHandler(logger, intentClient)
+	intentHandler := bintent.NewIntentHandler(logger, registry)
 	versionHandler := version.NewVersionHandler(logger)
 
 	builtinServer := builtin.NewHttpServer(logger, fmt.Sprintf(":%d", config.HttpPort))
@@ -137,7 +138,6 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 
 	processingpb.RegisterProcessingServer(grpcServer, processorService)
 	schedulingpb.RegisterSchedulingServer(grpcServer, schedulerService)
-	intentpb.RegisterIntentRegistryServer(grpcServer, intentService)
 	userpb.RegisterUserServer(grpcServer, userService)
 
 	serverRunner := &ServerRunner{

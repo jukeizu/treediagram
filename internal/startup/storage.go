@@ -1,7 +1,6 @@
 package startup
 
 import (
-	"github.com/jukeizu/treediagram/pkg/intent"
 	"github.com/jukeizu/treediagram/pkg/processor"
 	"github.com/jukeizu/treediagram/pkg/scheduler"
 	"github.com/jukeizu/treediagram/pkg/user"
@@ -10,18 +9,12 @@ import (
 
 type Storage struct {
 	ProcessorRepository processor.Repository
-	IntentRepository    intent.Repository
 	SchedulerRepository scheduler.Repository
 	UserRepository      user.Repository
 }
 
 func NewStorage(logger zerolog.Logger, dbUrl string) (*Storage, error) {
 	processorRepository, err := processor.NewRepository(dbUrl)
-	if err != nil {
-		return nil, err
-	}
-
-	intentRepository, err := intent.NewRepository(dbUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +31,6 @@ func NewStorage(logger zerolog.Logger, dbUrl string) (*Storage, error) {
 
 	s := &Storage{
 		ProcessorRepository: processorRepository,
-		IntentRepository:    intentRepository,
 		SchedulerRepository: schedulerRepository,
 		UserRepository:      userRepository,
 	}
@@ -53,11 +45,6 @@ func (s *Storage) Migrate() error {
 	}
 
 	err = s.UserRepository.Migrate()
-	if err != nil {
-		return err
-	}
-
-	err = s.IntentRepository.Migrate()
 	if err != nil {
 		return err
 	}

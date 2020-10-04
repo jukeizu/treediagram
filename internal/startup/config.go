@@ -8,4 +8,5 @@ type Config struct {
 	DiscordToken      string
 	DiscordTokenFile  string
 	ReceivingEndpoint string
+	IntentEndpoint    string
 }

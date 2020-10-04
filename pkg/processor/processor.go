@@ -4,13 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
 	"sync"
 
-	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/schedulingpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/userpb"
+	"github.com/jukeizu/treediagram/pkg/intent"
 	nats "github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 )
@@ -34,14 +33,14 @@ type Executable interface {
 type Processor struct {
 	logger          zerolog.Logger
 	queue           *nats.EncodedConn
-	registry        intentpb.IntentRegistryClient
+	registry        *intent.Registry
 	userClient      userpb.UserClient
 	schedulerClient schedulingpb.SchedulingClient
 	repository      Repository
 	waitGroup       *sync.WaitGroup
 }
 
-func New(logger zerolog.Logger, queue *nats.EncodedConn, registry intentpb.IntentRegistryClient, userClient userpb.UserClient, schedulerClient schedulingpb.SchedulingClient, repository Repository) Processor {
+func New(logger zerolog.Logger, queue *nats.EncodedConn, registry *intent.Registry, userClient userpb.UserClient, schedulerClient schedulingpb.SchedulingClient, repository Repository) Processor {
 	p := Processor{
 		logger:          logger.With().Str("component", "processor").Logger(),
 		queue:           queue,
@@ -113,28 +112,13 @@ func (p Processor) processMessageRequest(request *processingpb.MessageRequest) {
 
 	request.ServerId = serverId
 
-	query := &intentpb.QueryIntentsRequest{
+	query := intent.Query{
 		ServerId: request.ServerId,
 		Type:     "command",
 	}
 
-	stream, err := p.registry.QueryIntents(context.Background(), query)
-	if err != nil {
-		p.logger.Error().Err(err).Caller().Msg("error getting QueryIntents stream")
-		return
-	}
-
-	for {
-		intent, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-
-		if err != nil {
-			p.logger.Error().Err(err).Caller().Msg("error receiving intent from stream")
-			break
-		}
-
+	intents := p.registry.Query(query)
+	for _, intent := range intents {
 		command := Command{
 			Request: request,
 			Intent:  intent,
@@ -170,28 +154,13 @@ func (p Processor) processReaction(reaction *processingpb.Reaction) {
 		Interface("reaction", reaction).
 		Msg("reaction received")
 
-	query := &intentpb.QueryIntentsRequest{
+	query := intent.Query{
 		ServerId: reaction.ServerId,
 		Type:     "reaction",
 	}
 
-	stream, err := p.registry.QueryIntents(context.Background(), query)
-	if err != nil {
-		p.logger.Error().Err(err).Caller().Msg("error getting QueryIntents stream")
-		return
-	}
-
-	for {
-		intent, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-
-		if err != nil {
-			p.logger.Error().Err(err).Caller().Msg("error receiving intent from stream")
-			break
-		}
-
+	intents := p.registry.Query(query)
+	for _, intent := range intents {
 		r := Reaction{
 			Request: reaction,
 			Intent:  intent,

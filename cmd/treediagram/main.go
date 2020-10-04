@@ -24,6 +24,7 @@ const (
 	DefaultReceivingEndpoint            = "localhost:50051"
 	DiscordTokenEnvironmentVariable     = "TREEDIAGRAM_DISCORD_TOKEN"
 	DiscordTokenFileEnvironmentVariable = "TREEDIAGRAM_DISCORD_TOKEN_FILE"
+	DefaultIntentUrl                    = "http://localhost:8080/intent.yml"
 )
 
 var (
@@ -49,6 +50,7 @@ func parseConfig() startup.Config {
 	flag.BoolVar(&flagMigrate, "migrate", false, "Run db migrations")
 	flag.BoolVar(&flagVersion, "v", false, "version")
 	flag.BoolVar(&flagDebug, "D", false, "enable debug logging")
+	flag.StringVar(&c.IntentEndpoint, "intent.url", DefaultIntentUrl, "intent url")
 
 	flag.Parse()
 

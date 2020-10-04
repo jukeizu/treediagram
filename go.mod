@@ -6,13 +6,12 @@ require (
 	github.com/golang/protobuf v1.4.0
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/jnewmano/grpc-json-proxy v0.0.0-20190711184636-c105eed9ab4a
-	github.com/jukeizu/contract v0.3.1
+	github.com/jukeizu/contract v0.3.3
 	github.com/lib/pq v1.2.0
-	github.com/mattn/go-shellwords v1.0.6
 	github.com/nats-io/nats-server/v2 v2.1.0 // indirect
 	github.com/nats-io/nats.go v1.9.1
 	github.com/oklog/run v1.0.0
-	github.com/robfig/cron/v3 v3.0.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/xid v1.2.1
 	github.com/rs/zerolog v1.16.0
 	github.com/shawntoffel/gossage v0.0.2
@@ -22,6 +21,7 @@ require (
 	google.golang.org/genproto v0.0.0-20200424135956-bca184e23272 // indirect
 	google.golang.org/grpc v1.29.1
 	google.golang.org/protobuf v1.21.0
+	gopkg.in/yaml.v2 v2.3.0
 )
 
 go 1.13
