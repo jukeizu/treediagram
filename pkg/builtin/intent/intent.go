@@ -31,7 +31,12 @@ func (h IntentHandler) Load(request contract.Request) (*contract.Response, error
 		return nil, nil
 	}
 
-	err := h.queue.Publish(intent.LoadRegistrySubject, nil)
+	err := h.registry.Load()
+	if err != nil {
+		return nil, err
+	}
+
+	err = h.queue.Publish(intent.LoadRegistrySubject, h.registry)
 	if err != nil {
 		return nil, err
 	}

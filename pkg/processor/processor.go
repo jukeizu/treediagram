@@ -393,11 +393,12 @@ func (p Processor) scheduleJobs(processingRequest *processingpb.ProcessingReques
 	}
 }
 
-func (p Processor) loadRegistry(i interface{}) {
-	p.logger.Info().Msg("received load request")
-	err := p.registry.Load()
-	if err != nil {
-		p.logger.Error().Err(err).Msg("failed to load registry")
+func (p Processor) loadRegistry(r *intent.Registry) {
+	p.logger.Info().Msg("received load registry request")
+	if r == nil {
+		p.logger.Error().Msg("received nil registry")
+		return
 	}
+	p.registry = r
 	p.logger.Info().Msg("registry loaded")
 }

@@ -12,19 +12,19 @@ const (
 )
 
 type Registry struct {
-	url     string
-	intents []*contract.Intent
+	Url     string             `json:"url,omitempty" yaml:"url,omitempty"`
+	Intents []*contract.Intent `json:"intents,omitempty" yaml:"intents,omitempty"`
 }
 
 func NewRegistry(url string) *Registry {
 	return &Registry{
-		url:     url,
-		intents: []*contract.Intent{},
+		Url:     url,
+		Intents: []*contract.Intent{},
 	}
 }
 
 func (r *Registry) Load() error {
-	resp, err := http.Get(r.url)
+	resp, err := http.Get(r.Url)
 	if err != nil {
 		return err
 	}
@@ -38,19 +38,19 @@ func (r *Registry) Load() error {
 		return err
 	}
 
-	r.intents = intents
+	r.Intents = intents
 
 	return nil
 }
 
 func (r *Registry) Query(q Query) []*contract.Intent {
-	if r.intents == nil {
+	if r.Intents == nil {
 		return []*contract.Intent{}
 	}
 
 	reply := []*contract.Intent{}
 
-	for _, intent := range r.intents {
+	for _, intent := range r.Intents {
 		if q.Match(intent) {
 			reply = append(reply, intent)
 		}
