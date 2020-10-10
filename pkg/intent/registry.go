@@ -7,6 +7,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const (
+	LoadRegistrySubject = "intent.registry.load.received"
+)
+
 type Registry struct {
 	url     string
 	intents []*contract.Intent

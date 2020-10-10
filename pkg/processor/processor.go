@@ -75,6 +75,11 @@ func (p Processor) Start() error {
 		return err
 	}
 
+	_, err = p.queue.Subscribe(intent.LoadRegistrySubject, p.loadRegistry)
+	if err != nil {
+		return err
+	}
+
 	p.logger.Info().Msg("started")
 
 	return nil
@@ -386,4 +391,13 @@ func (p Processor) scheduleJobs(processingRequest *processingpb.ProcessingReques
 			Str("jobId", reply.Job.Id).
 			Msg("created job")
 	}
+}
+
+func (p Processor) loadRegistry(i interface{}) {
+	p.logger.Info().Msg("received load request")
+	err := p.registry.Load()
+	if err != nil {
+		p.logger.Error().Err(err).Msg("failed to load registry")
+	}
+	p.logger.Info().Msg("registry loaded")
 }

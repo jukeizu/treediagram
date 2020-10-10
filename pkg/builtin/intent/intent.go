@@ -4,18 +4,20 @@ import (
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/treediagram/pkg/builtin"
 	"github.com/jukeizu/treediagram/pkg/intent"
+	nats "github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 )
 
 type IntentHandler struct {
 	logger   zerolog.Logger
 	registry *intent.Registry
+	queue    *nats.EncodedConn
 }
 
-func NewIntentHandler(logger zerolog.Logger, registry *intent.Registry) IntentHandler {
+func NewIntentHandler(logger zerolog.Logger, registry *intent.Registry, queue *nats.EncodedConn) IntentHandler {
 	logger = logger.With().Str("component", "intent.endpoint.builtin.intent").Logger()
 
-	return IntentHandler{logger, registry}
+	return IntentHandler{logger, registry, queue}
 }
 
 func (h IntentHandler) Registrations() []builtin.HandlerRegistration {
@@ -29,12 +31,12 @@ func (h IntentHandler) Load(request contract.Request) (*contract.Response, error
 		return nil, nil
 	}
 
-	err := h.registry.Load()
+	err := h.queue.Publish(intent.LoadRegistrySubject, nil)
 	if err != nil {
-		return contract.StringResponse("```" + err.Error() + "```"), nil
+		return nil, err
 	}
 
-	return contract.StringResponse("loaded registry!"), nil
+	return contract.StringResponse("load request has been sent!"), nil
 }
 
 func authorIsOwner(request contract.Request) bool {

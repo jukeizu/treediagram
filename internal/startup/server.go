@@ -110,7 +110,7 @@ func NewServerRunner(logger zerolog.Logger, config Config) (*ServerRunner, error
 	helpHandler := help.NewHelpHandler(logger, registry)
 	serverSelectHandler := serverselect.NewServerSelectHandler(logger, userClient)
 	statsHandler := stats.NewStatsHandler(logger, processingClient)
-	intentHandler := bintent.NewIntentHandler(logger, registry)
+	intentHandler := bintent.NewIntentHandler(logger, registry, conn)
 	versionHandler := version.NewVersionHandler(logger)
 
 	builtinServer := builtin.NewHttpServer(logger, fmt.Sprintf(":%d", config.HttpPort))
