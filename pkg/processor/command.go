@@ -19,7 +19,7 @@ func (c Command) ShouldExecute() (bool, error) {
 		return false, nil
 	}
 
-	if c.Intent.Mention && !c.isBotMentioned() {
+	if !c.Request.IsDirect && c.Intent.Mention && !c.isBotMentioned() {
 		return false, nil
 	}
 
@@ -76,7 +76,8 @@ func (c Command) MarshalZerologObject(e *zerolog.Event) {
 		Str("channelId", c.Request.ChannelId).
 		Str("serverId", c.Request.ServerId).
 		Str("botId", c.Request.Bot.Id).
-		Str("userId", c.Request.Author.Id)
+		Str("userId", c.Request.Author.Id).
+		Bool("isDirect", c.Request.IsDirect)
 }
 
 func (c Command) isBotMentioned() bool {

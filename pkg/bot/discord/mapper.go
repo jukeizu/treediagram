@@ -65,6 +65,7 @@ func mapToPbMessageRequest(state *discordgo.State, a *discordgo.Application, m *
 		Author:      mapToPbUser(m.Author),
 		ChannelId:   m.ChannelID,
 		ServerId:    m.GuildID,
+		IsDirect:    m.GuildID == "",
 		Servers:     mapToPbServers(m.Author.ID, state.Guilds),
 		Content:     m.Content,
 		Mentions:    mapToPbUsers(m.Mentions),
