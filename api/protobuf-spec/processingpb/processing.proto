@@ -22,10 +22,11 @@ message MessageRequest {
     User author = 4;
     string channelId = 5;
     string serverId = 6;
-    repeated Server servers = 7;
-    repeated User mentions = 8;
-    string content = 9;
-    Application application = 10;
+    bool isDirect = 7;
+    repeated Server servers = 8;
+    repeated User mentions = 9;
+    string content = 10;
+    Application application = 11;
 }
 
 message User {
