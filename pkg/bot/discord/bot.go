@@ -58,6 +58,7 @@ func NewBot(token string, client processingpb.ProcessingClient, queue *nats.Enco
 
 	session.AddHandler(dh.messageCreate)
 	session.AddHandler(dh.messageReactionAdd)
+	session.AddHandler(dh.interactionCreate)
 
 	dh.Session = session
 
@@ -98,6 +99,37 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	d.Logger.Debug().Str("requestId", reply.Id).Msg("request sent")
+}
+
+func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	d.Logger.Debug().
+		Str("requestId", i.ID).
+		Msg("received interaction create")
+
+	pbInteraction := mapToPbInteraction(s.State, i)
+
+	_, err := d.Client.SendInteraction(context.Background(), pbInteraction)
+	if err != nil {
+		d.Logger.Error().Caller().Err(err).
+			Msg("error sending interaction")
+		return
+	}
+
+	d.Logger.Debug().
+		Str("customId", i.MessageComponentData().CustomID).
+		Msg("interaction request sent")
+
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+	})
+	if err != nil {
+		d.Logger.Error().Caller().Err(err).
+			Msg("error responding to interaction")
+		return
+	}
+
+	d.Logger.Debug().
+		Msg("responed to discord interaction")
 }
 
 func (d *bot) messageReactionAdd(s *discordgo.Session, r *discordgo.MessageReactionAdd) {

@@ -7,6 +7,7 @@ service Processing {
     rpc SendMessageRequest(MessageRequest) returns (SendMessageRequestReply) {}
     rpc GetMessageReply(MessageReplyRequest) returns (MessageReply) {}
     rpc SendReaction(Reaction) returns (SendReactionReply) {}
+    rpc SendInteraction(Interaction) returns (SendInteractionReply) {}
     rpc SendProcessingEvent(ProcessingEvent) returns (SendProcessingEventReply) {}
     rpc ProcessingRequestIntentStatistics(ProcessingRequestIntentStatisticsRequest) returns (ProcessingRequestIntentStatisticsReply) {}
 }
@@ -124,6 +125,18 @@ message Reaction {
     string serverId = 5;
 }
 
+message Interaction {
+    string identifier = 1;
+    string source = 2;
+    User bot = 3;
+    User user = 4;
+    string channelId = 5;
+    string serverId = 6;
+    bool isDirect = 7;
+    repeated string values = 10;
+    string type = 11;
+}
+
 message Emoji {
     string id = 1;
     string name = 2;
@@ -135,3 +148,4 @@ message Emoji {
 }
 
 message SendReactionReply {}
+message SendInteractionReply {}
