@@ -154,7 +154,7 @@ func main() {
 }
 
 func interrupt(cancel <-chan struct{}) error {
-	c := make(chan os.Signal)
+	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT)
 
 	select {

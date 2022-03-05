@@ -112,14 +112,14 @@ func mapToMessageSend(contractMessage *contract.Message) (*discordgo.MessageSend
 
 	messageSend := discordgo.MessageSend{
 		Content: contractMessage.Content,
-		Embed:   mapToMessageEmbed(contractMessage.Embed),
+		Embeds:  mapToMessageEmbeds(contractMessage.Embed),
 		Files:   mapToFiles(contractMessage.Files),
 	}
 
 	return &messageSend, nil
 }
 
-func mapToMessageEmbed(contractEmbed *contract.Embed) *discordgo.MessageEmbed {
+func mapToMessageEmbeds(contractEmbed *contract.Embed) []*discordgo.MessageEmbed {
 	if contractEmbed == nil {
 		return nil
 	}
@@ -138,7 +138,7 @@ func mapToMessageEmbed(contractEmbed *contract.Embed) *discordgo.MessageEmbed {
 		Fields:      mapToMessageEmbedFields(contractEmbed.Fields),
 	}
 
-	return &embed
+	return []*discordgo.MessageEmbed{&embed}
 }
 
 func mapToMessageEmbedFooter(contractEmbedFooter *contract.EmbedFooter) *discordgo.MessageEmbedFooter {
