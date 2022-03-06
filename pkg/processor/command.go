@@ -19,7 +19,7 @@ func (c Command) ShouldExecute() (bool, error) {
 		return false, nil
 	}
 
-	if !c.Request.IsDirect && c.Intent.Mention && !c.isBotMentioned() {
+	if c.Intent.Mention && !c.isBotMentioned() {
 		return false, nil
 	}
 
