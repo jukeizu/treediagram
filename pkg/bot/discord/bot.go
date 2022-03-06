@@ -102,6 +102,10 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if s == nil || i == nil {
+		return
+	}
+
 	if i.Type != discordgo.InteractionMessageComponent {
 		return
 	}
