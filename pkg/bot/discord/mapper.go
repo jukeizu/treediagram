@@ -85,7 +85,7 @@ func mapToPbReaction(state *discordgo.State, r *discordgo.MessageReaction, a *di
 
 func mapToPbInteraction(state *discordgo.State, i *discordgo.InteractionCreate) *processingpb.Interaction {
 	user := i.User
-	if i.User == nil && i.Member != nil && i.Member.User != nil {
+	if i.User == nil && i.Member != nil {
 		user = i.Member.User
 	}
 
@@ -240,16 +240,8 @@ func mapToMessageComponents(components *contract.Components) []discordgo.Message
 		messageComponents = append(messageComponents, actionRow)
 	}
 
-	for _, button := range mapToButtons(components.Buttons) {
-		messageComponents = append(messageComponents, button)
-	}
-
-	for _, textInput := range mapToTextInputs(components.TextInputs) {
-		messageComponents = append(messageComponents, textInput)
-	}
-
-	for _, selectMenu := range mapToSelectMenus(components.SelectMenus) {
-		messageComponents = append(messageComponents, selectMenu)
+	for _, component := range mapCommonMessageComponents(components.Buttons, components.TextInputs, components.SelectMenus) {
+		messageComponents = append(messageComponents, component)
 	}
 
 	return messageComponents
@@ -265,22 +257,32 @@ func mapToActionRows(actionsRows []*contract.ActionsRow) []*discordgo.ActionsRow
 	for _, actionRow := range actionsRows {
 		dActionRow := &discordgo.ActionsRow{}
 
-		for _, button := range mapToButtons(actionRow.Buttons) {
-			dActionRow.Components = append(dActionRow.Components, button)
-		}
-
-		for _, textInput := range mapToTextInputs(actionRow.TextInputs) {
-			dActionRow.Components = append(dActionRow.Components, textInput)
-		}
-
-		for _, selectMenu := range mapToSelectMenus(actionRow.SelectMenus) {
-			dActionRow.Components = append(dActionRow.Components, selectMenu)
+		for _, component := range mapCommonMessageComponents(actionRow.Buttons, actionRow.TextInputs, actionRow.SelectMenus) {
+			dActionRow.Components = append(dActionRow.Components, component)
 		}
 
 		dActionsRows = append(dActionsRows, dActionRow)
 	}
 
 	return dActionsRows
+}
+
+func mapCommonMessageComponents(buttons []*contract.Button, textInputs []*contract.TextInput, selectMenus []*contract.SelectMenu) []discordgo.MessageComponent {
+	messageComponents := []discordgo.MessageComponent{}
+
+	for _, button := range mapToButtons(buttons) {
+		messageComponents = append(messageComponents, button)
+	}
+
+	for _, textInput := range mapToTextInputs(textInputs) {
+		messageComponents = append(messageComponents, textInput)
+	}
+
+	for _, selectMenu := range mapToSelectMenus(selectMenus) {
+		messageComponents = append(messageComponents, selectMenu)
+	}
+
+	return messageComponents
 }
 
 func mapToComponentEmoji(emoji *contract.ComponentEmoji) discordgo.ComponentEmoji {

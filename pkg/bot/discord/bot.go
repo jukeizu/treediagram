@@ -129,7 +129,7 @@ func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCr
 	}
 
 	d.Logger.Debug().
-		Msg("responed to discord interaction")
+		Msg("responded to discord interaction")
 }
 
 func (d *bot) messageReactionAdd(s *discordgo.Session, r *discordgo.MessageReactionAdd) {

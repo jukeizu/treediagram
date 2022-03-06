@@ -3,7 +3,6 @@ package processor
 import (
 	"errors"
 	"regexp"
-	"strings"
 
 	"github.com/jukeizu/treediagram/api/protobuf-spec/intentpb"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
@@ -20,9 +19,7 @@ func (c Interaction) ShouldExecute() (bool, error) {
 		return false, nil
 	}
 
-	prefix := strings.Split(c.Request.Identifier, ".")[0]
-
-	match, err := regexp.MatchString(c.Intent.Regex, prefix)
+	match, err := regexp.MatchString(c.Intent.Regex, c.Request.Identifier)
 	if err != nil {
 		return match, errors.New("regexp: " + err.Error())
 	}
