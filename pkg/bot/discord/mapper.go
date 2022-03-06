@@ -83,6 +83,31 @@ func mapToPbReaction(state *discordgo.State, r *discordgo.MessageReaction, a *di
 	}
 }
 
+func mapToPbInteraction(state *discordgo.State, i *discordgo.InteractionCreate) *processingpb.Interaction {
+	if state == nil || i == nil {
+		return nil
+	}
+
+	user := i.User
+	if i.User == nil && i.Member != nil {
+		user = i.Member.User
+	}
+
+	data := i.MessageComponentData()
+
+	return &processingpb.Interaction{
+		Identifier: data.CustomID,
+		Values:     data.Values,
+		Type:       data.Type().String(),
+		Source:     "discord",
+		Bot:        mapToPbUser(state.User),
+		User:       mapToPbUser(user),
+		ChannelId:  i.ChannelID,
+		ServerId:   i.GuildID,
+		IsDirect:   i.GuildID == "",
+	}
+}
+
 func mapToPbEmoji(e discordgo.Emoji) *processingpb.Emoji {
 	return &processingpb.Emoji{
 		Id:            e.ID,
@@ -111,9 +136,10 @@ func mapToMessageSend(contractMessage *contract.Message) (*discordgo.MessageSend
 	}
 
 	messageSend := discordgo.MessageSend{
-		Content: contractMessage.Content,
-		Embeds:  mapToMessageEmbeds(contractMessage.Embed),
-		Files:   mapToFiles(contractMessage.Files),
+		Content:    contractMessage.Content,
+		Embeds:     mapToMessageEmbeds(contractMessage.Embed),
+		Files:      mapToFiles(contractMessage.Files),
+		Components: mapToMessageComponents(contractMessage.Compontents),
 	}
 
 	return &messageSend, nil
@@ -205,6 +231,159 @@ func mapToFiles(contractFiles []*contract.File) []*discordgo.File {
 	}
 
 	return files
+}
+
+func mapToMessageComponents(components *contract.Components) []discordgo.MessageComponent {
+	if components == nil {
+		return nil
+	}
+
+	messageComponents := []discordgo.MessageComponent{}
+
+	for _, actionRow := range mapToActionRows(components.ActionsRows) {
+		messageComponents = append(messageComponents, actionRow)
+	}
+
+	for _, component := range mapCommonMessageComponents(components.Buttons, components.TextInputs, components.SelectMenus) {
+		messageComponents = append(messageComponents, component)
+	}
+
+	return messageComponents
+}
+
+func mapToActionRows(actionsRows []*contract.ActionsRow) []*discordgo.ActionsRow {
+	if actionsRows == nil {
+		return nil
+	}
+
+	dActionsRows := []*discordgo.ActionsRow{}
+
+	for _, actionRow := range actionsRows {
+		dActionRow := &discordgo.ActionsRow{}
+
+		for _, component := range mapCommonMessageComponents(actionRow.Buttons, actionRow.TextInputs, actionRow.SelectMenus) {
+			dActionRow.Components = append(dActionRow.Components, component)
+		}
+
+		dActionsRows = append(dActionsRows, dActionRow)
+	}
+
+	return dActionsRows
+}
+
+func mapCommonMessageComponents(buttons []*contract.Button, textInputs []*contract.TextInput, selectMenus []*contract.SelectMenu) []discordgo.MessageComponent {
+	messageComponents := []discordgo.MessageComponent{}
+
+	for _, button := range mapToButtons(buttons) {
+		messageComponents = append(messageComponents, button)
+	}
+
+	for _, textInput := range mapToTextInputs(textInputs) {
+		messageComponents = append(messageComponents, textInput)
+	}
+
+	for _, selectMenu := range mapToSelectMenus(selectMenus) {
+		messageComponents = append(messageComponents, selectMenu)
+	}
+
+	return messageComponents
+}
+
+func mapToComponentEmoji(emoji *contract.ComponentEmoji) discordgo.ComponentEmoji {
+	if emoji == nil {
+		return discordgo.ComponentEmoji{}
+	}
+
+	return discordgo.ComponentEmoji{
+		ID:       emoji.Id,
+		Name:     emoji.Name,
+		Animated: emoji.Animated,
+	}
+}
+
+func mapToButtons(buttons []*contract.Button) []*discordgo.Button {
+	if buttons == nil {
+		return nil
+	}
+
+	dButtons := []*discordgo.Button{}
+
+	for _, button := range buttons {
+		dButton := &discordgo.Button{
+			Label:    button.Label,
+			Style:    discordgo.ButtonStyle(button.Style),
+			Emoji:    mapToComponentEmoji(&button.Emoji),
+			Disabled: button.Disabled,
+			URL:      button.Url,
+			CustomID: button.CustomId,
+		}
+		dButtons = append(dButtons, dButton)
+	}
+
+	return dButtons
+}
+
+func mapToTextInputs(textInputs []*contract.TextInput) []*discordgo.TextInput {
+	if textInputs == nil {
+		return nil
+	}
+
+	dTextInputs := []*discordgo.TextInput{}
+
+	for _, textInput := range textInputs {
+		dButton := &discordgo.TextInput{
+			CustomID:    textInput.CustomId,
+			Label:       textInput.Label,
+			Style:       discordgo.TextInputStyle(textInput.Style),
+			Placeholder: textInput.Placeholder,
+			Value:       textInput.Value,
+			Required:    textInput.Required,
+			MinLength:   textInput.MinLength,
+			MaxLength:   textInput.MaxLength,
+		}
+		dTextInputs = append(dTextInputs, dButton)
+	}
+
+	return dTextInputs
+}
+
+func mapToSelectMenuOptions(selectMenuOptions []contract.SelectMenuOption) []discordgo.SelectMenuOption {
+	dSelectMenuOptions := []discordgo.SelectMenuOption{}
+
+	for _, selectMenuOption := range selectMenuOptions {
+		dSelectMenuOption := discordgo.SelectMenuOption{
+			Label:       selectMenuOption.Label,
+			Value:       selectMenuOption.Value,
+			Description: selectMenuOption.Description,
+			Emoji:       mapToComponentEmoji(&selectMenuOption.Emoji),
+			Default:     selectMenuOption.Default,
+		}
+		dSelectMenuOptions = append(dSelectMenuOptions, dSelectMenuOption)
+	}
+
+	return dSelectMenuOptions
+}
+
+func mapToSelectMenus(selectMenus []*contract.SelectMenu) []*discordgo.SelectMenu {
+	if selectMenus == nil {
+		return nil
+	}
+
+	dSelectMenus := []*discordgo.SelectMenu{}
+
+	for _, selectMenu := range selectMenus {
+		dSelectMenu := &discordgo.SelectMenu{
+			CustomID:    selectMenu.CustomId,
+			Placeholder: selectMenu.Placeholder,
+			MinValues:   selectMenu.MinValues,
+			MaxValues:   selectMenu.MaxValues,
+			Options:     mapToSelectMenuOptions(selectMenu.Options),
+			Disabled:    selectMenu.Disabled,
+		}
+		dSelectMenus = append(dSelectMenus, dSelectMenu)
+	}
+
+	return dSelectMenus
 }
 
 func mapToLevel(dgoLevel int) zerolog.Level {

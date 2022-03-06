@@ -33,6 +33,12 @@ func (s service) SendReaction(ctx context.Context, req *processingpb.Reaction) (
 	return &processingpb.SendReactionReply{}, err
 }
 
+func (s service) SendInteraction(ctx context.Context, req *processingpb.Interaction) (*processingpb.SendInteractionReply, error) {
+	err := s.queue.Publish(InteractionReceivedSubject, req)
+
+	return &processingpb.SendInteractionReply{}, err
+}
+
 func (s service) SendProcessingEvent(ctx context.Context, req *processingpb.ProcessingEvent) (*processingpb.SendProcessingEventReply, error) {
 	err := s.queue.Publish(EventReceivedSubject, req)
 

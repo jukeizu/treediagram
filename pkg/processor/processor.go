@@ -19,6 +19,7 @@ const (
 	ProcessorQueueGroup           = "processor"
 	MessageRequestReceivedSubject = "messagerequest.received"
 	ReactionReceivedSubject       = "reaction.received"
+	InteractionReceivedSubject    = "interaction.received"
 	JobReceivedSubject            = "jobs"
 	ReplyReceivedSubject          = "processor.reply.received"
 	EventReceivedSubject          = "processor.event.received"
@@ -72,6 +73,11 @@ func (p Processor) Start() error {
 	}
 
 	_, err = p.queue.QueueSubscribe(ReactionReceivedSubject, ProcessorQueueGroup, p.processReaction)
+	if err != nil {
+		return err
+	}
+
+	_, err = p.queue.QueueSubscribe(InteractionReceivedSubject, ProcessorQueueGroup, p.processInteraction)
 	if err != nil {
 		return err
 	}
@@ -194,6 +200,42 @@ func (p Processor) processReaction(reaction *processingpb.Reaction) {
 
 		r := Reaction{
 			Request: reaction,
+			Intent:  intent,
+		}
+
+		p.process(r)
+	}
+}
+
+func (p Processor) processInteraction(interaction *processingpb.Interaction) {
+	p.logger.Info().
+		Interface("interaction", interaction).
+		Msg("interaction received")
+
+	query := &intentpb.QueryIntentsRequest{
+		ServerId: interaction.ServerId,
+		Type:     "interaction",
+	}
+
+	stream, err := p.registry.QueryIntents(context.Background(), query)
+	if err != nil {
+		p.logger.Error().Err(err).Caller().Msg("error getting QueryIntents stream")
+		return
+	}
+
+	for {
+		intent, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			p.logger.Error().Err(err).Caller().Msg("error receiving intent from stream")
+			break
+		}
+
+		r := Interaction{
+			Request: interaction,
 			Intent:  intent,
 		}
 
