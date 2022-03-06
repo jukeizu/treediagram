@@ -102,6 +102,10 @@ func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if i.Type != discordgo.InteractionMessageComponent {
+		return
+	}
+
 	d.Logger.Debug().
 		Str("requestId", i.ID).
 		Msg("received interaction create")
