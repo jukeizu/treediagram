@@ -123,8 +123,10 @@ func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCr
 		return
 	}
 
+	customId := i.MessageComponentData().CustomID
+
 	d.Logger.Debug().
-		Str("customId", i.MessageComponentData().CustomID).
+		Str("customId", customId).
 		Msg("interaction request sent")
 
 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -137,6 +139,7 @@ func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCr
 	}
 
 	d.Logger.Debug().
+		Str("customId", customId).
 		Msg("responded to discord interaction")
 }
 

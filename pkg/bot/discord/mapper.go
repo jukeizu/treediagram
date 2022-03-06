@@ -84,6 +84,10 @@ func mapToPbReaction(state *discordgo.State, r *discordgo.MessageReaction, a *di
 }
 
 func mapToPbInteraction(state *discordgo.State, i *discordgo.InteractionCreate) *processingpb.Interaction {
+	if state == nil || i == nil {
+		return nil
+	}
+
 	user := i.User
 	if i.User == nil && i.Member != nil {
 		user = i.Member.User
