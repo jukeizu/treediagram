@@ -73,5 +73,6 @@ func (c Interaction) MarshalZerologObject(e *zerolog.Event) {
 		Str("channelId", c.Request.ChannelId).
 		Str("serverId", c.Request.ServerId).
 		Str("botId", c.Request.Bot.Id).
-		Str("userId", c.Request.User.Id)
+		Str("userId", c.Request.User.Id).
+		Str("identifier", c.Request.Identifier)
 }
