@@ -132,9 +132,10 @@ message Interaction {
     User user = 4;
     string channelId = 5;
     string serverId = 6;
-    bool isDirect = 7;
-    repeated string values = 10;
-    string type = 11;
+    string messageId = 7;
+    bool isDirect = 8;
+    repeated string values = 9;
+    string type = 10;
 }
 
 message Emoji {

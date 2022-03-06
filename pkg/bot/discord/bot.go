@@ -129,14 +129,14 @@ func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCr
 		Str("customId", customId).
 		Msg("interaction request sent")
 
-	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 	})
-	if err != nil {
-		d.Logger.Error().Caller().Err(err).
-			Msg("error responding to interaction")
-		return
-	}
+	//if err != nil {
+	//	d.Logger.Error().Caller().Err(err).
+	//		Msg("error responding to interaction")
+	//	return
+	//}
 
 	d.Logger.Debug().
 		Str("customId", customId).
@@ -286,6 +286,26 @@ func (d *bot) publishMessages(messageReply *processingpb.MessageReply, messages 
 			}
 
 			channelId = id
+		}
+
+		if message.EditMessageId != "" {
+			messageEdit, err := mapToMessageEdit(message, channelId)
+			if err != nil {
+				return err
+			}
+
+			d.Logger.Info().
+				Str("messageReplyId", messageReply.Id).
+				Str("channelId", channelId).
+				Str("editMessageId", message.EditMessageId).
+				Msg("sending message edit to discord")
+
+			_, err = d.Session.ChannelMessageEditComplex(messageEdit)
+			if err != nil {
+				return err
+			}
+
+			continue
 		}
 
 		messageSend, err := mapToMessageSend(message)

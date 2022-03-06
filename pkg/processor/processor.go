@@ -97,7 +97,7 @@ func (p Processor) processMessageRequest(request *processingpb.MessageRequest) {
 		Interface("messageRequest", request).
 		Msg("message request received")
 
-	serverId, err := p.findServerId(request)
+	serverId, err := p.findServerId(request.ServerId, request.Author.Id)
 	if err != nil {
 		p.logger.Error().Err(err).Caller().
 			Str("userId", request.Author.Id).
@@ -212,6 +212,16 @@ func (p Processor) processInteraction(interaction *processingpb.Interaction) {
 		Interface("interaction", interaction).
 		Msg("interaction received")
 
+	serverId, err := p.findServerId(interaction.ServerId, interaction.User.Id)
+	if err != nil {
+		p.logger.Error().Err(err).Caller().
+			Str("userId", interaction.User.Id).
+			Msg("could not determine serverId for user")
+		return
+	}
+
+	interaction.ServerId = serverId
+
 	query := &intentpb.QueryIntentsRequest{
 		ServerId: interaction.ServerId,
 		Type:     "interaction",
@@ -323,12 +333,10 @@ func (p Processor) process(executable Executable) {
 	}(executable)
 }
 
-func (p Processor) findServerId(request *processingpb.MessageRequest) (string, error) {
-	if request.ServerId != "" {
-		return request.ServerId, nil
+func (p Processor) findServerId(serverId string, userId string) (string, error) {
+	if serverId != "" {
+		return serverId, nil
 	}
-
-	userId := request.Author.Id
 
 	p.logger.Info().
 		Str("userId", userId).

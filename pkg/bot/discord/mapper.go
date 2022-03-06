@@ -97,6 +97,7 @@ func mapToPbInteraction(state *discordgo.State, i *discordgo.InteractionCreate) 
 
 	return &processingpb.Interaction{
 		Identifier: data.CustomID,
+		MessageId:  i.Message.ID,
 		Values:     data.Values,
 		Type:       data.Type().String(),
 		Source:     "discord",
@@ -143,6 +144,22 @@ func mapToMessageSend(contractMessage *contract.Message) (*discordgo.MessageSend
 	}
 
 	return &messageSend, nil
+}
+
+func mapToMessageEdit(contractMessage *contract.Message, channelId string) (*discordgo.MessageEdit, error) {
+	if contractMessage == nil {
+		return nil, nil
+	}
+
+	messageEdit := discordgo.MessageEdit{
+		ID:         contractMessage.EditMessageId,
+		Channel:    channelId,
+		Content:    &contractMessage.Content,
+		Embeds:     mapToMessageEmbeds(contractMessage.Embed),
+		Components: mapToMessageComponents(contractMessage.Compontents),
+	}
+
+	return &messageEdit, nil
 }
 
 func mapToMessageEmbeds(contractEmbed *contract.Embed) []*discordgo.MessageEmbed {
