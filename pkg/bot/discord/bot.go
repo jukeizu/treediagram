@@ -288,6 +288,26 @@ func (d *bot) publishMessages(messageReply *processingpb.MessageReply, messages 
 			channelId = id
 		}
 
+		if message.EditMessageId != "" {
+			messageEdit, err := mapToMessageEdit(message, channelId)
+			if err != nil {
+				return err
+			}
+
+			d.Logger.Info().
+				Str("messageReplyId", messageReply.Id).
+				Str("channelId", channelId).
+				Str("editMessageId", message.EditMessageId).
+				Msg("sending message edit to discord")
+
+			_, err = d.Session.ChannelMessageEditComplex(messageEdit)
+			if err != nil {
+				return err
+			}
+
+			continue
+		}
+
 		messageSend, err := mapToMessageSend(message)
 		if err != nil {
 			return err
