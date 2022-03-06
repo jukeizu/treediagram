@@ -129,14 +129,14 @@ func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCr
 		Str("customId", customId).
 		Msg("interaction request sent")
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 	})
-	//if err != nil {
-	//	d.Logger.Error().Caller().Err(err).
-	//		Msg("error responding to interaction")
-	//	return
-	//}
+	if err != nil {
+		d.Logger.Error().Caller().Err(err).
+			Msg("error responding to interaction")
+		return
+	}
 
 	d.Logger.Debug().
 		Str("customId", customId).

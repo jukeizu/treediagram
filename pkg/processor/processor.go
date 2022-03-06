@@ -208,7 +208,7 @@ func (p Processor) processReaction(reaction *processingpb.Reaction) {
 }
 
 func (p Processor) processInteraction(interaction *processingpb.Interaction) {
-	p.logger.Info().
+	p.logger.Debug().
 		Interface("interaction", interaction).
 		Msg("interaction received")
 
