@@ -3,6 +3,7 @@ package discord
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
@@ -320,6 +321,7 @@ func (d *bot) publishMessages(messageReply *processingpb.MessageReply, messages 
 
 		publishedMessage, err := d.Session.ChannelMessageSendComplex(channelId, messageSend)
 		if err != nil {
+			d.handleRestError(messageReply, err)
 			return err
 		}
 
@@ -370,6 +372,53 @@ func (d *bot) getUserChannelId(userId string) (string, error) {
 	}
 
 	return dmChannel.ID, nil
+}
+
+func (d *bot) handleRestError(messageReply *processingpb.MessageReply, responseError error) {
+	restError := &discordgo.RESTError{}
+	if !errors.As(responseError, &restError) {
+		return
+	}
+
+	d.Logger.Debug().
+		Err(responseError).
+		Str("processingRequestId", messageReply.ProcessingRequestId).
+		Str("messageReplyId", messageReply.Id).
+		Str("channelId", messageReply.ChannelId).
+		Str("userId", messageReply.UserId).
+		Msg("handling error received from discord")
+
+	helpMessage := mapRestErrorToHelpMessage(restError, messageReply)
+	if helpMessage == "" {
+		d.Logger.Debug().
+			Err(responseError).
+			Str("processingRequestId", messageReply.ProcessingRequestId).
+			Str("messageReplyId", messageReply.Id).
+			Str("channelId", messageReply.ChannelId).
+			Str("userId", messageReply.UserId).
+			Msg("no help message required")
+		return
+	}
+
+	_, err := d.Session.ChannelMessageSend(messageReply.ChannelId, helpMessage)
+	if err != nil {
+		d.Logger.Error().Caller().Err(err).
+			Err(responseError).
+			Str("processingRequestId", messageReply.ProcessingRequestId).
+			Str("messageReplyId", messageReply.Id).
+			Str("channelId", messageReply.ChannelId).
+			Str("userId", messageReply.UserId).
+			Msg("error sending discord error help message")
+		return
+	}
+
+	d.Logger.Info().
+		Err(responseError).
+		Str("processingRequestId", messageReply.ProcessingRequestId).
+		Str("messageReplyId", messageReply.Id).
+		Str("channelId", messageReply.ChannelId).
+		Str("userId", messageReply.UserId).
+		Msg("help message sent to user")
 }
 
 func (d *bot) discordLogger(dgoLevel int, caller int, format string, a ...interface{}) {
