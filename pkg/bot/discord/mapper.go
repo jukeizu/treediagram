@@ -2,6 +2,7 @@ package discord
 
 import (
 	"bytes"
+	"fmt"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jukeizu/contract"
@@ -401,6 +402,14 @@ func mapToSelectMenus(selectMenus []*contract.SelectMenu) []*discordgo.SelectMen
 	}
 
 	return dSelectMenus
+}
+
+func mapRestErrorToHelpMessage(restError *discordgo.RESTError, messageReply *processingpb.MessageReply) string {
+	// Cannot send messages to this user
+	if restError.Message.Code == 50007 {
+		return fmt.Sprintf("<@%s> We've been trying to reach you ~~about your car's extended warranty~~.\n\nPlease allow direct messages from this server and try again.", messageReply.UserId)
+	}
+	return ""
 }
 
 func mapToLevel(dgoLevel int) zerolog.Level {
