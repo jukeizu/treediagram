@@ -2,7 +2,7 @@
  jobs:                                                                            
    test:                                                                          
      docker:                                                                      
-       - image: golang:1.17
+       - image: golang:1.19
      steps:                                                                       
        - checkout                                                                 
        - restore_cache:                                                           
