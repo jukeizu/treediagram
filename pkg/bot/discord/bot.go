@@ -9,6 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/jukeizu/contract"
 	"github.com/jukeizu/treediagram/api/protobuf-spec/processingpb"
+	"github.com/jukeizu/treediagram/internal"
 	nats "github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 )
@@ -74,13 +75,33 @@ func NewBot(token string, client processingpb.ProcessingClient, queue *nats.Enco
 func (d *bot) Open() error {
 	d.Logger.Info().Msg("session opening")
 
-	return d.Session.Open()
+	err := d.Session.Open()
+	if err != nil {
+		return err
+	}
+
+	return d.registerApplicationCommands()
 }
 
 func (d *bot) Close() {
 	d.Logger.Info().Msg("session closing")
 
 	d.Session.Close()
+}
+
+func (d *bot) registerApplicationCommands() error {
+	_, err := d.Session.ApplicationCommandBulkOverwrite(d.Session.State.User.ID, "", d.defaultGlobalCommands())
+	return err
+}
+
+func (d *bot) defaultGlobalCommands() []*discordgo.ApplicationCommand {
+	version := discordgo.ApplicationCommand{
+		Name:        "version",
+		Description: "Returns the current bot version",
+		Version:     internal.Version,
+	}
+
+	return []*discordgo.ApplicationCommand{&version}
 }
 
 func (d *bot) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -107,13 +128,19 @@ func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCr
 		return
 	}
 
-	if i.Type != discordgo.InteractionMessageComponent {
+	d.Logger.Debug().
+		Str("requestId", i.ID).
+		Str("type", i.Type.String()).
+		Msg("received interaction create")
+
+	if i.Type == discordgo.InteractionApplicationCommand {
+		d.handleApplicationCommand(s, i)
 		return
 	}
 
-	d.Logger.Debug().
-		Str("requestId", i.ID).
-		Msg("received interaction create")
+	if i.Type != discordgo.InteractionMessageComponent {
+		return
+	}
 
 	pbInteraction := mapToPbInteraction(s.State, i)
 
@@ -142,6 +169,15 @@ func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCr
 	d.Logger.Debug().
 		Str("customId", customId).
 		Msg("responded to discord interaction")
+}
+
+func (d *bot) handleApplicationCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	data := i.ApplicationCommandData()
+
+	switch data.Name {
+	case "version":
+		d.sendStringCommandResponse(internal.Version, s, i)
+	}
 }
 
 func (d *bot) messageReactionAdd(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
@@ -428,4 +464,53 @@ func (d *bot) discordLogger(dgoLevel int, caller int, format string, a ...interf
 		Str("component", "discordgo").
 		Str("version", discordgo.VERSION).
 		Msg(message)
+}
+
+func (d *bot) sendStringCommandResponse(content string, s *discordgo.Session, i *discordgo.InteractionCreate) {
+	d.sendCommandResponse(&discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: content,
+		},
+	}, s, i)
+}
+
+func (d *bot) sendCommandResponse(response *discordgo.InteractionResponse, s *discordgo.Session, i *discordgo.InteractionCreate) {
+	data := i.ApplicationCommandData()
+
+	userID := ""
+	if i.User != nil {
+		userID = i.User.ID
+	} else if i.Member != nil && i.Member.User != nil {
+		userID = i.Member.User.ID
+	}
+
+	d.Logger.Debug().
+		Str("command", data.Name).
+		Str("requestId", i.ID).
+		Str("userId", userID).
+		Str("serverId", i.GuildID).
+		Str("channelId", i.ChannelID).
+		Msg("sending interaction response")
+
+	err := s.InteractionRespond(i.Interaction, response)
+	if err != nil {
+		d.Logger.Error().Caller().
+			Err(err).
+			Str("command", data.Name).
+			Str("requestId", i.ID).
+			Str("userId", userID).
+			Str("serverId", i.GuildID).
+			Str("channelId", i.ChannelID).
+			Msg("failed to send interaction response")
+		return
+	}
+
+	d.Logger.Debug().
+		Str("command", data.Name).
+		Str("requestId", i.ID).
+		Str("userId", userID).
+		Str("serverId", i.GuildID).
+		Str("channelId", i.ChannelID).
+		Msg("interaction response sent")
 }
