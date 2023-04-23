@@ -31,7 +31,7 @@ func (s *loggingService) Preference(ctx context.Context, req *userpb.PreferenceR
 			return
 		}
 
-		l.Info().Msg("")
+		l.Debug().Msg("")
 	}(time.Now())
 
 	reply, err = s.Service.Preference(ctx, req)
