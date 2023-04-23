@@ -172,7 +172,7 @@ func (p Processor) processJob(schedulingJob *schedulingpb.Job) {
 }
 
 func (p Processor) processReaction(reaction *processingpb.Reaction) {
-	p.logger.Info().
+	p.logger.Debug().
 		Interface("reaction", reaction).
 		Msg("reaction received")
 
@@ -208,7 +208,7 @@ func (p Processor) processReaction(reaction *processingpb.Reaction) {
 }
 
 func (p Processor) processInteraction(interaction *processingpb.Interaction) {
-	p.logger.Debug().
+	p.logger.Info().
 		Interface("interaction", interaction).
 		Msg("interaction received")
 

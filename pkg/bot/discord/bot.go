@@ -128,7 +128,7 @@ func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCr
 		return
 	}
 
-	d.Logger.Debug().
+	d.Logger.Info().
 		Str("requestId", i.ID).
 		Str("type", i.Type.String()).
 		Msg("received interaction create")
@@ -153,7 +153,7 @@ func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCr
 
 	customId := i.MessageComponentData().CustomID
 
-	d.Logger.Debug().
+	d.Logger.Info().
 		Str("customId", customId).
 		Msg("interaction request sent")
 
@@ -166,7 +166,7 @@ func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCr
 		return
 	}
 
-	d.Logger.Debug().
+	d.Logger.Info().
 		Str("customId", customId).
 		Msg("responded to discord interaction")
 }
@@ -416,7 +416,7 @@ func (d *bot) handleRestError(messageReply *processingpb.MessageReply, responseE
 		return
 	}
 
-	d.Logger.Debug().
+	d.Logger.Info().
 		Err(responseError).
 		Str("processingRequestId", messageReply.ProcessingRequestId).
 		Str("messageReplyId", messageReply.Id).
@@ -426,7 +426,7 @@ func (d *bot) handleRestError(messageReply *processingpb.MessageReply, responseE
 
 	helpMessage := mapRestErrorToHelpMessage(restError, messageReply)
 	if helpMessage == "" {
-		d.Logger.Debug().
+		d.Logger.Info().
 			Err(responseError).
 			Str("processingRequestId", messageReply.ProcessingRequestId).
 			Str("messageReplyId", messageReply.Id).
@@ -485,7 +485,7 @@ func (d *bot) sendCommandResponse(response *discordgo.InteractionResponse, s *di
 		userID = i.Member.User.ID
 	}
 
-	d.Logger.Debug().
+	d.Logger.Info().
 		Str("command", data.Name).
 		Str("requestId", i.ID).
 		Str("userId", userID).
@@ -506,7 +506,7 @@ func (d *bot) sendCommandResponse(response *discordgo.InteractionResponse, s *di
 		return
 	}
 
-	d.Logger.Debug().
+	d.Logger.Info().
 		Str("command", data.Name).
 		Str("requestId", i.ID).
 		Str("userId", userID).
