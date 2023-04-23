@@ -77,7 +77,8 @@ func (c Command) MarshalZerologObject(e *zerolog.Event) {
 		Str("serverId", c.Request.ServerId).
 		Str("botId", c.Request.Bot.Id).
 		Str("userId", c.Request.Author.Id).
-		Bool("isDirect", c.Request.IsDirect)
+		Bool("isDirect", c.Request.IsDirect).
+		Str("content", c.Request.Content)
 }
 
 func (c Command) isBotMentioned() bool {
