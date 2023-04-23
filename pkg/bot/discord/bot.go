@@ -128,15 +128,18 @@ func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCr
 		return
 	}
 
-	d.Logger.Info().
-		Str("requestId", i.ID).
-		Str("type", i.Type.String()).
-		Msg("received interaction create")
+	user := d.getInteractionUser(i)
 
 	if i.Type == discordgo.InteractionApplicationCommand {
 		d.handleApplicationCommand(s, i)
 		return
 	}
+
+	d.Logger.Info().
+		Str("requestId", i.ID).
+		Str("type", i.Type.String()).
+		Interface("user", user).
+		Msg("received interaction create")
 
 	if i.Type != discordgo.InteractionMessageComponent {
 		return
@@ -155,6 +158,7 @@ func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCr
 
 	d.Logger.Info().
 		Str("customId", customId).
+		Interface("user", user).
 		Msg("interaction request sent")
 
 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -168,11 +172,21 @@ func (d *bot) interactionCreate(s *discordgo.Session, i *discordgo.InteractionCr
 
 	d.Logger.Info().
 		Str("customId", customId).
+		Interface("user", user).
 		Msg("responded to discord interaction")
 }
 
 func (d *bot) handleApplicationCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	data := i.ApplicationCommandData()
+	user := d.getInteractionUser(i)
+
+	d.Logger.Info().
+		Str("requestId", i.ID).
+		Interface("user", user).
+		Interface("data", data).
+		Str("serverId", i.GuildID).
+		Str("channelId", i.ChannelID).
+		Msg("received application command")
 
 	switch data.Name {
 	case "version":
@@ -183,10 +197,10 @@ func (d *bot) handleApplicationCommand(s *discordgo.Session, i *discordgo.Intera
 func (d *bot) messageReactionAdd(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
 	message, err := d.Session.State.Message(r.ChannelID, r.MessageID)
 	if err == discordgo.ErrStateNotFound {
-		d.Logger.Info().
+		d.Logger.Debug().
 			Str("messageID", r.MessageID).
 			Str("channelID", r.ChannelID).
-			Msg("lookup up message from discord api")
+			Msg("looking up reaction message from discord api")
 
 		message, err = d.Session.ChannelMessage(r.ChannelID, r.MessageID)
 	}
@@ -477,18 +491,12 @@ func (d *bot) sendStringCommandResponse(content string, s *discordgo.Session, i 
 
 func (d *bot) sendCommandResponse(response *discordgo.InteractionResponse, s *discordgo.Session, i *discordgo.InteractionCreate) {
 	data := i.ApplicationCommandData()
+	user := d.getInteractionUser(i)
 
-	userID := ""
-	if i.User != nil {
-		userID = i.User.ID
-	} else if i.Member != nil && i.Member.User != nil {
-		userID = i.Member.User.ID
-	}
-
-	d.Logger.Info().
-		Str("command", data.Name).
+	d.Logger.Debug().
+		Interface("data", data).
 		Str("requestId", i.ID).
-		Str("userId", userID).
+		Interface("user", user).
 		Str("serverId", i.GuildID).
 		Str("channelId", i.ChannelID).
 		Msg("sending interaction response")
@@ -497,9 +505,9 @@ func (d *bot) sendCommandResponse(response *discordgo.InteractionResponse, s *di
 	if err != nil {
 		d.Logger.Error().Caller().
 			Err(err).
-			Str("command", data.Name).
+			Interface("data", data).
 			Str("requestId", i.ID).
-			Str("userId", userID).
+			Interface("user", user).
 			Str("serverId", i.GuildID).
 			Str("channelId", i.ChannelID).
 			Msg("failed to send interaction response")
@@ -507,10 +515,18 @@ func (d *bot) sendCommandResponse(response *discordgo.InteractionResponse, s *di
 	}
 
 	d.Logger.Info().
-		Str("command", data.Name).
+		Interface("data", data).
 		Str("requestId", i.ID).
-		Str("userId", userID).
+		Interface("user", user).
 		Str("serverId", i.GuildID).
 		Str("channelId", i.ChannelID).
 		Msg("interaction response sent")
+}
+
+func (d *bot) getInteractionUser(i *discordgo.InteractionCreate) *discordgo.User {
+	if i.Member != nil && i.Member.User != nil {
+		return i.Member.User
+	}
+
+	return i.User
 }

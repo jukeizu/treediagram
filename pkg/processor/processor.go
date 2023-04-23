@@ -298,7 +298,7 @@ func (p Processor) process(executable Executable) {
 			return
 		}
 
-		p.logger.Info().
+		p.logger.Debug().
 			Str("processingRequestId", processingRequest.Id).
 			EmbedObject(executable).
 			Msg("saving responses from execute")
@@ -307,12 +307,12 @@ func (p Processor) process(executable Executable) {
 			p.saveResponseMessage(processingRequest, message)
 		}
 
-		p.logger.Info().
+		p.logger.Debug().
 			Str("processingRequestId", processingRequest.Id).
 			EmbedObject(executable).
 			Msg("finished saving responses from execute")
 
-		p.logger.Info().
+		p.logger.Debug().
 			Str("processingRequestId", processingRequest.Id).
 			EmbedObject(executable).
 			Msg("scheduling jobs")
@@ -321,7 +321,7 @@ func (p Processor) process(executable Executable) {
 			p.scheduleJobs(processingRequest, message)
 		}
 
-		p.logger.Info().
+		p.logger.Debug().
 			Str("processingRequestId", processingRequest.Id).
 			EmbedObject(executable).
 			Msg("finished scheduling jobs")
@@ -338,7 +338,7 @@ func (p Processor) findServerId(serverId string, userId string) (string, error) 
 		return serverId, nil
 	}
 
-	p.logger.Info().
+	p.logger.Debug().
 		Str("userId", userId).
 		Msg("looking up server preference")
 
@@ -349,14 +349,14 @@ func (p Processor) findServerId(serverId string, userId string) (string, error) 
 
 	preference := preferenceReply.Preference
 	if preference == nil {
-		p.logger.Info().
+		p.logger.Debug().
 			Str("userId", userId).
 			Msg("user does not have a preferred server")
 
 		return "", nil
 	}
 
-	p.logger.Info().
+	p.logger.Debug().
 		Str("userId", userId).
 		Str("preferredServerId", preference.ServerId).
 		Msg("found server preference for user")
